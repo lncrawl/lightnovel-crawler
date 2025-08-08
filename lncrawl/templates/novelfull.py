@@ -1,5 +1,5 @@
 import re
-from typing import Iterable
+from typing import Generator
 from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup, Tag
@@ -13,7 +13,7 @@ from lncrawl.templates.soup.searchable import SearchableSoupTemplate
 class NovelFullTemplate(SearchableSoupTemplate, ChapterOnlySoupTemplate):
     is_template = True
 
-    def select_search_items(self, query: str) -> Iterable[Tag]:
+    def select_search_items(self, query: str) -> Generator[Tag, None, None]:
         params = {"keyword": query}
         soup = self.get_soup(f"{self.home_url}search?{urlencode(params)}")
         yield from soup.select("#list-page .row h3[class*='title'] > a")
@@ -21,7 +21,7 @@ class NovelFullTemplate(SearchableSoupTemplate, ChapterOnlySoupTemplate):
     def parse_search_item(self, tag: Tag) -> SearchResult:
         title = tag.get("title", tag.get_text())
         return SearchResult(
-            title=title.strip(),
+            title=str(title).strip(),
             url=self.absolute_url(tag["href"]),
         )
 
@@ -30,28 +30,28 @@ class NovelFullTemplate(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         assert tag
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: BeautifulSoup):
         tag = soup.select_one(".book img")
-        assert tag
+        if not tag:
+            return None
         if tag.has_attr("data-src"):
             return self.absolute_url(tag["data-src"])
         if tag.has_attr("src"):
             return self.absolute_url(tag["src"])
 
     def parse_authors(self, soup: BeautifulSoup):
-        possible_selectors = [
-            "a[href*='/a/']",
-            "a[href*='/au/']",
-            "a[href*='author']",
+        selectors = [
+            ".info a[href*='/a/']",
+            ".info a[href*='/au/']",
+            ".info a[href*='author']",
         ]
-        for a in soup.select_one(".info").select(",".join(possible_selectors)):
+        for a in soup.select(','.join(selectors)):
             yield a.text.strip()
 
     def parse_genres(self, soup: BeautifulSoup):
         info_section = soup.select_one(".info, .info-meta")
         if not info_section:
             return
-
         for li in info_section.select("li"):
             header = li.select_one("h3")
             if not header or ("Genre" not in header.text and "Tag" not in header.text):
@@ -88,7 +88,7 @@ class NovelFullTemplate(SearchableSoupTemplate, ChapterOnlySoupTemplate):
 
     def select_chapter_body(self, soup: BeautifulSoup) -> Tag:
         contents = soup.select_one("#chr-content, #chapter-content")
+        assert contents
         for ads in contents.select("div"):
             ads.extract()
-
         return contents

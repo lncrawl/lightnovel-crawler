@@ -33,9 +33,10 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         yield from soup.select("ul.novel-list .novel-item a")
 
     def parse_search_item(self, tag: Tag) -> SearchResult:
-        title = tag.select_one(".novel-title").text.strip()
+        title = tag.select_one(".novel-title")
+        assert title
         return SearchResult(
-            title=title,
+            title=title.get_text(strip=True),
             url=self.absolute_url(tag["href"]),
             info=" | ".join([x.text.strip() for x in tag.select(".novel-stats")]),
         )
@@ -45,9 +46,10 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         assert tag
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: BeautifulSoup):
         tag = soup.select_one("#novel figure.cover img")
-        assert tag
+        if not tag:
+            return None
         if tag.has_attr("data-src"):
             return self.absolute_url(tag["data-src"])
         elif tag.has_attr("src"):
@@ -67,7 +69,7 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
     def select_chapter_tags(self, soup: BeautifulSoup):
         tag = soup.select("#chapters .pagination li a")
         if tag:
-            last_page = tag[-1]["href"]
+            last_page = str(tag[-1]["href"])
             last_page_qs = parse_qs(urlparse(last_page).query)
             max_page = int(last_page_qs["page"][0])
             wjm = last_page_qs["wjm"][0]
@@ -94,11 +96,15 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
             yield from soup.select("ul.chapter-list li a")
 
     def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+        title = tag.select_one(".chapter-title")
+        assert title
         return Chapter(
             id=id,
             url=self.absolute_url(tag["href"]),
-            title=tag.select_one(".chapter-title").text.strip(),
+            title=title.get_text(strip=True),
         )
 
     def select_chapter_body(self, soup: BeautifulSoup) -> Tag:
-        return soup.select_one(".chapter-content")
+        body = soup.select_one(".chapter-content")
+        assert body
+        return body

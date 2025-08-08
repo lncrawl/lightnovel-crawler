@@ -30,23 +30,29 @@ class OptionalVolumeSoupTemplate(GeneralSoupTemplate):
         if chap_id > 0:
             return
 
-        vol_id = 0
-        chap_id = 0
         parent = soup.select_one("html")
+        if not parent:
+            return
+
+        vol_id = 1
+        vol_item = self.parse_volume_item(parent, vol_id)
+        yield vol_item
+
+        chap_id = 1
         for tag in self.select_chapter_tags(parent):
             if not isinstance(tag, Tag):
                 continue
             if chap_id % 100 == 0:
-                vol_id = chap_id // 100 + 1
+                vol_id += 1
                 vol_item = self.parse_volume_item(parent, vol_id)
                 yield vol_item
-            chap_id += 1
             item = self.parse_chapter_item(tag, chap_id, vol_item)
             item.volume = vol_id
+            chap_id += 1
             yield item
 
-    def select_volume_tags(self, soup: BeautifulSoup):
-        return []
+    def select_volume_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
+        yield from ()
 
     def parse_volume_item(self, tag: Tag, id: int) -> Volume:
         return Volume(id=id)

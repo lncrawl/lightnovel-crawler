@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Generator, List
+from typing import Generator
 
 from bs4 import Tag
 
@@ -12,17 +12,17 @@ from .general import GeneralBrowserTemplate
 class SearchableBrowserTemplate(GeneralBrowserTemplate, SearchableSoupTemplate):
     """Attempts to crawl using cloudscraper first, if failed use the browser."""
 
-    def search_novel_in_soup(self, query: str) -> List[SearchResult]:
+    def search_novel_in_soup(self, query: str) -> Generator[SearchResult, None, None]:
         tags = self.select_search_items(query)
-        return list(self.process_search_results(tags))
+        yield from self.process_search_results(tags)
 
-    def search_novel_in_browser(self, query: str) -> List[SearchResult]:
+    def search_novel_in_browser(self, query: str) -> Generator[SearchResult, None, None]:
         tags = self.select_search_items_in_browser(query)
-        return list(self.process_search_results_in_browser(tags))
+        yield from self.process_search_results_in_browser(tags)
 
     def process_search_results_in_browser(
         self, tags: Generator[Tag, None, None]
-    ) -> Generator[Tag, None, None]:
+    ) -> Generator[SearchResult, None, None]:
         """Process novel item tag and generates search results from the browser"""
         count = 0
         for tag in tags:
@@ -39,7 +39,7 @@ class SearchableBrowserTemplate(GeneralBrowserTemplate, SearchableSoupTemplate):
 
     def select_search_items_in_browser(self, query: str) -> Generator[Tag, None, None]:
         """Select novel items found by the query using the browser"""
-        yield from self.select_search_items(self.browser.soup)
+        yield from self.select_search_items(query)
 
     def parse_search_item_in_browser(self, tag: Tag) -> SearchResult:
         """Parse a tag and return single search result"""

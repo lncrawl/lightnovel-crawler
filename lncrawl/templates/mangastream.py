@@ -1,9 +1,11 @@
+from typing import Generator
 from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup, Tag
 
 from lncrawl.models import Chapter, SearchResult, Volume
-from lncrawl.templates.browser.optional_volume import OptionalVolumeBrowserTemplate
+from lncrawl.templates.browser.optional_volume import \
+    OptionalVolumeBrowserTemplate
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
 
 
@@ -27,8 +29,9 @@ class MangaStreamTemplate(SearchableBrowserTemplate, OptionalVolumeBrowserTempla
         a = tag.select_one("a.tip")
         title = tag.select_one("span.ntitle")
         info = tag.select_one("span.nchapter")
+        assert a
         return SearchResult(
-            title=title.text.strip() if title else a.text.strip(),
+            title=(title or a).get_text(strip=True),
             url=self.absolute_url(a["href"]),
             info=info.text.strip() if isinstance(info, Tag) else "",
         )
@@ -42,16 +45,16 @@ class MangaStreamTemplate(SearchableBrowserTemplate, OptionalVolumeBrowserTempla
         self.browser.wait("h1.entry-title")
         return self.parse_title(self.browser.soup)
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: BeautifulSoup):
         tag = soup.select_one(
             ".thumbook img, meta[property='og:image'],.sertothumb img"
         )
+        if not tag:
+            return None
         if tag.has_attr("data-src"):
             return self.absolute_url(tag["data-src"])
-
         if tag.has_attr("src"):
             return self.absolute_url(tag["src"])
-
         if tag.has_attr("content"):
             return self.absolute_url(tag["content"])
 
@@ -67,34 +70,36 @@ class MangaStreamTemplate(SearchableBrowserTemplate, OptionalVolumeBrowserTempla
         return self.cleaner.extract_contents(soup.select_one(".entry-content"))
 
     def select_volume_tags(self, soup: BeautifulSoup):
-        return []
+        yield from ()
 
     def parse_volume_item(self, tag: Tag, id: int) -> Volume:
         return Volume(id=id)
 
-    def select_chapter_tags(self, tag: Tag):
-        chapters = tag.select(".eplister li a")
-        first_li = tag.select_one(".eplister li")
+    def select_chapter_tags(self, parent: Tag) -> Generator[Tag, None, None]:
+        chapters = parent.select(".eplister li a")
+        first_li = parent.select_one(".eplister li")
         li_class = first_li.get("class", "") if first_li else ""
-        if first_li.get("data-num", 0) == 1 or "tseplsfrst" not in li_class:
+        data_num = first_li.get("data-num", "0") if first_li else "0"
+        if data_num == '1' or "tseplsfrst" not in str(li_class):
             yield from reversed(chapters)
         else:
             yield from chapters
 
     def parse_chapter_item(self, tag: Tag, id: int, vol: Volume) -> Chapter:
         title = tag.select_one(".epl-title")
+        if not isinstance(title, Tag):
+            title = tag.select_one("span")
+        assert title
         return Chapter(
             id=id,
-            title=(
-                title.text.strip()
-                if isinstance(title, Tag)
-                else tag.select_one("span").text.strip()
-            ),
+            title=title.get_text(strip=True),
             url=self.absolute_url(tag["href"]),
         )
 
     def select_chapter_body(self, soup: BeautifulSoup) -> Tag:
-        return soup.select_one("#readernovel, #readerarea, .entry-content")
+        body = soup.select_one("#readernovel, #readerarea, .entry-content")
+        assert body
+        return body
 
     def visit_chapter_page_in_browser(self, chapter: Chapter) -> None:
         self.visit(chapter.url)

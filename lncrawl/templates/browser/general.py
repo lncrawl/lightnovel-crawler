@@ -1,7 +1,7 @@
 import logging
-from typing import Generator, Union
+from typing import Generator, Optional, Union
 
-from bs4 import BeautifulSoup, Tag
+from bs4 import Tag
 
 from ...core.exeptions import FallbackToBrowser
 from ...models import Chapter, Volume
@@ -34,13 +34,12 @@ class GeneralBrowserTemplate(BasicBrowserTemplate, GeneralSoupTemplate):
             logger.warning("Failed to parse novel authors | %s", e)
 
         try:
-            tags = set(list(self.parse_genres(soup)))
-            self.novel_tags = ", ".join(tags)
+            self.novel_tags = list(self.parse_genres(soup))
         except Exception as e:
             logger.warning("Failed to parse novel tags | %s", e)
 
         try:
-            self.novel_synopsis = self.parse_summary(soup)
+            self.novel_synopsis = self.parse_summary(soup) or ""
         except Exception as e:
             logger.warning("Failed to parse novel synopsis | %s", e)
 
@@ -50,7 +49,7 @@ class GeneralBrowserTemplate(BasicBrowserTemplate, GeneralSoupTemplate):
             elif isinstance(item, Volume):
                 self.volumes.append(item)
 
-    def visit_novel_page_in_browser(self) -> BeautifulSoup:
+    def visit_novel_page_in_browser(self) -> None:
         """Open the Novel URL in the browser"""
         self.visit(self.novel_url)
 
@@ -71,13 +70,12 @@ class GeneralBrowserTemplate(BasicBrowserTemplate, GeneralSoupTemplate):
             logger.warning("Failed to parse novel authors | %s", e)
 
         try:
-            tags = set(list(self.parse_genres_in_browser()))
-            self.novel_tags = ", ".join(tags)
+            self.novel_tags = list(self.parse_genres_in_browser())
         except Exception as e:
             logger.warning("Failed to parse novel tags | %s", e)
 
         try:
-            self.novel_synopsis = self.parse_summary_in_browser()
+            self.novel_synopsis = self.parse_summary_in_browser() or ""
         except Exception as e:
             logger.warning("Failed to parse novel synopsis | %s", e)
 
@@ -91,7 +89,7 @@ class GeneralBrowserTemplate(BasicBrowserTemplate, GeneralSoupTemplate):
         """Parse and return the novel title in the browser"""
         return self.parse_title(self.browser.soup)
 
-    def parse_cover_in_browser(self) -> str:
+    def parse_cover_in_browser(self) -> Optional[str]:
         """Parse and return the novel cover image in the browser"""
         return self.parse_cover(self.browser.soup)
 
@@ -103,7 +101,7 @@ class GeneralBrowserTemplate(BasicBrowserTemplate, GeneralSoupTemplate):
         """Parse and return the novel categories in the browser"""
         yield from self.parse_genres(self.browser.soup)
 
-    def parse_summary_in_browser(self) -> str:
+    def parse_summary_in_browser(self) -> Optional[str]:
         """Parse and return the novel summary or synopsis in the browser"""
         return self.parse_summary(self.browser.soup)
 
