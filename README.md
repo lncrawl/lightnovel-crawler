@@ -85,7 +85,7 @@ If you used a folder other than Applications during installation, replace `/Appl
 
 ⏬ **Windows**: [lncrawl.exe ~ 36MB](https://go.bitanon.dev/lncrawl-windows)
 
-> In Windows 8, 10 or later versions, it might say that `lncrawl.exe` is not safe to dowload or execute. You should bypass/ignore this security check to execute this program.
+> In Windows 8, 10 or later versions, it might say that `lncrawl.exe` is not safe to download or execute. You should bypass/ignore this security check to execute this program.
 
 ⏬ **Linux**: [lncrawl ~ 54MB](https://go.bitanon.dev/lncrawl-linux)
 
