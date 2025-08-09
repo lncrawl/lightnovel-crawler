@@ -38,7 +38,7 @@ def _release_queue(driver: WebDriver):
     __override_quit(driver)
 
 
-def check_active(driver: WebDriver) -> bool:
+def check_active(driver: Optional[WebDriver]) -> bool:
     if not isinstance(driver, WebDriver):
         return False
     return driver in __open_browsers

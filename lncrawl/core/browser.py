@@ -1,10 +1,11 @@
 import logging
-from typing import Any, Iterable, List, Optional
+from typing import Any, List, Optional
 
 from bs4 import BeautifulSoup
 from requests.cookies import RequestsCookieJar
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.types import WaitExcTypes
 
 from ..webdriver import ChromeOptions, WebDriver, create_new
 from ..webdriver.elements import EC, By, WebElement
@@ -35,13 +36,13 @@ class Browser:
         - browser_storage (Optional[dict], optional): A Storage to save some user info that is saved in your Browser storage. Default: None.
         - soup_parser (Optional[str], optional): Parser for page content. Default: None.
         """
-        self._driver: WebDriver = None
         self.options = options
         self.timeout = timeout
         self.headless = headless
         self.cookie_store = cookie_store
         self.browser_storage = browser_storage
         self.soup_maker = soup_maker or SoupMaker()
+        self._driver: Optional[WebDriver] = None
 
     def __del__(self):
         if not self._driver:
@@ -108,14 +109,17 @@ class Browser:
             return
         if isinstance(self.cookie_store, RequestsCookieJar):
             for cookie in self._driver.get_cookies():
-                self.cookie_store.set(
-                    name=cookie.get("name"),
-                    value=cookie.get("value"),
-                    path=cookie.get("path"),
-                    domain=cookie.get("domain"),
-                    secure=cookie.get("secure"),
-                    expires=cookie.get("expiry"),
-                )
+                name = cookie.get("name")
+                value = cookie.get("value")
+                if name and value:
+                    self.cookie_store.set(
+                        name=name,
+                        value=value,
+                        path=cookie.get("path"),
+                        domain=cookie.get("domain"),
+                        secure=cookie.get("secure"),
+                        expires=cookie.get("expiry"),
+                    )
             logger.debug("Cookies retrieved: %s", self.cookie_store)
         if isinstance(self.browser_storage, dict):
             self.browser_storage["localStorage"] = self._driver.execute_script(
@@ -182,37 +186,36 @@ class Browser:
     def visit(self, url: str) -> None:
         """Visit an URL. Create new session if it does not exist"""
         self._init_browser()
-        self._driver.get(url)
+        if self._driver:
+            return self._driver.get(url)
 
     def find_all(self, selector: str, by: By = By.CSS_SELECTOR) -> List[WebElement]:
         if not self._driver:
-            return None
-        if isinstance(by, By):
-            by = str(by)
-        return self._driver.find_elements(by, selector)
+            return []
+        return self._driver.find_elements(str(by), selector)  # type:ignore
 
-    def find(self, selector: str, by: By = By.CSS_SELECTOR) -> WebElement:
+    def find(self, selector: str, by: By = By.CSS_SELECTOR) -> Optional[WebElement]:
         if not self._driver:
             return None
-        if isinstance(by, By):
-            by = str(by)
-        return self._driver.find_element(by, selector)
+        return self._driver.find_element(str(by), selector)  # type:ignore
 
     def click(self, selector: str, by: By = By.CSS_SELECTOR) -> None:
         "Select and click on an element."
         if not self._driver:
             return None
         elem = self.find(selector, by)
-        elem.scroll_into_view()
-        elem.click()
+        if elem:
+            elem.scroll_into_view()
+            elem.click()
 
     def submit(self, selector: str, by: By = By.CSS_SELECTOR) -> None:
         """Select a form and submit it."""
         if not self._driver:
             return None
         elem = self.find(selector, by)
-        elem.scroll_into_view()
-        elem.submit()
+        if elem:
+            elem.scroll_into_view()
+            elem.submit()
 
     def send_keys(
         self,
@@ -225,10 +228,11 @@ class Browser:
         if not self._driver:
             return None
         elem = self.find(selector, by)
-        elem.scroll_into_view()
-        if clear:
-            elem.clear()
-        elem.send_keys(text)
+        if elem:
+            elem.scroll_into_view()
+            if clear:
+                elem.clear()
+            elem.send_keys(text)
 
     def execute_js(self, script: str, *args, is_async=False) -> Any:
         """
@@ -252,7 +256,7 @@ class Browser:
         by: By = By.CSS_SELECTOR,
         timeout: Optional[float] = 30,
         poll_frequency: Optional[float] = 0.25,
-        ignored_exceptions: Iterable[Exception] = [],
+        ignored_exceptions: Optional[WaitExcTypes] = None,
         expected_conditon=EC.presence_of_element_located,
         reversed: bool = False,
     ):
@@ -269,18 +273,20 @@ class Browser:
             return
         if not selector or not callable(expected_conditon):
             return
-        if isinstance(by, By):
-            by = str(by)
         logger.info(
             f"Wait {timeout} seconds for {expected_conditon.__name__} by {by}:{selector}"
         )
         try:
             waiter = WebDriverWait(
-                self._driver, timeout, poll_frequency, ignored_exceptions
+                self._driver,
+                timeout or 30,
+                poll_frequency or 0.25,
+                ignored_exceptions=ignored_exceptions,
             )
+            condition = expected_conditon((str(by), selector))
             if reversed:
-                waiter.until_not(expected_conditon((by, selector)))
+                waiter.until_not(condition)  # type: ignore
             else:
-                waiter.until(expected_conditon((by, selector)))
+                waiter.until(condition)  # type: ignore
         except Exception as e:
             logger.info("Waiting could not be finished | %s", e)
