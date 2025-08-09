@@ -1,4 +1,4 @@
-import { JobPriorityTag, JobStatusTag } from '@/components/Tags/jobs';
+import { JobStatusTag } from '@/components/Tags/jobs';
 import { type Job } from '@/types';
 import { formatDate } from '@/utils/time';
 import { ClockCircleOutlined } from '@ant-design/icons';
