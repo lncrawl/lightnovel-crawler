@@ -25,6 +25,7 @@ class RateLimiter(object):
 
     def __enter__(self):
         self._time = self._now()
+        return self
 
     def __exit__(self, type, value, traceback):
         if self._closed:

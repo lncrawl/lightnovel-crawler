@@ -1,6 +1,8 @@
 import { JobPriorityTag, JobStatusTag } from '@/components/Tags/jobs';
 import { type Job } from '@/types';
-import { Card, Flex, Grid, Space, Typography } from 'antd';
+import { formatDate } from '@/utils/time';
+import { ClockCircleOutlined } from '@ant-design/icons';
+import { Card, Flex, Grid, Space, Tag, Typography } from 'antd';
 import { Link } from 'react-router-dom';
 import { JobActionButtons } from './JobActionButtons';
 import { JobProgressCircle, JobProgressLine } from './JobProgessBar';
@@ -35,7 +37,9 @@ export const JobListItemCard: React.FC<{
 
             <Space style={{ marginTop: 5 }}>
               <JobStatusTag value={job.status} completed={job.run_state} />
-              <JobPriorityTag value={job.priority} />
+              <Tag icon={<ClockCircleOutlined />} color="default">
+                {formatDate(job.created_at)}
+              </Tag>
             </Space>
 
             {!lg && <JobProgressLine job={job} style={{ marginTop: 10 }} />}

@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from jose import jwt
 from passlib.context import CryptContext
-from sqlmodel import func, select
+from sqlmodel import func, select, and_, or_
 
 from ..context import ServerContext
 from ..exceptions import AppErrors
@@ -96,16 +96,43 @@ class UserService:
         self,
         offset: int = 0,
         limit: int = 20,
+        search: Optional[str] = None
     ) -> Paginated[User]:
         with self._db.session() as sess:
-            q = select(User).offset(offset).limit(limit)
-            users = sess.exec(q).all()
-            total = sess.exec(select(func.count()).select_from(User)).one()
+            stmt = select(User)
+            cnt = select(func.count()).select_from(User)
+
+            # Apply filters
+            conditions: List[Any] = []
+            if search:
+                matcher = f"%{search.lower()}%"
+                conditions.append(
+                    or_(
+                        func.lower(User.name).like(matcher),
+                        func.lower(User.email).like(matcher),
+                        func.lower(User.role).like(matcher),
+                        func.lower(User.tier).like(matcher),
+                    )
+                )
+
+            if conditions:
+                stmt = stmt.where(and_(*conditions))
+                cnt = cnt.where(and_(*conditions))
+
+            # Apply sorting
+            stmt = stmt.order_by(func.lower(User.created_at).asc())
+
+            # Apply pagination
+            stmt = stmt.offset(offset).limit(limit)
+
+            total = sess.exec(cnt).one()
+            items = sess.exec(stmt).all()
+
             return Paginated(
                 total=total,
                 offset=offset,
                 limit=limit,
-                items=list(users),
+                items=list(items),
             )
 
     def get(self, user_id: str) -> User:

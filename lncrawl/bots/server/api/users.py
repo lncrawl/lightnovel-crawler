@@ -10,13 +10,14 @@ from ..security import ensure_user
 router = APIRouter()
 
 
-@router.get('s', summary='Get list of all users')
-def all_users(
+@router.get('s', summary='Get list of users')
+def list_users(
     ctx: ServerContext = Depends(),
+    search: str = Query(default=''),
     offset: int = Query(default=0),
     limit: int = Query(default=20, le=100),
 ) -> Paginated[User]:
-    return ctx.users.list(offset, limit)
+    return ctx.users.list(offset, limit, search)
 
 
 @router.post('', summary='Create an user')

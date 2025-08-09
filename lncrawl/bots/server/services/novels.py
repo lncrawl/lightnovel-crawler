@@ -42,7 +42,7 @@ class NovelService:
                 cnt = cnt.where(and_(*conditions))
 
             # Apply sorting
-            stmt = stmt.order_by(func.lower(Novel.title).asc())
+            stmt = stmt.order_by(func.lower(Novel.updated_at).desc())
 
             # Apply pagination
             stmt = stmt.offset(offset).limit(limit)
