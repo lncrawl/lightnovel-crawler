@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from jose import jwt
 from passlib.context import CryptContext
-from sqlmodel import func, select, and_, or_
+from sqlmodel import and_, asc, func, or_, select
 
 from ..context import ServerContext
 from ..exceptions import AppErrors
@@ -105,22 +105,23 @@ class UserService:
             # Apply filters
             conditions: List[Any] = []
             if search:
-                matcher = f"%{search.lower()}%"
+                q = f'%{search.lower()}%'
                 conditions.append(
                     or_(
-                        func.lower(User.name).like(matcher),
-                        func.lower(User.email).like(matcher),
-                        func.lower(User.role).like(matcher),
-                        func.lower(User.tier).like(matcher),
+                        func.lower(User.name).like(q),
+                        func.lower(User.email).like(q),
+                        func.lower(User.role).like(q),
+                        func.lower(User.tier).like(q),
                     )
                 )
 
             if conditions:
-                stmt = stmt.where(and_(*conditions))
-                cnt = cnt.where(and_(*conditions))
+                cnd = and_(*conditions)
+                stmt = stmt.where(cnd)
+                cnt = cnt.where(cnd)
 
             # Apply sorting
-            stmt = stmt.order_by(func.lower(User.created_at).asc())
+            stmt = stmt.order_by(asc(User.created_at))
 
             # Apply pagination
             stmt = stmt.offset(offset).limit(limit)

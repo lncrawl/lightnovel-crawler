@@ -1,6 +1,6 @@
-from typing import List, Any
+from typing import Any, List
 
-from sqlmodel import func, select, and_, not_
+from sqlmodel import and_, desc, func, not_, select
 
 from ..context import ServerContext
 from ..exceptions import AppErrors
@@ -33,16 +33,16 @@ class NovelService:
                 conditions.append(Novel.title != '')
 
             if search:
-                conditions.append(
-                    func.lower(Novel.title).like(f"%{search.lower()}%")
-                )
+                q = f"%{search.lower()}%"
+                conditions.append(func.lower(Novel.title).like(q))
 
             if conditions:
-                stmt = stmt.where(and_(*conditions))
-                cnt = cnt.where(and_(*conditions))
+                cnd = and_(*conditions)
+                stmt = stmt.where(cnd)
+                cnt = cnt.where(cnd)
 
             # Apply sorting
-            stmt = stmt.order_by(func.lower(Novel.updated_at).desc())
+            stmt = stmt.order_by(desc(Novel.updated_at))
 
             # Apply pagination
             stmt = stmt.offset(offset).limit(limit)

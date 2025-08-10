@@ -105,3 +105,5 @@ export function useNovelList() {
     updateParams,
   };
 }
+
+export type NovelListHook = ReturnType<typeof useNovelList>;

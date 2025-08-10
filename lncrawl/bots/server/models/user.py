@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, EmailStr
-from sqlmodel import JSON, Column, Field, SQLModel, BigInteger
+from sqlmodel import JSON, BigInteger, Column, Field, SQLModel
 
 from ..utils.time_utils import current_timestamp
 from ._base import BaseTable
