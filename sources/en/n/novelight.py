@@ -122,7 +122,7 @@ class NoveLightCrawler(Crawler):
 
         soup = self.make_soup(
             self.get_json(
-                chapter.url.replace("chapter", "ajax/read-chapter"), 
+                chapter.url.replace("chapter", "ajax/read-chapter"),
                 headers=headers
             )["content"]
         )
