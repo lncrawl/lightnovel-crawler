@@ -91,8 +91,8 @@ class Illusia(Crawler):
 
         # --- Descobrir story_id pela tag JSON do WP ---
         story_id = None
-        for l in soup.select('link[rel="alternate"][type="application/json"]'):
-            href = l.get("href") or ""
+        for link in soup.select('link[rel="alternate"][type="application/json"]'):
+            href = link.get("href") or ""
             m = re.search(r"/wp-json/wp/v2/fcn_story/(\d+)", href)
             if m:
                 story_id = m.group(1)
@@ -359,6 +359,3 @@ class Illusia(Crawler):
         self._set_display_numbers()
         logger.info("Capítulos via HTML: %d | Volumes: %d", len(self.chapters), len(self.volumes))
 
-
-# registro
-Crawler = Illusia
