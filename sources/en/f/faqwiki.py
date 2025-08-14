@@ -12,6 +12,7 @@ class FaqWiki(Crawler):
     base_url = [
         "https://faqwiki.us/",
         "https://www.faqwiki.us/",
+        'https://faqwiki.xyz',
     ]
     has_manga = False
     has_mtl = True

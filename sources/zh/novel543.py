@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from lncrawl.core.crawler import Crawler
+
 # import urllib.parse
 
 logger = logging.getLogger(__name__)
@@ -146,4 +147,19 @@ class Novel543(Crawler):
         if tip_div and "溫馨提示" in tip_div.text:
             tip_div.decompose()
 
-        return self.cleaner.extract_contents(content_div)
+        extracted_content = self.cleaner.extract_contents(content_div)
+
+        # a chapter may be multiple pages, we want to get the next ones too
+        # We check if the next chapter link has an additional _number at the end
+        # if it does we recursively download the next page
+
+        next_ = soup.find("a", string="下一章")
+        if next_ and next_.has_attr("href"):
+            next_url = self.absolute_url(next_["href"])
+            if next_url.count("_") > 1:  # if it has multiple _ it means it's a multi-page chapter
+                next_url = next_url.rsplit("_", 1)[0] + "_2.html"
+                extracted_content += self.download_chapter_body(
+                    {"url": next_url, "title": chapter["title"]}
+                )
+
+        return extracted_content

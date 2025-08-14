@@ -13,8 +13,9 @@ export const UserAvatar: React.FC<
     user?: User | null;
   } & AvatarProps
 > = ({ user, ...avatarProps }) => {
-  if (!user) return null;
-
+  if (!user) {
+    return null;
+  }
   return (
     <Avatar
       size={72}

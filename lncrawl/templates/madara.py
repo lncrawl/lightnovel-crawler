@@ -37,10 +37,11 @@ class MadaraTemplate(SearchableSoupTemplate, ChapterOnlyBrowserTemplate):
 
     def parse_search_item(self, tag: Tag) -> SearchResult:
         a = tag.select_one(".post-title h3 a")
-        latest = tag.select_one(".latest-chap .chapter a").text
-        votes = tag.select_one(".rating .total_votes").text
+        latest = tag.select_one(".latest-chap .chapter a")
+        votes = tag.select_one(".rating .total_votes")
+        assert a and latest and votes
         return SearchResult(
-            title=a.text.strip(),
+            title=a.get_text(strip=True),
             url=self.absolute_url(a["href"]),
             info="%s | Rating: %s" % (latest, votes),
         )
@@ -112,4 +113,6 @@ class MadaraTemplate(SearchableSoupTemplate, ChapterOnlyBrowserTemplate):
         )
 
     def select_chapter_body(self, soup: BeautifulSoup) -> Tag:
-        return soup.select_one("div.reading-content")
+        body = soup.select_one("div.reading-content")
+        assert body
+        return body

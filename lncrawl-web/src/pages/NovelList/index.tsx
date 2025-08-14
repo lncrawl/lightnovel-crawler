@@ -4,7 +4,6 @@ import {
   Divider,
   Empty,
   Flex,
-  Input,
   Pagination,
   Result,
   Row,
@@ -12,6 +11,7 @@ import {
   Typography,
 } from 'antd';
 import { useNovelList } from './hooks';
+import { NovelFilterBox } from './NovelFilterBox';
 import { NovelListItemCard } from './NovelListItemCard';
 
 export const NovelListPage: React.FC<any> = () => {
@@ -54,15 +54,10 @@ export const NovelListPage: React.FC<any> = () => {
 
       <Divider size="small" />
 
-      <Flex align="center">
-        <Input.Search
-          defaultValue={initialSearch}
-          onSearch={(search) => updateParams({ search })}
-          placeholder="Search novels"
-          allowClear
-          size="large"
-        />
-      </Flex>
+      <NovelFilterBox
+        initialSearch={initialSearch}
+        updateParams={updateParams}
+      />
 
       <Divider size="small" />
 

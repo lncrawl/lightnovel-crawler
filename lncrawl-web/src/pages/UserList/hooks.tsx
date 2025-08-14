@@ -1,6 +1,5 @@
-import type { Novel, PaginatiedResponse } from '@/types';
+import type { PaginatiedResponse, User } from '@/types';
 import { stringifyError } from '@/utils/errors';
-import { Grid } from 'antd';
 import axios from 'axios';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -11,8 +10,7 @@ interface SearchParams {
   search?: string;
 }
 
-export function useNovelList() {
-  const breakpoint = Grid.useBreakpoint();
+export function useUserList() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [refreshId, setRefreshId] = useState(0);
@@ -20,41 +18,28 @@ export function useNovelList() {
   const [error, setError] = useState<string>();
 
   const [total, setTotal] = useState(0);
-  const [novels, setNovels] = useState<Novel[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   const search = useMemo(
     () => searchParams.get('search') || '',
     [searchParams]
   );
 
+  const perPage = 25;
   const currentPage = useMemo(
     () => parseInt(searchParams.get('page') || '1', 10),
     [searchParams]
   );
 
-  const perPage = useMemo(() => {
-    // xs={8} lg={6} xl={4}
-    if (breakpoint.xl) {
-      return 48;
-    } else if (breakpoint.lg) {
-      return 32;
-    } else {
-      return 24;
-    }
-  }, [breakpoint.xl, breakpoint.lg, breakpoint.sm]);
-
-  const fetchNovels = async (search: string, page: number, limit: number) => {
+  const fetchUsers = async (search: string, page: number, limit: number) => {
     setError(undefined);
     try {
       const offset = (page - 1) * limit;
-      const { data } = await axios.get<PaginatiedResponse<Novel>>(
-        '/api/novels',
-        {
-          params: { search, offset, limit },
-        }
-      );
+      const { data } = await axios.get<PaginatiedResponse<User>>('/api/users', {
+        params: { search, offset, limit },
+      });
       setTotal(data.total);
-      setNovels(data.items);
+      setUsers(data.items);
     } catch (err: any) {
       setError(stringifyError(err));
     } finally {
@@ -64,13 +49,12 @@ export function useNovelList() {
 
   useEffect(() => {
     const tid = setTimeout(() => {
-      fetchNovels(search, currentPage, perPage);
+      fetchUsers(search, currentPage, perPage);
     }, 50);
     return () => clearTimeout(tid);
-  }, [search, currentPage, perPage, refreshId]);
+  }, [search, currentPage, refreshId]);
 
   const refresh = useCallback(() => {
-    setLoading(true);
     setRefreshId((v) => v + 1);
   }, []);
 
@@ -97,7 +81,7 @@ export function useNovelList() {
     search,
     perPage,
     currentPage,
-    novels,
+    users,
     total,
     loading,
     error,
@@ -105,5 +89,3 @@ export function useNovelList() {
     updateParams,
   };
 }
-
-export type NovelListHook = ReturnType<typeof useNovelList>;
