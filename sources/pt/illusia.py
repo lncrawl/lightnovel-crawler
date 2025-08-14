@@ -358,4 +358,3 @@ class Illusia(Crawler):
             self.chapters.append({"id": chap_id, "volume": vol_id, "title": title, "url": url})
         self._set_display_numbers()
         logger.info("Capítulos via HTML: %d | Volumes: %d", len(self.chapters), len(self.volumes))
-
