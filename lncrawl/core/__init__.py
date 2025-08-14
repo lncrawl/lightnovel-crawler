@@ -1,5 +1,7 @@
-"""
-Interactive application to take user inputs
+"""Core app bootstrap: CLI initialization and launcher.
+
+Initializes environment, logging, optional proxy fetcher, and dispatches to
+the selected bot runtime.
 """
 
 import logging
@@ -12,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def init():
+    """Initialize CLI environment and logging; parse arguments."""
     from ..assets.version import get_version
     from .arguments import get_args
     from .display import description, input_suppression
@@ -39,6 +42,7 @@ def init():
 
 
 def start_app():
+    """Entry point invoked by scripts to run the application/bot."""
     from ..bots import run_bot
     from .arguments import get_args
     from .display import cancel_method, error_message

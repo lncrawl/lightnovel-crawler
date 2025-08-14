@@ -1,3 +1,4 @@
+"""Worker microtask to progress a job through all crawl stages."""
 import logging
 import shutil
 import time

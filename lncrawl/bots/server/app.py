@@ -1,3 +1,4 @@
+"""FastAPI application setup, middleware, and static file serving."""
 import traceback
 from pathlib import Path
 

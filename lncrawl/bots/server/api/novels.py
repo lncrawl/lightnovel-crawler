@@ -1,3 +1,4 @@
+"""Novel listing, details, artifacts, cover, TOC, and chapter content."""
 from typing import List
 
 from fastapi import APIRouter, Depends, Path, Query, Security

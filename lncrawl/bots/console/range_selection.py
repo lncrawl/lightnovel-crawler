@@ -1,3 +1,4 @@
+"""Console prompts to choose which chapters/volumes to download."""
 from prompt_toolkit.styles.style import Style
 from questionary import prompt
 from questionary.prompts.common import Choice

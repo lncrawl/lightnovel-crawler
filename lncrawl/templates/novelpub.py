@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Template for NovelPub-like sites with dynamic search and paginated TOC."""
 
 import logging
 import re

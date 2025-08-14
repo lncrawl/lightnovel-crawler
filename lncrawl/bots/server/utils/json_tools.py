@@ -1,3 +1,4 @@
+"""Robust JSON encode/decode helpers with logging and defaults."""
 import json
 import logging
 from typing import Any, TypeVar

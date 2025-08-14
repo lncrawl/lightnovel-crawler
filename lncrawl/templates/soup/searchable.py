@@ -1,3 +1,4 @@
+"""Soup template for searchable sites; defines result selection and parsing."""
 from abc import abstractmethod
 from typing import Generator, List
 

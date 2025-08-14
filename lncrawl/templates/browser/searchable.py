@@ -1,3 +1,4 @@
+"""Browser template for searchable sites with result parsing helpers."""
 from abc import abstractmethod
 from typing import Generator, List
 

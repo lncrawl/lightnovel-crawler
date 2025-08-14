@@ -1,3 +1,7 @@
+"""Scaffold for implementing a new bot.
+
+Implement the methods to wire a UI to `App` workflows.
+"""
 import logging
 
 from ..core.app import App

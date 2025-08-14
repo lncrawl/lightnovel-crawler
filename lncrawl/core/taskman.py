@@ -1,3 +1,9 @@
+"""Task queue and concurrency utilities.
+
+Provides a thin wrapper around ThreadPoolExecutor with progress bars, domain
+gating, rate limiting, and helpers to resolve futures as generators or lists.
+"""
+
 import atexit
 import logging
 import os
@@ -25,13 +31,7 @@ class TaskManager(ABC):
         workers: Optional[int] = None,
         ratelimit: Optional[float] = None,
     ) -> None:
-        """A helper class for task queueing and parallel task execution.
-        It is being used as a superclass of the Crawler.
-
-        Args:
-        - workers (int, optional): Number of concurrent workers to expect. Default: 5.
-        - ratelimit (float, optional): Number of requests per second.
-        """
+        """Initialize executor and optional rate limiter."""
         self.init_executor(workers, ratelimit)
 
     def close(self) -> None:
@@ -61,15 +61,7 @@ class TaskManager(ABC):
         workers: Optional[int] = None,
         ratelimit: Optional[float] = None,
     ):
-        """Initializes a new executor.
-
-        If the number of workers are not the same as the current executor,
-        it will shutdown the current executor, and cancel all pending tasks.
-
-        Args:
-        - workers (int, optional): Number of concurrent workers to expect. Default: 5.
-        - ratelimit (float, optional): Number of requests per second.
-        """
+        """Create a fresh executor and configure rate limiting if requested."""
         self._futures: List[Future] = []
         self.close()  # cleanup previous initialization
 
@@ -88,14 +80,7 @@ class TaskManager(ABC):
         setattr(self._executor, "submit", self.submit_task)
 
     def submit_task(self, fn, *args, **kwargs) -> Future:
-        """Submits a callable to be executed with the given arguments.
-
-        Schedules the callable to be executed as fn(*args, **kwargs) and returns
-        a Future instance representing the execution of the callable.
-
-        Returns:
-            A Future representing the given call.
-        """
+        """Submit a task (respecting rate limit if configured) and track it."""
         if hasattr(self, "_limiter"):
             fn = self._limiter.wrap(fn)
         if not self._submit:
@@ -142,18 +127,7 @@ class TaskManager(ABC):
         return bar
 
     def domain_gate(self, hostname: Optional[str]):
-        """Limit number of entry per hostname.
-
-        Args:
-            hostname: A fully qualified url.
-
-        Returns:
-            A semaphore object to wait.
-
-        Example:
-            with self.domain_gate(url):
-                self.scraper.get(url)
-        """
+        """Provide a per-host semaphore to limit concurrent requests."""
         if hostname is None:
             hostname = ''
         if hostname not in _host_semaphores:
@@ -161,11 +135,7 @@ class TaskManager(ABC):
         return _host_semaphores[hostname]
 
     def cancel_futures(self, futures: Iterable[Future]) -> None:
-        """Cancels all the future that are not yet done.
-
-        Args:
-            futures: A iterable list of futures to cancel.
-        """
+        """Cancel any not-yet-done futures in the provided iterable."""
         if not futures:
             return
         for future in futures:
@@ -181,17 +151,7 @@ class TaskManager(ABC):
         fail_fast: bool = False,
         signal=Event(),
     ) -> Generator[Any, None, None]:
-        """Create a generator output to resolve the futures.
-
-        Args:
-            futures: A iterable list of futures to resolve.
-            timeout: The number of seconds to wait for the result of a future.
-                If None, then there is no limit on the wait time.
-            disable_bar: Hides the progress bar if True.
-            desc: The progress bar description
-            unit: The progress unit name
-            fail_fast: Fail on first error
-        """
+        """Yield results as futures complete, updating a progress bar."""
         futures = list(futures)
         if not futures:
             return
@@ -247,17 +207,7 @@ class TaskManager(ABC):
         fail_fast: bool = False,
         signal=Event(),
     ) -> list:
-        """Wait for the futures to be done.
-
-        Args:
-            futures: A iterable list of futures to resolve.
-            timeout: The number of seconds to wait for the result of a future.
-                If None, then there is no limit on the wait time.
-            disable_bar: Hides the progress bar if True.
-            desc: The progress bar description
-            unit: The progress unit name
-            fail_fast: Fail on first error
-        """
+        """Resolve all futures and return their results as a list."""
 
         return list(
             self.resolve_as_generator(

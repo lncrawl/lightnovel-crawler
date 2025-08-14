@@ -1,3 +1,4 @@
+"""Novel listing, retrieval, deletion, and artifact lookup services."""
 from typing import List, Any
 
 from sqlmodel import func, select, and_, not_

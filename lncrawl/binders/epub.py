@@ -1,3 +1,9 @@
+"""EPUB binder using ebooklib.
+
+Builds a structured EPUB with cover, intro page, volumes, chapters, and
+embedded images.
+"""
+
 import logging
 import os
 from typing import Dict, Generator, List, Set
@@ -26,6 +32,14 @@ def bind_epub_book(
     book_title: str,
     is_rtl: bool = False,
 ):
+    """Create a single EPUB file and return its path.
+
+    - chapter_groups: list of volume lists where each list contains `Chapter`
+    - images: absolute paths to images to embed
+    - suffix: appended to filename (e.g., chapter range or volume label)
+    - book_title: display title in the EPUB
+    - is_rtl: right-to-left reading direction
+    """
     from ..core.app import App
     assert isinstance(app, App) and app.crawler
 
@@ -203,6 +217,7 @@ def bind_epub_book(
 
 
 def make_epubs(app, data: Dict[str, List[Chapter]]) -> Generator[str, None, None]:
+    """Iterate chapter groups and yield created EPUB file paths."""
     from ..core.app import App
     assert isinstance(app, App) and app.crawler
 

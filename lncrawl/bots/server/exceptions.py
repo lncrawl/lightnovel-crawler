@@ -1,3 +1,4 @@
+"""HTTP exception classes and global handlers for the FastAPI app."""
 import traceback
 
 from fastapi import Request, HTTPException

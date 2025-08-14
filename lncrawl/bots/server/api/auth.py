@@ -1,3 +1,4 @@
+"""Authentication endpoints for login, signup, self-update, and OTP flow."""
 from fastapi import APIRouter, Body, Depends, Security, Form
 
 from ..context import ServerContext

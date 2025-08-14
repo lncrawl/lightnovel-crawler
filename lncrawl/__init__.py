@@ -1,3 +1,4 @@
+"""Package entry: sets up environment and starts the app."""
 #!/usr/bin/env python3
 from __future__ import annotations
 
@@ -5,6 +6,7 @@ import multiprocessing
 
 
 def main():
+    """CLI entrypoint used by both `python -m lncrawl` and console scripts."""
     multiprocessing.freeze_support()
 
     try:

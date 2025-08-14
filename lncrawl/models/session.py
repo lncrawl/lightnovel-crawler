@@ -1,3 +1,5 @@
+"""Session entity holding runtime and output options for a crawl."""
+
 from typing import Dict, List, Optional, Tuple
 
 from box import Box
@@ -6,6 +8,7 @@ from .formats import OutputFormat
 
 
 class Session(Box):
+    """Serializable snapshot of user input, options, and progress."""
     def __init__(
         self,
         user_input: str = "",

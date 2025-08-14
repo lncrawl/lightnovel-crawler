@@ -1,3 +1,4 @@
+"""Time utilities for timestamps, parsing, and relative times."""
 from datetime import datetime
 from typing import Any
 

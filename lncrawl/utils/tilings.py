@@ -1,8 +1,6 @@
-"""
-Generate coordinates for tilings of the plane.
+"""Generate polygon tilings used by the image generator.
 
-Diagrams and background to this code are on my blog:
-http://alexwlchan.net/2016/10/tiling-the-plane-with-pillow/
+Diagrams and background: http://alexwlchan.net/2016/10/tiling-the-plane-with-pillow/
 """
 
 import math

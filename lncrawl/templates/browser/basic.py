@@ -1,3 +1,8 @@
+"""Provide a base browser-capable crawler with graceful fallbacks.
+
+Tries requests/cloudscraper first; on failure initializes a Selenium
+`Browser` and retries operations in the browser context.
+"""
 import logging
 from abc import abstractmethod
 from io import BytesIO

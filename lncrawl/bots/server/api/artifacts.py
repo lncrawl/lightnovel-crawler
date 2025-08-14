@@ -1,3 +1,4 @@
+"""Artifact listing, retrieval, and file download endpoints."""
 import mimetypes
 import os
 from typing import Optional

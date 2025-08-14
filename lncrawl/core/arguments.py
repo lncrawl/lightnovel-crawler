@@ -1,3 +1,9 @@
+"""Command-line arguments builder.
+
+Provides a small composable wrapper (`Args`) around `argparse` to build the
+CLI for the crawler and expose a singleton-like `get_args()` accessor.
+"""
+
 import argparse
 from urllib.parse import parse_qs
 
@@ -9,6 +15,12 @@ from .display import LINE_SIZE
 
 
 class Args:
+    """Composable argument group/option builder.
+
+    Instances can represent either a single `add_argument` call, a group of
+    arguments, or a mutually exclusive group. The `build` method applies the
+    structure to a provided parser/group or creates a fresh parser by default.
+    """
     def __init__(self, *args, mutex: list = [], group: list = [], **kargs):
         self.args = args
         self.kargs = kargs
@@ -17,6 +29,7 @@ class Args:
         self.arguments = None
 
     def build(self, parser=None):
+        """Apply this builder to an `argparse` parser or group."""
         if parser is None:
             parser = argparse.ArgumentParser(
                 prog="lncrawl",
@@ -40,6 +53,7 @@ class Args:
         return parser
 
     def get_args(self):
+        """Parse and cache arguments once per process."""
         if self.arguments is None:
             self.arguments, _ = self.build().parse_known_args()
 

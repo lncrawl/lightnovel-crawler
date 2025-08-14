@@ -1,3 +1,4 @@
+"""Login-capable browser template with soup/browser fallbacks."""
 import logging
 from abc import abstractmethod
 

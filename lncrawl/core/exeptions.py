@@ -1,3 +1,5 @@
+"""Common exception types and retry groups used across the core."""
+
 from urllib.error import URLError
 
 from cloudscraper.exceptions import CloudflareException

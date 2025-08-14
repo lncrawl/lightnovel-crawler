@@ -1,3 +1,4 @@
+"""CDP helper scripts and get() wrapper to reduce webdriver detectability."""
 import json
 import logging
 
@@ -152,6 +153,7 @@ def __send_cdp(driver: WebDriver, cmd: str, params: dict = {}):
 
 
 def _override_get(driver: WebDriver):
+    """Wrap driver.get to inject anti-detection scripts and UA overrides."""
     get_original = driver.get
 
     def get_wrapped(*args, **kwargs):

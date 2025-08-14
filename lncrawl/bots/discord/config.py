@@ -1,3 +1,4 @@
+"""Configuration and logging setup for the Discord bot."""
 import logging
 import logging.config
 import os

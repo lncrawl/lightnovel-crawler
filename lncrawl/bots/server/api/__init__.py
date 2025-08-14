@@ -1,3 +1,4 @@
+"""Aggregate API router that wires all sub-routers with dependencies."""
 from fastapi import APIRouter, Depends, Security
 
 from ..security import ensure_admin, ensure_user

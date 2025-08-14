@@ -1,3 +1,4 @@
+"""Database engine/session management using SQLModel."""
 import logging
 
 from sqlmodel import Session, SQLModel, create_engine

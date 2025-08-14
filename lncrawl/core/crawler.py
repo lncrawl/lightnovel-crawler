@@ -1,3 +1,9 @@
+"""Crawler base class used by individual source implementations.
+
+Extends `Scraper` to add novel-specific fields and utilities and defines
+abstract methods that a source must implement to fetch metadata and content.
+"""
+
 import hashlib
 import logging
 from abc import abstractmethod
@@ -33,13 +39,10 @@ class Crawler(Scraper):
         workers: Optional[int] = None,
         parser: Optional[str] = None,
     ) -> None:
-        """
-        Creates a standalone Crawler instance.
+        """Create a standalone crawler instance.
 
-        Args:
-        - workers (int, optional): Number of concurrent workers to expect. Default: 10.
-        - parser (Optional[str], optional): Desirable features of the parser. This can be the name of a specific parser
-            ("lxml", "lxml-xml", "html.parser", or "html5lib") or it may be the type of markup to be used ("html", "html5", "xml").
+        - workers: Expected concurrency for downloads
+        - parser: Desired BS4 parser or markup type
         """
         self.cleaner = TextCleaner()
 
@@ -121,6 +124,7 @@ class Crawler(Scraper):
         return 0
 
     def extract_chapter_images(self, chapter: Chapter) -> None:
+        """Collect image references from HTML and rewrite to local paths."""
         ignore_images = get_args().ignore_images
         if ignore_images:
             return
@@ -153,6 +157,7 @@ class Crawler(Scraper):
         fail_fast=False,
         signal=Event(),
     ) -> Generator[Chapter, None, None]:
+        """Concurrent chapter downloader yielding completed chapters."""
         def _downloader(chapter: Chapter):
             chapter.body = ""
             chapter.images = {}

@@ -1,3 +1,4 @@
+"""Novel and Artifact ORM models and related serialized structures."""
 import os
 from typing import Any, Dict, List, Optional
 

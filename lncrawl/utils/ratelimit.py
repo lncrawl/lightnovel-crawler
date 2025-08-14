@@ -1,3 +1,4 @@
+"""Simple per-call rate limiter for wrapping functions and code blocks."""
 import logging
 import time
 

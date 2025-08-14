@@ -1,3 +1,4 @@
+"""Create a remote (Selenium Grid) Chrome WebDriver with tuned options."""
 import json
 import locale
 import logging
@@ -24,13 +25,7 @@ def create_remote(
     soup_maker: Optional[SoupMaker] = None,
     **kwargs,
 ) -> WebDriver:
-    """
-    Acquire a webdriver instane. There is a limit of how many webdriver
-    instances you can keep open at a time. You must call quit() to cleanup
-    existing one to obtain new ones.
-
-    NOTE: You must call quit() to cleanup the queue.
-    """
+    """Create a remote WebDriver; limited by a semaphore similar to local."""
     _acquire_queue(timeout)
     is_debug = os.getenv("debug_mode")
 

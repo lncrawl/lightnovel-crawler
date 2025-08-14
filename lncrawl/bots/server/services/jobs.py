@@ -1,3 +1,4 @@
+"""Job listing, creation, cancellation, and detail retrieval services."""
 from typing import List, Optional
 
 from pydantic import HttpUrl

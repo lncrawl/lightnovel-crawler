@@ -1,4 +1,7 @@
-# https://github.com/alexwlchan/specktre
+"""Procedurally generate abstract cover images.
+
+Inspired by `https://github.com/alexwlchan/specktre`.
+"""
 
 import random
 from typing import List, Optional
@@ -18,6 +21,7 @@ def generate_image(
     generator: Optional[TileGenerator] = None,
     side_length: int = 50,
 ) -> Image:
+    """Generate a polygonal image and optionally save it to disk."""
     tiles = generate_tiles(
         generator,
         width,
@@ -68,6 +72,7 @@ def generate_cover_image(
     width: int = 800,
     height: int = 1032,
 ) -> Image:
+    """Generate a book-like cover image with curated palettes and tilings."""
     generate_image(
         filename=filename,
         width=width,

@@ -1,3 +1,4 @@
+"""Extended WebElement and By helpers with BeautifulSoup integration."""
 import logging
 from enum import Enum
 from typing import List
@@ -38,6 +39,7 @@ class By(str, Enum):
 
 
 class WebElement(_WebElement):
+    """Wrap Selenium's WebElement to expose soup parsing and convenience APIs."""
     def __init__(self, parent, id_):
         super().__init__(parent, id_)
         self.__soup_maker = getattr(self._parent, "_soup_maker", SoupMaker())
@@ -59,6 +61,7 @@ class WebElement(_WebElement):
         return self.__soup_maker
 
     def as_tag(self) -> Tag:
+        """Return a cached BeautifulSoup Tag representing this element."""
         html = self.outer_html
         if not hasattr(self, "_tag") or self._html != html:
             self._html = html
@@ -76,9 +79,11 @@ class WebElement(_WebElement):
         return self.find_element(by, selector)
 
     def remove(self):
+        """Remove the element from the DOM via JS."""
         self.parent.execute_script(scripts.remove_element, self)
 
     def scroll_into_view(self):
+        """Scroll the element into view if needed via JS."""
         self.parent.execute_script(scripts.scroll_into_view_if_needed, self)
 
 

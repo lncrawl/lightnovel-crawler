@@ -1,3 +1,4 @@
+"""Runner status and control endpoints."""
 from fastapi import APIRouter, Depends
 
 from ..context import ServerContext

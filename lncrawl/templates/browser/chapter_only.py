@@ -1,3 +1,4 @@
+"""Browser template for sites with a single flat chapter list."""
 from typing import Generator
 
 from bs4 import Tag

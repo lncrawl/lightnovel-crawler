@@ -1,9 +1,12 @@
+"""Volume entity model containing chapter range metadata."""
+
 from typing import Optional
 
 from box import Box
 
 
 class Volume(Box):
+    """A numbered volume grouping with optional range statistics."""
     def __init__(
         self,
         id: int,

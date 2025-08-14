@@ -1,3 +1,4 @@
+"""Template for NovelMTL-like sites with paginated chapter lists."""
 import time
 from concurrent.futures import Future
 from typing import List

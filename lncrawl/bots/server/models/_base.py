@@ -1,3 +1,4 @@
+"""Shared base model with UUID id and timestamp fields."""
 import uuid
 
 from sqlalchemy import event

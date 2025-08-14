@@ -1,3 +1,5 @@
+"""Dynamic source loader, updater, and crawler preparation utilities."""
+
 import gzip
 import hashlib
 import importlib.util
@@ -47,6 +49,7 @@ __executor = TaskManager()
 
 
 def __download_data(url: str) -> bytes:
+    """Download bytes with appropriate headers for the platform."""
     logger.debug("Downloading %s", url)
 
     if Platform.windows:
@@ -102,6 +105,7 @@ __latest_index = {}
 
 
 def __load_current_index():
+    """Load current sources index from user data or local package."""
     try:
         index_file = __user_data_path / "sources" / "_index.json"
         if __is_dev_mode or not index_file.is_file():
@@ -119,6 +123,7 @@ def __load_current_index():
 
 
 def __save_current_index():
+    """Persist current index to user data directory."""
     index_file = __user_data_path / "sources" / "_index.json"
     index_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -128,6 +133,7 @@ def __save_current_index():
 
 
 def __load_latest_index():
+    """Fetch latest index from GitHub and merge into current index."""
     global __latest_index
     global __current_index
     try:
@@ -153,6 +159,7 @@ def __load_latest_index():
 
 
 def __check_updates():
+    """Decide whether to fetch latest index and notify for app updates."""
     global __latest_index
     last_download = __current_index.get("v", 0)
     if time.time() - last_download < __index_fetch_internval_in_seconds:
@@ -172,6 +179,7 @@ def __check_updates():
 # --------------------------------------------------------------------------- #
 
 def __save_source_data(source_id: str, data: bytes):
+    """Persist a downloaded crawler file atomically and update index."""
     latest = __latest_index["crawlers"][source_id]
     dst_file = __user_data_path / str(latest["file_path"])
     dst_dir = dst_file.parent
@@ -192,6 +200,7 @@ def __save_source_data(source_id: str, data: bytes):
 
 
 def __download_sources():
+    """Download crawler files that are missing or outdated."""
     tbd_sids = []
     for sid in __current_index["crawlers"].keys():
         if sid not in __latest_index["crawlers"]:
@@ -243,6 +252,7 @@ def __can_do(crawler: Type[Crawler], prop_name: str):
 
 
 def __update_rejected(url: str, reason: str):
+    """Populate `rejected_sources` for URL and host variations."""
     no_www = url.replace("://www.", "://")
     url_host = urlparse(url).hostname
     no_www_host = urlparse(no_www).hostname
@@ -255,11 +265,13 @@ def __update_rejected(url: str, reason: str):
 
 
 def __load_rejected_sources():
+    """Load rejected sources list from index into memory."""
     for url, reason in __current_index["rejected"].items():
         __update_rejected(url, reason)
 
 
 def __import_crawlers(file_path: Path, no_cache=False) -> List[Type[Crawler]]:
+    """Import a crawler module from a file and collect valid crawler classes."""
     if not no_cache:
         if file_path in __cache_crawlers:
             return __cache_crawlers[file_path]
@@ -331,6 +343,7 @@ def __import_crawlers(file_path: Path, no_cache=False) -> List[Type[Crawler]]:
 
 
 def __add_crawlers_from_path(path: Path, no_cache=False):
+    """Recursively import crawlers from a file or directory path."""
     if path.name.startswith("_") or not path.name[0].isalnum():
         return
 
@@ -363,6 +376,7 @@ def __add_crawlers_from_path(path: Path, no_cache=False):
 
 
 def __load_crawlers():
+    """Load user-downloaded crawler files referenced by the index."""
     for _, current in __current_index["crawlers"].items():
         source_file = __user_data_path / str(current["file_path"])
         if source_file.is_file():
@@ -376,6 +390,7 @@ sources_path = (__local_data_path / "sources").absolute()
 
 
 def load_sources():
+    """Public entry: ensure indices, updates, and load crawlers into memory."""
     __load_current_index()
     if not __is_dev_mode:
         __check_updates()
@@ -394,6 +409,7 @@ def load_sources():
 
 
 def update_sources():
+    """Force-check updates and return the latest index timestamp."""
     __load_latest_index()
     __download_sources()
     __load_rejected_sources()
@@ -402,6 +418,10 @@ def update_sources():
 
 
 def prepare_crawler(url: str, crawler_file: Optional[str] = None) -> Crawler:
+    """Select and construct a crawler for a given novel URL.
+
+    Optionally load a specific crawler file for development.
+    """
     parsed_url = urlparse(url)
     hostname = parsed_url.hostname
     no_www = url.replace("://www.", "://")

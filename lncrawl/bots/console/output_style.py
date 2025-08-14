@@ -1,3 +1,4 @@
+"""Console prompts for output folder, replacement policy, and formats."""
 import os
 import shutil
 

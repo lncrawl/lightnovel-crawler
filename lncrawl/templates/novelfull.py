@@ -1,3 +1,4 @@
+"""Template for NovelFull-like sites with chapter archive endpoints."""
 import re
 from typing import Iterable
 from urllib.parse import urlencode

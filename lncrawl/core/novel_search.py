@@ -1,6 +1,4 @@
-"""
-To search for novels in selected sources
-"""
+"""Parallel multi-process search across selected sources."""
 import atexit
 import logging
 from concurrent.futures import Future
@@ -26,6 +24,7 @@ def _search_process(
     query: str,
     file_path: str,
 ):
+    """Child process entry to search a single source and send results back."""
     try:
         from ..models import SearchResult
         from .sources import prepare_crawler
@@ -49,6 +48,7 @@ def _search_process(
 
 # This runs in a thread to execute the processes
 def _run(p: Process, hostname: str, signal: Event):
+    """Thread wrapper to run a process with timeout and cleanup."""
     from .exeptions import LNException
     try:
         atexit.register(p.kill)
@@ -71,6 +71,7 @@ def _run(p: Process, hostname: str, signal: Event):
 
 
 def search_novels(app):
+    """Spawn searches, combine and rank results, and update app state."""
     from ..models import CombinedSearchResult, SearchResult
     from .app import App
     from .sources import crawler_list, rejected_sources

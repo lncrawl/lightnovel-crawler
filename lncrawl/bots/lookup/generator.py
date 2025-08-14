@@ -1,3 +1,4 @@
+"""Write a skeleton crawler class using the chosen template."""
 import os
 from typing import Type
 

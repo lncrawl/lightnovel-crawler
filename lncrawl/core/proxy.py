@@ -1,3 +1,9 @@
+"""Simple rotating proxy fetcher/manager.
+
+Supports loading private proxies from file and fetching public proxies from
+remote lists, validating them, and rotating with TTL and usage limits.
+"""
+
 import atexit
 import logging
 import os
@@ -27,6 +33,7 @@ __is_private_proxy: Dict[str, bool] = {}
 
 
 def load_proxies(proxy_file: str):
+    """Load and register proxies from a local file."""
     with open(proxy_file, encoding="utf-8") as f:
         lines = f.read().splitlines()
 
@@ -48,6 +55,7 @@ def load_proxies(proxy_file: str):
 
 
 def get_a_proxy(scheme: str = "http", timeout: float = 0):
+    """Return a proxy URL for `scheme`, optionally waiting for availability."""
     if timeout > 0:
         wait_for_first_proxy(scheme, timeout)
 
@@ -74,11 +82,13 @@ def get_a_proxy(scheme: str = "http", timeout: float = 0):
 
 
 def remove_faulty_proxies(faulty_url: str):
+    """Mark a faulty public proxy as overused so it is skipped."""
     if faulty_url and not __is_private_proxy[faulty_url]:
         __proxy_use_count[faulty_url] = __max_use_per_proxy + 1
 
 
 def wait_for_first_proxy(scheme: str, timeout: float = 0):
+    """Block until at least one proxy is available or the timeout elapses."""
     if timeout <= 0:
         timeout = 10 * 60
 
@@ -170,6 +180,7 @@ def __find_proxies():
 
 
 def start_proxy_fetcher():
+    """Start background thread to periodically fetch and validate public proxies."""
     global __has_exit
     __has_exit = False
     atexit.register(stop_proxy_fetcher)
@@ -177,6 +188,7 @@ def start_proxy_fetcher():
 
 
 def stop_proxy_fetcher(*args, **kwargs):
+    """Signal the proxy fetcher thread to exit and unregister atexit hook."""
     atexit.unregister(stop_proxy_fetcher)
     global __has_exit
     __has_exit = True

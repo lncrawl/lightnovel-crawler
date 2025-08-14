@@ -1,3 +1,4 @@
+"""Resume a previously interrupted download session from metadata."""
 import logging
 from typing import List, Optional
 

@@ -1,3 +1,4 @@
+"""Prompt helpers for lookup tool: url and feature selection."""
 import re
 
 from questionary import prompt

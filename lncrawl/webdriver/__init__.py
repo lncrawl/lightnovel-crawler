@@ -1,5 +1,9 @@
-# https://cloudbytes.dev/snippets/run-selenium-and-chrome-on-wsl2
-# https://github.com/ultrafunkamsterdam/undetected-chromedriver
+"""WebDriver factories for local and remote Chrome sessions.
+
+References:
+- https://cloudbytes.dev/snippets/run-selenium-and-chrome-on-wsl2
+- https://github.com/ultrafunkamsterdam/undetected-chromedriver
+"""
 
 import logging
 from typing import Optional
@@ -23,6 +27,7 @@ def create_new(
     headless: bool = False,
     **kwargs,
 ) -> WebDriver:
+    """Create a new WebDriver session, local or remote based on CLI args."""
     args = get_args()
     if args.selenium_grid:
         return create_remote(

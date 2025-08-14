@@ -1,3 +1,8 @@
+"""Template for Madara-based sites (many manga readers).
+
+Provides search, metadata parsing, chapter list fetching (via AJAX and
+fallback), and chapter body selection tailored to Madara themes.
+"""
 import logging
 from urllib.parse import urlencode
 

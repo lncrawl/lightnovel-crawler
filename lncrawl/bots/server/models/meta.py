@@ -1,3 +1,4 @@
+"""Serializable metadata structures returned by metadata endpoints."""
 from typing import Optional
 
 from pydantic import BaseModel, Field

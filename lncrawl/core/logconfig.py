@@ -1,3 +1,5 @@
+"""Logging configuration for CLI and file outputs."""
+
 import atexit
 import logging
 import logging.config
@@ -11,6 +13,7 @@ from .display import debug_mode
 
 
 def configure_logging():
+    """Initialize logging based on CLI args and environment variables."""
     args = get_args()
 
     levels = ["NOTSET", "WARN", "INFO", "DEBUG"]

@@ -1,3 +1,4 @@
+"""Admin-only endpoints (e.g., updating source index)."""
 from fastapi import APIRouter, Depends
 
 from ..context import ServerContext

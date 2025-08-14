@@ -1,3 +1,5 @@
+"""Calibre converters: transform EPUBs into other formats via `ebook-convert`."""
+
 import logging
 import os
 import subprocess
@@ -35,6 +37,7 @@ def run_ebook_convert(*args) -> bool:
 
 
 def epub_to_calibre(app, epub_file: str, fmt: OutputFormat):
+    """Convert a single EPUB into another `fmt` using Calibre."""
     from ..core.app import App
     assert isinstance(app, App) and app.crawler
 
@@ -98,6 +101,7 @@ def epub_to_calibre(app, epub_file: str, fmt: OutputFormat):
 
 
 def make_calibres(app, fmt: OutputFormat) -> Generator[str, None, None]:
+    """Convert all generated EPUBs to the target format if Calibre is available."""
     from ..core.app import App
     assert isinstance(app, App) and app.crawler
 

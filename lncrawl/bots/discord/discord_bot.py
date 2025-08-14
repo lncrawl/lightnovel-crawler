@@ -1,3 +1,4 @@
+"""Discord client implementation handling messages and sessions."""
 import os
 import subprocess
 from datetime import datetime

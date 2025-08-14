@@ -1,3 +1,4 @@
+"""Small algorithm helpers used in services (e.g., binary search)."""
 from typing import Any, Callable, List
 
 

@@ -1,5 +1,6 @@
-"""
-https://stackoverflow.com/a/15445989/1583052
+"""Context manager to temporarily disable SSL verification in requests.
+
+Adapted from: https://stackoverflow.com/a/15445989/1583052
 """
 import warnings
 import contextlib

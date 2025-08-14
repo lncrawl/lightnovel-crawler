@@ -1,3 +1,4 @@
+"""Singleton-ish server context wiring config, DB, services, and scheduler."""
 from functools import cached_property
 from typing import Optional
 

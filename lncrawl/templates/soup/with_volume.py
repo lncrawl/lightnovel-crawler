@@ -1,3 +1,4 @@
+"""Soup template for sites with explicit volume and chapter structure."""
 from abc import abstractmethod
 from typing import Generator, Union
 

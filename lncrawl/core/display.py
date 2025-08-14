@@ -1,3 +1,5 @@
+"""Console display helpers and formatting for the CLI output."""
+
 import os
 import textwrap
 import traceback
@@ -24,6 +26,7 @@ except Exception:
 
 
 def description():
+    """Render app header and banner."""
     print("=" * LINE_SIZE)
 
     if ENABLE_BANNER:
@@ -44,6 +47,7 @@ def description():
 
 
 def epilog():
+    """Render footer with helpful links."""
     print()
     print("-" * LINE_SIZE)
 
@@ -61,6 +65,7 @@ def epilog():
 
 
 def debug_mode(level):
+    """Show selected log level banner in the console."""
     text = Fore.RED + " " + Chars.SOUND + " "
     text += "LOG LEVEL: %s" % level
     text += Fore.RESET
@@ -72,6 +77,7 @@ def debug_mode(level):
 
 
 def input_suppression():
+    """Indicate that interactive prompts are suppressed."""
     text = Fore.RED + " " + Chars.ERROR + " "
     text += "Input is suppressed"
     text += Fore.RESET
@@ -81,12 +87,14 @@ def input_suppression():
 
 
 def cancel_method():
+    """Print a tip describing how to cancel the program."""
     print()
     print(Chars.RIGHT_ARROW, "Press", Fore.MAGENTA, "Ctrl + C", Fore.RESET, "to exit")
     print()
 
 
 def error_message(ex_type, message, tb):
+    """Pretty-print an error and a short traceback summary."""
     from ..core.exeptions import LNException
     print()
     tb_summary = "".join(traceback.format_tb(tb)[-4:]).strip()
@@ -99,6 +107,7 @@ def error_message(ex_type, message, tb):
 
 
 def app_complete():
+    """Print completion banner used by bots/UIs."""
     print(
         Style.BRIGHT + Fore.YELLOW + Chars.SPARKLE,
         "Task completed",
@@ -109,6 +118,7 @@ def app_complete():
 
 
 def new_version_news(latest):
+    """Announce when a newer version is available."""
     print(
         "",
         Chars.PARTY + Style.BRIGHT + Fore.CYAN,
@@ -130,6 +140,7 @@ def new_version_news(latest):
 
 
 def url_supported_list():
+    """List supported sources and their base URLs."""
     from .sources import crawler_list
 
     crawlers = list(set(crawler_list.values()))
@@ -144,6 +155,7 @@ def url_supported_list():
 
 
 def url_not_recognized():
+    """Inform the user that a URL is not recognized and show help links."""
     print()
     print(
         Fore.RED, Chars.ERROR, "Sorry! I do not recognize this website yet.", Fore.RESET
@@ -163,6 +175,7 @@ def url_not_recognized():
 
 
 def guessed_url_for_novelupdates():
+    """Suggest looking up a novel on NovelUpdates."""
     print()
     print(
         Fore.GREEN,
@@ -174,6 +187,7 @@ def guessed_url_for_novelupdates():
 
 
 def url_rejected(reason):
+    """Explain why a source is rejected and where to report issues."""
     print()
     print(Fore.RED, Chars.ERROR, "Sorry! I do not support this website.", Fore.RESET)
     print(Fore.RED, Chars.EMPTY, "Reason:", reason, Fore.RESET)
@@ -191,6 +205,7 @@ def url_rejected(reason):
 
 
 def __format_search_result_info(short_info):
+    """Format a wrapped sub-line for search result items."""
     if not short_info or len(short_info) == 0:
         return ""
     return "\n".join(
@@ -206,6 +221,7 @@ def __format_search_result_info(short_info):
 
 
 def format_novel_choices(choices: List[CombinedSearchResult]):
+    """Build questionary `Choice` items for combined search results."""
     items = []
     for index, item in enumerate(choices):
         title = "%d. %s [in %d sources]" % (
@@ -223,6 +239,7 @@ def format_novel_choices(choices: List[CombinedSearchResult]):
 
 
 def display_novel_title(title: str, vol_count: int, chap_count: int, link: str):
+    """Print a highlighted novel title, counts, and its URL."""
     print()
     print(
         Style.BRIGHT,
@@ -260,6 +277,7 @@ def display_novel_title(title: str, vol_count: int, chap_count: int, link: str):
 
 
 def format_source_choices(novels: List[SearchResult]):
+    """Build questionary `Choice` items for individual source URLs."""
     items = []
     items.append(Choice(title="0. Back", value=-1))
     for index, item in enumerate(novels):
@@ -270,6 +288,7 @@ def format_source_choices(novels: List[SearchResult]):
 
 
 def format_resume_choices(meta_list: List[MetaInfo]):
+    """Build choices for resuming previously started downloads."""
     items = []
     for index, meta in enumerate(meta_list):
         if not meta.session or not meta.novel:

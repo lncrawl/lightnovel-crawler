@@ -1,3 +1,4 @@
+"""CRUD operations for artifact records and file lifecycle management."""
 import os
 from typing import Optional
 

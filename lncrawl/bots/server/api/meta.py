@@ -1,3 +1,4 @@
+"""Read-only metadata endpoints (supported sources, etc.)."""
 from typing import List
 
 from fastapi import APIRouter, Depends

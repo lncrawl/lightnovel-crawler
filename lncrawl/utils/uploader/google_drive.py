@@ -1,4 +1,4 @@
-"""[DEPRECATED] Uploader for google drive"""
+"""[DEPRECATED] Google Drive uploader via PyDrive."""
 import logging
 import os
 
@@ -13,6 +13,7 @@ except Exception:
 
 
 def upload(file_path, description=None) -> str:
+    """Upload a file to Google Drive and return a shareable link."""
     gauth = GoogleAuth()
     # gauth.LocalWebserverAuth()
 

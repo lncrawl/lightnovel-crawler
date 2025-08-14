@@ -1,3 +1,9 @@
+"""A thin wrapper around Selenium WebDriver.
+
+This class manages driver lifecycle, cookie/localStorage sync, convenience
+DOM operations, simple waits, and cached `soup` access.
+"""
+
 import logging
 from typing import Any, Iterable, List, Optional
 
@@ -24,16 +30,14 @@ class Browser:
         browser_storage: Optional[dict] = None,
         soup_maker: Optional[SoupMaker] = None,
     ) -> None:
-        """
-        Interface to interact with chrome webdriver.
+        """Interface to interact with Chrome WebDriver.
 
-        Args:
-        - headless (bool, optional): True to hide the UI, False to show the UI. Default: True.
-        - timeout (Optional[int], optional): Maximum wait duration in seconds for an element to be available. Default: 120.
-        - options (Optional[&quot;ChromeOptions&quot;], optional): Webdriver options. Default: None.
-        - cookie_store (Optional[RequestsCookieJar], optional): A cookie store to synchronize cookies. Default: None.
-        - browser_storage (Optional[dict], optional): A Storage to save some user info that is saved in your Browser storage. Default: None.
-        - soup_parser (Optional[str], optional): Parser for page content. Default: None.
+        - headless: Hide UI when True
+        - timeout: Explicit wait timeout in seconds
+        - options: WebDriver options
+        - cookie_store: Sync cookies from/to Requests
+        - browser_storage: Sync localStorage/sessionStorage
+        - soup_maker: HTML parser provider
         """
         self._driver: WebDriver = None
         self.options = options

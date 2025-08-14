@@ -1,3 +1,4 @@
+"""Global constants used across the project."""
 import os
 
 DEFAULT_OUTPUT_PATH = os.getenv('OUTPUT_PATH') or os.path.abspath("Lightnovels")

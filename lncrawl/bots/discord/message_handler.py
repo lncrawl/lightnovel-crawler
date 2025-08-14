@@ -1,3 +1,4 @@
+"""Per-user session handler for the Discord bot."""
 import asyncio
 import os
 import random

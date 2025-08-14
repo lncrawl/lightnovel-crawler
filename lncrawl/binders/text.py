@@ -1,3 +1,5 @@
+"""Plain text binder: convert cleaned HTML chapters to .txt files."""
+
 import logging
 import os
 import re
@@ -11,6 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 def make_texts(app, data) -> Generator[str, None, None]:
+    """Generate .txt files per chapter under `text/<volume>/`.
+
+    Strips tags with BeautifulSoup and writes text paragraphs separated by
+    `Chars.EOL` markers.
+    """
     for vol in data:
         dir_name = os.path.join(app.output_path, "text", vol)
         os.makedirs(dir_name, exist_ok=True)

@@ -1,3 +1,4 @@
+"""Module entry to support `python -m lncrawl` execution."""
 #!/usr/bin/env python3
 
 import sys

@@ -1,3 +1,4 @@
+"""Interactive console bot implementation backed by questionary prompts."""
 import logging
 from typing import Optional
 

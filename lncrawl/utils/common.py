@@ -1,9 +1,11 @@
+"""Common utilities: cached static property descriptor."""
 from typing import TypeVar, Generic, Callable, Type
 
 T = TypeVar('T')
 
 
 class static_cached_property(Generic[T]):
+    """A descriptor caching the value of a staticmethod the first time it's accessed."""
     def __init__(self, func: Callable[..., T]):
         self._initialized = False
         if isinstance(func, staticmethod):

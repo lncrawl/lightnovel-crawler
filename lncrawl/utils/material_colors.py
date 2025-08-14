@@ -1,3 +1,4 @@
+"""Material color utilities for selecting and generating color palettes."""
 import random
 from enum import Enum
 from typing import Generator, List, Tuple

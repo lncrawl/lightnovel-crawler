@@ -1,8 +1,11 @@
+"""GoFile uploader using their public API."""
+
 from requests import Session
 
 
 # API Docs: https://gofile.io/api
 def upload(file_path, description=""):
+    """Upload a file to GoFile and return the download page URL."""
     with Session() as sess:
         response = sess.get("https://api.gofile.io/getServer")
         response.raise_for_status()

@@ -1,3 +1,5 @@
+"""Novel entity model containing metadata, volumes, and chapters."""
+
 from typing import List, Optional
 
 from box import Box
@@ -8,6 +10,7 @@ from .volume import Volume
 
 
 class Novel(Box):
+    """A complete novel record used for metadata and serialization."""
     def __init__(
         self,
         url: str,

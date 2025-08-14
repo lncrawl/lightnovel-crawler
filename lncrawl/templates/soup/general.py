@@ -1,3 +1,4 @@
+"""General soup template defining the core parsing contract and flow."""
 import logging
 from abc import abstractmethod
 from typing import Generator, Union

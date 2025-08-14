@@ -1,3 +1,5 @@
+"""Utilities to standardize novel metadata and chapters list."""
+
 import math
 import re
 from typing import Dict
@@ -8,10 +10,12 @@ from .exeptions import LNException
 
 
 def __format_title(text):
+    """Normalize title casing and whitespace."""
     return re.sub(r"\s+", " ", str(text)).strip().title()
 
 
 def __format_volume(crawler: Crawler, vol_id_map: Dict[int, int]):
+    """Ensure volumes exist, are typed, sorted, and annotated."""
     if crawler.volumes:
         crawler.volumes = [
             vol if isinstance(vol, Volume) else Volume(**vol)
@@ -32,6 +36,7 @@ def __format_volume(crawler: Crawler, vol_id_map: Dict[int, int]):
 
 
 def __format_chapters(crawler: Crawler, vol_id_map: Dict[int, int]):
+    """Sort chapters, assign to volumes, and compute volume stats."""
     crawler.chapters = [
         chap if isinstance(chap, Chapter) else Chapter(**chap)
         for chap in sorted(crawler.chapters, key=lambda x: x.get("id"))
@@ -63,6 +68,7 @@ def __format_chapters(crawler: Crawler, vol_id_map: Dict[int, int]):
 
 
 def format_novel(crawler: Crawler):
+    """Normalize crawler fields in-place for downstream consumers."""
     crawler.novel_title = __format_title(crawler.novel_title)
     crawler.novel_author = __format_title(crawler.novel_author)
     vol_id_map: Dict[int, int] = {}

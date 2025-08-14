@@ -1,3 +1,4 @@
+"""Generic pagination container for list endpoints."""
 from typing import Generic, List, TypeVar
 
 from pydantic import BaseModel

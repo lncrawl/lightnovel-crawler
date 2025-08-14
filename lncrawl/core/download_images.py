@@ -14,6 +14,11 @@ logger = logging.getLogger(__name__)
 
 
 def fetch_chapter_images(app, signal=Event()):
+    """Generator to fetch cover and inline images, updating progress.
+
+    Downloads or generates cover, fetches per-chapter images concurrently,
+    and prunes failed image references from chapter bodies.
+    """
     from .app import App
     assert isinstance(app, App) and app.crawler, 'Invalid app instance'
 

@@ -1,3 +1,4 @@
+"""Browser template for sites with explicit volume and chapter lists."""
 from typing import Generator, Union
 
 from bs4 import Tag

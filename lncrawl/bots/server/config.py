@@ -1,3 +1,4 @@
+"""Server configuration loaded from environment and .env files."""
 import logging
 import os
 from functools import cached_property
@@ -8,6 +9,10 @@ from lncrawl import constants as C
 
 
 def env(key, default_value=None):
+    """Read an environment variable or return the provided default.
+
+    Raises when no default is provided and the key is missing.
+    """
     value = os.getenv(key, default_value)
     if value is None:
         raise Exception(f'Missing required ENV: {key}')

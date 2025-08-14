@@ -1,3 +1,4 @@
+"""Job CRUD and related endpoints (novel, artifacts, cancel)."""
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Form, Path, Query, Security

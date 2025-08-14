@@ -1,3 +1,4 @@
+"""Offer to open the output folder on supported platforms."""
 import os
 
 from questionary import prompt

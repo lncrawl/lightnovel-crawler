@@ -1,3 +1,4 @@
+"""Main console workflow: gather inputs, run crawl, and output files."""
 import atexit
 import logging
 import sys

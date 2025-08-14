@@ -1,3 +1,4 @@
+"""Soup template for sites with a single flat list of chapters."""
 from abc import abstractmethod
 from typing import Generator
 

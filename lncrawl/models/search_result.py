@@ -1,9 +1,12 @@
+"""Search result entities used to present and combine results."""
+
 from typing import List
 
 from box import Box
 
 
 class SearchResult(Box):
+    """One search hit from a source with optional info blurb."""
     def __init__(
         self,
         title: str,
@@ -18,6 +21,7 @@ class SearchResult(Box):
 
 
 class CombinedSearchResult(Box):
+    """Merged results keyed by a normalized title across sources."""
     def __init__(
         self,
         id: str,

@@ -1,3 +1,4 @@
+"""Enumerations used by server models and services."""
 from enum import Enum, IntEnum
 
 from lncrawl.models import OutputFormat

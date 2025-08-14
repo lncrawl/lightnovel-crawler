@@ -1,3 +1,4 @@
+"""FastAPI-based server bot to expose REST endpoints and serve the web UI."""
 import logging
 import os
 
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 class ServerBot:
 
     def start(self):
+        """Start the FastAPI app with uvicorn (reload when --watch is set)."""
         args = get_args()
         os.putenv("debug_mode", 'true')
 

@@ -1,3 +1,4 @@
+"""SMTP mailer for OTP and job success notifications."""
 import logging
 from email.mime.text import MIMEText
 from smtplib import SMTP

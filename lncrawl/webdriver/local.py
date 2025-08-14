@@ -1,5 +1,9 @@
-# https://cloudbytes.dev/snippets/run-selenium-and-chrome-on-wsl2
-# https://github.com/ultrafunkamsterdam/undetected-chromedriver
+"""Create a local Chrome WebDriver with sane defaults and anti-detection tweaks.
+
+References:
+- https://cloudbytes.dev/snippets/run-selenium-and-chrome-on-wsl2
+- https://github.com/ultrafunkamsterdam/undetected-chromedriver
+"""
 
 import logging
 import os
@@ -26,12 +30,9 @@ def create_local(
     soup_maker: Optional[SoupMaker] = None,
     **kwargs,
 ) -> WebDriver:
-    """
-    Acquire a webdriver instane. There is a limit of how many webdriver
-    instances you can keep open at a time. You must call quit() to cleanup
-    existing one to obtain new ones.
+    """Create a local Chrome WebDriver instance.
 
-    NOTE: You must call quit() to cleanup the queue.
+    Limited by a global semaphore; quitting the driver releases the slot.
     """
     _acquire_queue(timeout)
     is_debug = os.getenv("debug_mode")

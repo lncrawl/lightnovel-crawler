@@ -1,3 +1,4 @@
+"""Template for MangaStream-like sites with optional volumes and search."""
 from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup, Tag

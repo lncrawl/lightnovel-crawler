@@ -19,6 +19,7 @@ def get_chapter_file(
     output_path: str,
     pack_by_volume: bool,
 ):
+    """Return the JSON file path for a chapter given app settings."""
     dir_name = Path(output_path) / "json"
     if pack_by_volume:
         vol_name = "Volume " + str(chapter.volume).rjust(2, "0")
@@ -30,6 +31,10 @@ def get_chapter_file(
 
 
 def _save_chapter(file_name: Path, chapter: Chapter):
+    """Persist a chapter to disk as JSON with normalized HTML title.
+
+    Adds a small source notice if requested via CLI.
+    """
     if not chapter.body:
         chapter.body = "<p><i>Failed to download chapter body</i></p>"
 
@@ -53,6 +58,10 @@ def _save_chapter(file_name: Path, chapter: Chapter):
 
 
 def restore_chapter_body(app):
+    """Load chapter bodies from existing cache if available.
+
+    Returns a mapping of chapter id to file path for subsequent saves.
+    """
     from .app import App
     assert isinstance(app, App) and app.crawler, 'Invalid app instance'
 
@@ -84,6 +93,7 @@ def restore_chapter_body(app):
 
 
 def fetch_chapter_body(app, signal=Event()):
+    """Generator that downloads missing chapter bodies and updates progress."""
     from .app import App
     assert isinstance(app, App) and app.crawler, 'Invalid app instance'
 

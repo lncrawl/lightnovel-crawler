@@ -1,3 +1,4 @@
+"""Download and extract the deprecated KindleGen tool for MOBI generation."""
 import os
 import platform
 import tarfile
@@ -18,6 +19,7 @@ LINUX_URL = "http://kindlegen.s3.amazonaws.com/kindlegen_linux_2.6_i386_v2_9.tar
 
 
 def get_url_by_platform():
+    """Return the appropriate KindleGen URL for the current platform."""
     if platform.system() == "Linux":
         return LINUX_URL
     elif platform.system() == "Darwin":
@@ -29,6 +31,7 @@ def get_url_by_platform():
 
 
 def extract_kindlegen_file(extractor, file_list):
+    """Locate and extract the kindlegen executable to the user's home dir."""
     logger.debug(file_list)
     home = os.path.expanduser("~")
     if file_list.count("kindlegen") == 1:
@@ -44,6 +47,7 @@ def extract_kindlegen_file(extractor, file_list):
 
 
 def download_kindlegen():
+    """Download and extract KindleGen according to platform-specific archive."""
     # Download the file
     url = get_url_by_platform()
     print("Downloading kindlegen...")
@@ -73,6 +77,7 @@ def download_kindlegen():
 
 
 def retrieve_kindlegen():
+    """Return the path to an existing KindleGen binary or None."""
     # Check kindlegen availability
     home = os.path.expanduser("~")
     kindlegen_file = os.path.join(home, "kindlegen")

@@ -1,3 +1,4 @@
+"""Console input helpers for URL/query, source selection, and retries."""
 import re
 from typing import List
 

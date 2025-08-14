@@ -1,3 +1,9 @@
+"""Static HTML binder for local reading in a browser.
+
+Generates one HTML file per chapter with navigation, styles, and inline JS.
+Copies referenced images alongside.
+"""
+
 import logging
 import os
 import shutil
@@ -9,12 +15,14 @@ logger = logging.getLogger(__name__)
 
 
 def get_filename(chapter):
+    """Return zero-padded chapter filename or empty string if invalid."""
     if not chapter or 'id' not in chapter:
         return ''
     return str(chapter["id"]).rjust(5, "0") + ".html"
 
 
 def bind_html_chapter(chapters, index, direction="ltr"):
+    """Render a single chapter page with prev/next navigation and TOC."""
     chapter = chapters[index]
     prev_chapter = chapters[index - 1] if index > 0 else None
     next_chapter = chapters[index + 1] if index + 1 < len(chapters) else None
@@ -75,6 +83,7 @@ def bind_html_chapter(chapters, index, direction="ltr"):
 
 
 def make_webs(app, data) -> Generator[str, None, None]:
+    """Generate per-chapter HTML files and copy referenced images."""
     from ..core.app import App
     assert isinstance(app, App) and app.crawler
     assert isinstance(data, dict)

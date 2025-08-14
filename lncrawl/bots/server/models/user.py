@@ -1,3 +1,4 @@
+"""User ORM and request/response models for auth endpoints."""
 from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, EmailStr

@@ -1,3 +1,4 @@
+"""Metadata service: supported sources, TOC, chapter content, covers."""
 import base64
 import io
 import json

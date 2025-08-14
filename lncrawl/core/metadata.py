@@ -1,3 +1,5 @@
+"""Persist and restore crawl session metadata and novel structure."""
+
 import json
 import logging
 from pathlib import Path
@@ -11,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_metadata_list(output_path: str) -> Iterable[MetaInfo]:
+    """Yield `MetaInfo` objects from all metadata files under a path."""
     for meta_file in Path(output_path).glob("**/" + C.META_FILE_NAME):
         try:
             with open(meta_file, "r", encoding="utf-8") as fp:
@@ -22,6 +25,7 @@ def get_metadata_list(output_path: str) -> Iterable[MetaInfo]:
 
 
 def save_metadata(app, completed=False):
+    """Serialize current app state to `metadata.json` in the output folder."""
     from .app import App
     if not isinstance(app, App) or not app.crawler:
         return
@@ -77,6 +81,7 @@ def save_metadata(app, completed=False):
 
 
 def load_metadata(app, meta: MetaInfo):
+    """Populate an app instance from previously saved `MetaInfo`."""
     from .app import App
     novel = meta.novel
     session = meta.session

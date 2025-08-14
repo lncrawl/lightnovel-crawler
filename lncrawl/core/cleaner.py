@@ -1,3 +1,9 @@
+"""HTML-to-cleaned-HTML utilities.
+
+`TextCleaner` removes ads/trackers/noise, normalizes tag attributes/styles,
+extracts paragraphs, and returns safe HTML for binding.
+"""
+
 import itertools
 import re
 import sys
@@ -8,6 +14,7 @@ from bs4 import Comment, Tag
 
 
 class TextCleaner:
+    """Mutable cleaner configuration and operations for HTML fragments."""
     def __init__(self) -> None:
         self.line_separator = "<br>"
         self.invisible_chars = [
@@ -151,6 +158,7 @@ class TextCleaner:
         }
 
     def extract_contents(self, tag) -> str:
+        """Clean a container and return safe HTML paragraphs."""
         self.clean_contents(tag)
         body = self.extract_paragraphs(tag)
         paragraphs = " ".join(body).split(self.line_separator)
@@ -163,6 +171,7 @@ class TextCleaner:
         )
 
     def clean_contents(self, div):
+        """Destructively sanitize a tag tree: remove ads/bad tags/attrs."""
         if not isinstance(div, Tag):
             return div
 
@@ -194,6 +203,7 @@ class TextCleaner:
         return div
 
     def clean_text(self, text) -> str:
+        """Normalize text by removing control chars and applying substitutions."""
         text = str(text).strip()
         text = text.translate(self.nonprintable_mapping)
         if not hasattr(self, "_subs_"):
@@ -262,6 +272,7 @@ class TextCleaner:
         return ";".join(clean_css)
 
     def extract_paragraphs(self, tag) -> list:
+        """Flatten a container into list of HTML/text lines split by line breaks."""
         if not isinstance(tag, Tag):
             return []
 

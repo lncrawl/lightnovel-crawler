@@ -1,3 +1,5 @@
+"""BeautifulSoup factory and helpers used by the scraper/crawler."""
+
 import logging
 from abc import ABC
 from typing import Optional, Union
@@ -18,12 +20,7 @@ class SoupMaker(ABC):
         self,
         parser: Optional[str] = None,
     ) -> None:
-        """This is a helper for Beautiful Soup. It is being used as a superclass of the Crawler.
-
-        Args:
-        - parser (Optional[str], optional): Desirable features of the parser. This can be the name of a specific parser
-            ("lxml", "lxml-xml", "html.parser", or "html5lib") or it may be the type of markup to be used ("html", "html5", "xml").
-        """
+        """Configure parser preference (defaults to lxml)."""
         self._parser = parser or DEFAULT_PARSER
 
     def close(self) -> None:
@@ -34,6 +31,7 @@ class SoupMaker(ABC):
         data: Union[Response, bytes, str],
         encoding: Optional[str] = None,
     ) -> BeautifulSoup:
+        """Parse bytes/str/Response into a BeautifulSoup instance."""
         if isinstance(data, Response):
             return self.make_soup(data.content, encoding)
         elif isinstance(data, bytes):
@@ -49,5 +47,6 @@ class SoupMaker(ABC):
         data: Union[Response, bytes, str],
         encoding: Optional[str] = None,
     ) -> Tag:
+        """Create a first child `Tag` from a body for convenience."""
         soup = self.make_soup(data, encoding)
         return next(soup.find("body").children)

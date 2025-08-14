@@ -1,3 +1,4 @@
+"""Soup template for sites where volumes are optional or absent."""
 from abc import abstractmethod
 from typing import Generator, Union
 

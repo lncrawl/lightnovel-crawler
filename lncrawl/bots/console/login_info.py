@@ -1,3 +1,4 @@
+"""Prompt for login credentials if required by a crawler."""
 from typing import Optional, Tuple
 
 from questionary import prompt

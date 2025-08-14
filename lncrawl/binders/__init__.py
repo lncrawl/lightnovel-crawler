@@ -1,5 +1,7 @@
-"""
-To bind into ebooks
+"""Orchestrates binding chapters into various output formats.
+
+Exposes helpers to generate output files by format, and to package them into
+archives. Acts as the public API for binders used by `App.bind_books`.
 """
 import logging
 import os
@@ -37,6 +39,7 @@ available_formats = depends_on_none + depends_on_epub
 
 
 def make_format(app, data, fmt: OutputFormat):
+    """Yield output files generated for the requested format."""
     from ..core.app import App
     assert isinstance(app, App) and app.crawler, 'App instance'
 
@@ -62,6 +65,11 @@ def make_format(app, data, fmt: OutputFormat):
 
 
 def create_archive(app, fmt: OutputFormat, files: List[str]):
+    """Create a zip archive for produced files under `archives/`.
+
+    If only a single file was created, copy it into `archives/` instead of
+    zipping to preserve the extension.
+    """
     from ..core.app import App
     assert isinstance(app, App) and app.crawler, 'App instance'
 
@@ -98,6 +106,10 @@ def create_archive(app, fmt: OutputFormat, files: List[str]):
 
 
 def generate_books(app, data) -> Generator[OutputFormat, None, None]:
+    """Generate enabled formats, archive them, and update app state.
+
+    Yields each `OutputFormat` as it completes.
+    """
     from ..core.app import App
     assert isinstance(app, App) and app.crawler, 'App instance'
 

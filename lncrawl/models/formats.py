@@ -1,3 +1,5 @@
+"""Supported output formats enumeration."""
+
 from enum import Enum
 
 

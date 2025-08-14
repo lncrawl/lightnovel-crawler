@@ -1,3 +1,11 @@
+"""Core application orchestration.
+
+This module defines the `App` class which coordinates the overall crawling
+workflow: preparing search, selecting a crawler, fetching novel and chapter
+data, downloading images, and binding outputs. It also exposes progress
+properties for UI/reporting.
+"""
+
 import atexit
 import logging
 import os
@@ -56,6 +64,12 @@ class App:
 
     @property
     def progress(self):
+        """Overall progress percentage across stages.
+
+        We combine individual stage progresses with small weights for
+        info/binding, and dynamic weights for image vs chapter fetching
+        depending on whether the crawler handles manga.
+        """
         if self.search_progress > 0:
             return self.search_progress
         info_w = 0.02
@@ -78,6 +92,7 @@ class App:
     # ----------------------------------------------------------------------- #
 
     def destroy(self):
+        """Clean up resources and reset runtime state."""
         atexit.unregister(self.destroy)
         if self.crawler:
             self.crawler.close()
@@ -125,6 +140,7 @@ class App:
             ]
 
     def guess_novel_title(self, url: str) -> str:
+        """Best-effort guess of a page's title using HTTP, falling back to a browser."""
         try:
             scraper = Scraper(url)
             response = scraper.get_response(url)
@@ -163,6 +179,7 @@ class App:
     # ----------------------------------------------------------------------- #
 
     def can_do(self, prop_name):
+        """Check whether the active crawler overrides a capability/method."""
         if not hasattr(self.crawler.__class__, prop_name):
             return False
         if not hasattr(Crawler, prop_name):
@@ -195,6 +212,7 @@ class App:
         save_metadata(self)
 
     def prepare_novel_output_path(self):
+        """Create and set a stable output directory for the current novel."""
         assert self.crawler
 
         if not self.good_file_name:

@@ -1,3 +1,4 @@
+"""Interactive tool to generate a new crawler from a site template."""
 import logging
 import re
 from urllib.parse import urlparse

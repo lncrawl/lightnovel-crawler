@@ -1,3 +1,4 @@
+"""Async HTTP fetch helpers for site content and images."""
 import httpx
 from bs4 import BeautifulSoup
 

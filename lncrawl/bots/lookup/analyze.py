@@ -1,3 +1,4 @@
+"""Analyze a site and pick the best matching crawler template."""
 import logging
 import os
 import textwrap

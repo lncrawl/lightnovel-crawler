@@ -1,3 +1,4 @@
+"""Background scheduler that polls the DB and runs job microtasks."""
 import logging
 from collections import deque
 from threading import Event, Thread

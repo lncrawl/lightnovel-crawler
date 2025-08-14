@@ -1,3 +1,4 @@
+"""General browser template mirroring soup parsing logic with Selenium."""
 import logging
 from typing import Generator, Union
 

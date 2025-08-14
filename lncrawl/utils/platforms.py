@@ -1,3 +1,4 @@
+"""Detect runtime platform and screen characteristics with caching."""
 import os
 import platform
 import sys
@@ -6,6 +7,7 @@ from .common import static_cached_property
 
 
 class Screen:
+    """Holds detected screen size metrics for UI decisions."""
     width = 1920
     height = 1080
     view_width = 1920
@@ -13,6 +15,7 @@ class Screen:
 
 
 class Platform:
+    """Static helpers to introspect OS/platform features."""
     @static_cached_property
     @staticmethod
     def name():

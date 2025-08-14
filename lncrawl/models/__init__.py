@@ -1,3 +1,5 @@
+"""Public re-exports for model types used throughout the app."""
+
 from .chapter import Chapter
 from .formats import OutputFormat
 from .meta import MetaInfo

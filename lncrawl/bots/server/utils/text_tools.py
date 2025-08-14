@@ -1,3 +1,4 @@
+"""Compression, encryption, hashing, and key derivation helpers."""
 import base64
 import hashlib
 import lzma

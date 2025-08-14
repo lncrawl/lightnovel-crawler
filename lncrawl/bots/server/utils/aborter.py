@@ -1,3 +1,4 @@
+"""Simple abort/wait helper backed by a threading.Event."""
 from threading import Event
 
 

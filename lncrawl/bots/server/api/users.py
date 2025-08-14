@@ -1,3 +1,4 @@
+"""User management endpoints (list, create, get, update, delete)."""
 from fastapi import APIRouter, Body, Depends, Path, Query, Security
 
 from ..context import ServerContext

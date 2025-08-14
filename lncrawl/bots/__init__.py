@@ -1,3 +1,4 @@
+"""Bot runners: console, telegram, discord, lookup, server."""
 supported_bots = [
     "console",
     "telegram",
@@ -8,6 +9,7 @@ supported_bots = [
 
 
 def run_bot(bot):
+    """Dispatch to the selected bot implementation by name."""
     if bot not in supported_bots:
         bot = "console"
 
