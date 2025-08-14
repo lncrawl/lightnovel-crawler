@@ -6,6 +6,7 @@ from lncrawl.core.crawler import Crawler
 logger = logging.getLogger(__name__)
 search_url = "https://phoenixnovels.com.br/?s=%s&post_type=wp-manga"
 
+
 class PhoenixNovels(Crawler):
     base_url = "https://phoenixnovels.com.br/"
 
