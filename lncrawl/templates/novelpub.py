@@ -63,12 +63,13 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         yield from soup.select(".novel-list .novel-item a")
 
     def parse_search_item(self, tag: Tag) -> SearchResult:
-        title = tag.select_one(".novel-title").text.strip()
+        title = tag.select_one(".novel-title")
+        assert title
         info = [s.text.strip() for s in tag.select(".novel-stats")]
         return SearchResult(
-            title=title,
-            info=" | ".join(info),
             url=self.absolute_url(tag["href"]),
+            title=title.get_text(strip=True),
+            info=" | ".join(info),
         )
 
     def parse_title(self, soup: BeautifulSoup) -> str:
@@ -80,9 +81,10 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         self.browser.wait("article#novel")
         return self.parse_title(self.browser.soup)
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: BeautifulSoup):
         tag = soup.select_one("article#novel figure.cover > img")
-        assert tag
+        if not tag:
+            return None
         if tag.has_attr("data-src"):
             return self.absolute_url(tag["data-src"])
         if tag.has_attr("src"):
@@ -104,14 +106,14 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
     def select_chapter_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
         chapter_page = f"{self.novel_url.strip('/')}/chapters"
         soup = self.get_soup(chapter_page)
-        page_count = max(
-            [
-                int(digit_regex.search(a["href"]).group(1))
-                for a in soup.select(".pagination-container li a[href]")
-            ]
-        )
-        if not page_count:
-            page_count = 1
+
+        page_count = 1
+        for a in soup.select(".pagination-container li a[href]"):
+            match = digit_regex.search(str(a["href"]))
+            if match:
+                v = int(match.group(1))
+                if v > page_count:
+                    page_count = v
 
         futures = [self.executor.submit(lambda x: x, soup)]
         futures += [
@@ -132,21 +134,28 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
             chapter_list = self.browser.find("ul.chapter-list")
             yield from chapter_list.as_tag().select("li a")
             try:
-                next_link = self.browser.find('.PagedList-skipToNext a[rel="next"]')
-                next_link = next_link.get_attribute("href")
+                next = self.browser.find('.PagedList-skipToNext a[rel="next"]')
+                link = next.get_attribute("href")
+                if not link:
+                    break
+                next_link = link
             except Exception:
-                next_link = False
+                break
 
     def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+        assert tag
+        title = tag.get("title", tag.get_text())
         return Chapter(
             id=id,
-            title=tag["title"],
+            title=str(title).strip(),
             url=self.absolute_url(tag["href"]),
         )
 
     def select_chapter_body(self, soup: BeautifulSoup) -> Tag:
         self.browser.wait(".chapter-content")
-        return soup.select_one(".chapter-content")
+        body = soup.select_one(".chapter-content")
+        assert body
+        return body
 
     def visit_chapter_page_in_browser(self, chapter: Chapter) -> None:
         """Open the Chapter URL in the browser"""

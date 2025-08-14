@@ -67,6 +67,9 @@ build: version install build-web build-wheel build-exe
 start-server:
 	$(PY) -m lncrawl -b server -ll
 
+watch-server:
+	$(PY) -m lncrawl -b server -ll --watch
+
 start-web:
 	$(YARN) dev
 

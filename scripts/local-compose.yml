@@ -1,0 +1,49 @@
+services:
+  chrome:
+    image: selenium/standalone-chrome:latest
+    shm_size: 6gb
+    restart: unless-stopped
+    ports:
+      - "7900:7900"
+      - "4444:4444"
+    environment:
+      SE_VNC_VIEW_ONLY: "1"
+      SE_EVENT_BUS_PUBLISH_PORT: "4442"
+      SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
+      SE_NODE_MAX_SESSIONS: "4"
+      SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
+      SE_NO_VNC_PORT: "7900"
+      SE_SCREEN_WIDTH: "1920"
+      SE_SCREEN_HEIGHT: "1080"
+      SE_NODE_GRID_URL: "false"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.50'
+          memory: 2G
+        reservations:
+          cpus: '1.00'
+          memory: 1G
+
+  postgres:
+    image: postgres:alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpass
+      POSTGRES_DB: lncrawl
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+volumes:
+  pgdata:

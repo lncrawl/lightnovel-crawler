@@ -42,7 +42,8 @@ def _release_queue(driver: WebDriver):
     __override_quit(driver)
 
 
-def check_active(driver: WebDriver) -> bool:
+
+def check_active(driver: Optional[WebDriver]) -> bool:
     """Return True if the driver is still tracked as active."""
     if not isinstance(driver, WebDriver):
         return False

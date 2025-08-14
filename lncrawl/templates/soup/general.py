@@ -1,7 +1,7 @@
 """General soup template defining the core parsing contract and flow."""
 import logging
 from abc import abstractmethod
-from typing import Generator, Union
+from typing import Generator, Union, Optional
 
 from bs4 import BeautifulSoup, Tag
 
@@ -38,7 +38,7 @@ class GeneralSoupTemplate(Crawler):
             logger.warning("Failed to parse novel tags | %s", e)
 
         try:
-            self.novel_synopsis = self.parse_summary(soup)
+            self.novel_synopsis = self.parse_summary(soup) or ""
         except Exception as e:
             logger.warning("Failed to parse novel synopsis | %s", e)
 
@@ -57,9 +57,9 @@ class GeneralSoupTemplate(Crawler):
         raise NotImplementedError()
 
     @abstractmethod
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: BeautifulSoup) -> Optional[str]:
         """Parse and return the novel cover image"""
-        raise NotImplementedError()
+        return None
 
     def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
         """Parse and return the novel authors"""
@@ -69,9 +69,9 @@ class GeneralSoupTemplate(Crawler):
         """Parse and return the novel categories"""
         yield from []
 
-    def parse_summary(self, soup: BeautifulSoup) -> str:
+    def parse_summary(self, soup: BeautifulSoup) -> Optional[str]:
         """Parse and return the novel summary or synopsis"""
-        return ""
+        return None
 
     @abstractmethod
     def parse_chapter_list(

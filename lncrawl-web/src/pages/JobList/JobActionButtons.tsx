@@ -14,13 +14,14 @@ export const JobActionButtons: React.FC<{
   const navigate = useNavigate();
   const isAdmin = useSelector(Auth.select.isAdmin);
   const currentUser = useSelector(Auth.select.user);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const cancelJob = async () => {
     try {
       await axios.post(`/api/job/${job.id}/cancel`);
       if (onChange) onChange();
     } catch (err) {
-      message.open({
+      messageApi.open({
         type: 'error',
         content: stringifyError(err, 'Something went wrong!'),
       });
@@ -40,7 +41,7 @@ export const JobActionButtons: React.FC<{
       );
       navigate({ pathname: `/job/${result.data.id}` });
     } catch (err) {
-      message.open({
+      messageApi.open({
         type: 'error',
         content: stringifyError(err, 'Something went wrong!'),
       });
@@ -49,6 +50,7 @@ export const JobActionButtons: React.FC<{
 
   return (
     <>
+      {contextHolder}
       {job.status === JobStatus.COMPLETED && (
         <Button onClick={replayJob}>
           <ReloadOutlined /> Replay

@@ -33,9 +33,8 @@ export const UserTierTag: React.FC<{ value?: UserTier }> = ({ value }) => {
 };
 
 export const UserStatusTag: React.FC<{ value?: boolean }> = ({ value }) => {
-  if (!value) return null;
   return (
-    <Tag color={value ? 'green' : 'gray'} style={{ margin: 0 }}>
+    <Tag color={value ? 'green' : 'cyan'} style={{ margin: 0 }}>
       {value ? 'Active' : 'Inactive'}
     </Tag>
   );

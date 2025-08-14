@@ -22,10 +22,11 @@ class Args:
     structure to a provided parser/group or creates a fresh parser by default.
     """
     def __init__(self, *args, mutex: list = [], group: list = [], **kargs):
+
         self.args = args
         self.kargs = kargs
-        self.group = group
-        self.mutex = mutex
+        self.group = group or []
+        self.mutex = mutex or []
         self.arguments = None
 
     def build(self, parser=None):
@@ -200,6 +201,7 @@ _builder = Args(
                     "--first",
                     type=int,
                     nargs="?",
+                    const=10,
                     metavar="COUNT",
                     help="Download first few chapters (default: 10).",
                 ),
@@ -207,6 +209,7 @@ _builder = Args(
                     "--last",
                     type=int,
                     nargs="?",
+                    const=10,
                     metavar="COUNT",
                     help="Download last few chapters (default: 10).",
                 ),
