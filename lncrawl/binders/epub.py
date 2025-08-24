@@ -23,6 +23,7 @@ def bind_epub_book(
     chapter_groups: List[List[Chapter]],  # chapters grouped by volumes
     images: List[str],  # full path of images to add
     suffix: str,  # suffix to the file name
+    novel_idx: int,  # position in the series
     book_title: str,
     is_rtl: bool = False,
 ):
@@ -49,6 +50,12 @@ def bind_epub_book(
     book.add_author(novel_author)
     book.add_metadata('DC', 'description', novel_synopsis)
     book.set_identifier(output_path + suffix)
+
+    # add series metadata
+    book.add_metadata(None, 'meta', 'series', {'property': 'collection-type'})
+    book.add_metadata(None, 'meta', novel_title, {'property': 'belongs-to-collection'})
+    book.add_metadata(None, 'meta', str(novel_idx), {'property': 'group-position'})
+
     if is_rtl:
         book.set_direction("rtl")
 
@@ -206,6 +213,7 @@ def make_epubs(app, data: Dict[str, List[Chapter]]) -> Generator[str, None, None
     from ..core.app import App
     assert isinstance(app, App) and app.crawler
 
+    novel_idx = 1
     for volume, chapters in data.items():
         if not chapters:
             continue
@@ -230,5 +238,8 @@ def make_epubs(app, data: Dict[str, List[Chapter]]) -> Generator[str, None, None
             chapter_groups=list(volumes.values()),
             images=list(images),
             suffix=volume,
+            novel_idx=novel_idx,
             book_title=book_title,
         )
+
+        novel_idx += 1
