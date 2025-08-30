@@ -164,7 +164,7 @@ class CentralNovel(Crawler):
         padroes = [
             rf'\b(?:{meses})\s+\d{{1,2}},\s*\d{{4}}\s*$',
             rf'\b\d{{1,2}}\s+de\s+(?:{meses})\s+de\s+\d{{4}}\s*$',
-            rf'\b\d{{1,2}}/\d{{1,2}}/\d{{2,4}}\s*$',
+            r'\b\d{1,2}/\d{1,2}/\d{2,4}\s*$',
         ]
         for pat in padroes:
             t = re.sub(pat, '', t, flags=re.IGNORECASE)
