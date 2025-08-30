@@ -203,7 +203,6 @@ class Novelmania(Crawler):
         text = re.sub(r'^[,\-–:;\s]+|[,\-–:;\s]+$', '', text)
         return text
 
-
     def _clean_chapter_title(self, text: str) -> str:
         """
         Remove datas/horas PT-BR do final do título, ex.:
@@ -214,7 +213,7 @@ class Novelmania(Crawler):
             return text
 
         # remove prefixo "Volume X " do início
-        text = re.sub(r'^\s*volume\s+\d+\s+', '', text, flags=re.I).strip()
+        text = re.sub(r'^\s*volume\s+\d+(?:\.\d+)?\s+', '', text, flags=re.I).strip()
         return text
         # datas por extenso (dd de Mês de yyyy, hh:mm opcional)
         meses = ("janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|"
@@ -236,6 +235,7 @@ class Novelmania(Crawler):
         # limpa separadores finais redundantes
         text = re.sub(r"[,\-\–]\s*$", "", text).strip()
         return text
+
     def _load_chapters_try_variants(self) -> bool:
         """Tenta abrir variantes típicas de URL/estado de aba para forçar
         o servidor a retornar a seção de capítulos renderizada no HTML."""
@@ -271,7 +271,7 @@ class Novelmania(Crawler):
         self.volumes = []
         self.chapters = []
 
-        volume_header_re = re.compile(r"(?i)\bvolume\s*(\d+)\b")
+        volume_header_re = re.compile(r"(?i)\bvolume\s*(\d+(?:\.\d+)?)\b")
 
         # Coleta cabeçalhos candidatos
         candidates = soup.select(
@@ -287,7 +287,7 @@ class Novelmania(Crawler):
             m = volume_header_re.search(text or "")
             if not m:
                 continue
-            num = int(m.group(1))
+            num = float(m.group(1))
             if num in headers_map:
                 # já temos esse volume mapeado; pula duplicatas
                 continue
@@ -307,7 +307,8 @@ class Novelmania(Crawler):
                     jumps += 1
                 body = sib or hdr.parent
 
-            headers_map[num] = (f"Volume {num}", body)
+            title_num = int(num) if float(num).is_integer() else num
+            headers_map[num] = (f"Volume {title_num}", body)
 
         # Fallback: estrutura Material-UI
         if not headers_map:
@@ -317,17 +318,17 @@ class Novelmania(Crawler):
                 m = volume_header_re.search(text or "")
                 if not m:
                     continue
-                num = int(m.group(1))
+                num = float(m.group(1))
                 if num in headers_map:
                     continue
-                headers_map[num] = (f"Volume {num}", acc)
+                title_num = int(num) if float(num).is_integer() else num
+                headers_map[num] = (f"Volume {title_num}", acc)
 
-        
         # Fallback 2: aceitar QUALQUER cabeçalho como uma seção/volume
         if not headers_map:
             idx = 0
             for hdr in candidates:
-                title = (hdr.get_text(" ", strip=True) or "").strip() or f"Seção {idx+1}"
+                title = (hdr.get_text(" ", strip=True) or "").strip() or f"Seção {idx + 1}"
                 # tenta localizar o corpo do acordeão como antes
                 body = None
                 target = hdr.get("data-bs-target") or hdr.get("data-target") or hdr.get("aria-controls")
