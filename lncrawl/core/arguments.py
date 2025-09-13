@@ -303,6 +303,14 @@ _builder = Args(
             help="Do not prompt to close at the end for windows platforms.",
         ),
         Args(
+            "--ratelimit",
+            dest="ratelimit",
+            metavar="LIMIT",
+            type=float,
+            default=60.0,
+            help="Limit downloads to x chapters per minute.",
+        ),
+        Args(
             "--resume",
             dest="resume",
             nargs="?",

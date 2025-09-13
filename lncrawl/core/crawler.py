@@ -1,5 +1,6 @@
 import hashlib
 import logging
+import time
 from abc import abstractmethod
 from threading import Event
 from typing import Generator, List, Optional, Union
@@ -53,6 +54,14 @@ class Crawler(Scraper):
         self.is_rtl: bool = False
         self.novel_synopsis: str = ""
         self.novel_tags: List[str] = []
+
+        # timepoint at which the next download can start
+        self.next_download_timepoint = 0.0  # can start immediatly
+        if get_args().ratelimit and get_args().ratelimit > 0:
+            # ratlimit is items/minute -> invert to get duration in seconds between downloads
+            self.time_between_downloads = 60.0 / get_args().ratelimit
+        else:
+            self.time_between_downloads = 0
 
         # Each item must contain these keys:
         # `id` - 1 based index of the volume
@@ -154,6 +163,12 @@ class Crawler(Scraper):
         signal=Event(),
     ) -> Generator[Chapter, None, None]:
         def _downloader(chapter: Chapter):
+            # implement rate limiting
+            current_time = time.monotonic()
+            if current_time < self.next_download_timepoint:
+                time.sleep(self.next_download_timepoint - current_time)
+            self.next_download_timepoint = time.monotonic() + self.time_between_downloads
+
             chapter.body = ""
             chapter.images = {}
             chapter.body = self.download_chapter_body(chapter)
