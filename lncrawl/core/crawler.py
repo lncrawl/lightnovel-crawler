@@ -164,9 +164,13 @@ class Crawler(Scraper):
     ) -> Generator[Chapter, None, None]:
         def _downloader(chapter: Chapter):
             # implement rate limiting
-            current_time = time.monotonic()
-            if current_time < self.next_download_timepoint:
-                time.sleep(self.next_download_timepoint - current_time)
+            while self.next_download_timepoint - time.monotonic() > 0.5:
+                # fast breakout on CTRL+C
+                if signal.is_set():
+                    break
+                time.sleep(0.5)
+            if not signal.is_set() and time.monotonic() < self.next_download_timepoint:
+                time.sleep(self.next_download_timepoint - time.monotonic())
             self.next_download_timepoint = time.monotonic() + self.time_between_downloads
 
             chapter.body = ""
