@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 from pydantic import computed_field, BaseModel
+from sqlalchemy.sql.expression import column
 from sqlmodel import JSON, Column, Field, Index, func
 
 from ._base import BaseTable
@@ -24,7 +25,7 @@ class Novel(BaseTable, table=True):
     extra: Dict[str, Any] = Field(default={}, sa_column=Column(JSON), description="Extra field")
 
     __table_args__ = (
-        Index("idx_novel_title_lower", func.lower(title)),
+        Index("idx_novel_title_lower", func.lower(column("title"))),
     )
 
 

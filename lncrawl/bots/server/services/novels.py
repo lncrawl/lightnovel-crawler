@@ -9,6 +9,9 @@ from ..models.pagination import Paginated
 from ..models.user import User, UserRole
 
 
+NOVEL_TITLE_COLUMN = Novel.__table__.c.title
+
+
 class NovelService:
     def __init__(self, ctx: ServerContext) -> None:
         self._ctx = ctx
@@ -34,7 +37,7 @@ class NovelService:
 
             if search:
                 q = f"%{search.lower()}%"
-                conditions.append(func.lower(Novel.title).like(q))
+                conditions.append(func.lower(NOVEL_TITLE_COLUMN).like(q))
 
             if conditions:
                 cnd = and_(*conditions)

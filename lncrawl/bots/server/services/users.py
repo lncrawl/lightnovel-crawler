@@ -14,6 +14,12 @@ from ..models.user import (CreateRequest, LoginRequest, PasswordUpdateRequest,
                            UpdateRequest, User, UserRole, UserTier,
                            VerifiedEmail)
 
+USER_TABLE = User.__table__
+USER_NAME_COLUMN = USER_TABLE.c.name
+USER_EMAIL_COLUMN = USER_TABLE.c.email
+USER_ROLE_COLUMN = USER_TABLE.c.role
+USER_TIER_COLUMN = USER_TABLE.c.tier
+
 logger = logging.getLogger(__name__)
 
 
@@ -113,10 +119,10 @@ class UserService:
                 q = f'%{search.lower()}%'
                 conditions.append(
                     or_(
-                        func.lower(User.name).like(q),
-                        func.lower(User.email).like(q),
-                        func.lower(User.role).like(q),
-                        func.lower(User.tier).like(q),
+                        func.lower(USER_NAME_COLUMN).like(q),
+                        func.lower(USER_EMAIL_COLUMN).like(q),
+                        func.lower(USER_ROLE_COLUMN).like(q),
+                        func.lower(USER_TIER_COLUMN).like(q),
                     )
                 )
 
