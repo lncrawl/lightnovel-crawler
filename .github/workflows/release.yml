@@ -174,6 +174,9 @@ jobs:
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: 🏷️ Read package version
+        run: echo "PACKAGE_VERSION=$(head -n 1 lncrawl/VERSION)" >> $GITHUB_ENV
+
       - name: 🏗️ Build and Push Image
         uses: docker/build-push-action@v5
         with:
@@ -183,6 +186,7 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${GITHUB_REF##*/}
+            ghcr.io/${{ github.repository }}:${{ env.PACKAGE_VERSION }}
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
             org.opencontainers.image.revision=${{ github.sha }}
