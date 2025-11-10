@@ -16,7 +16,6 @@ import urllib.parse
 from lncrawl.core.crawler import Crawler
 from lncrawl.models import Chapter, SearchResult, Volume
 from lncrawl.templates.soup.searchable import SearchableSoupTemplate
-from scripts.index_gen import crawler
 
 logger = logging.getLogger(__name__)
 search_url = "https://cheldra.wordpress.com"
@@ -40,13 +39,17 @@ class Cheldra(SearchableSoupTemplate):
     def parse_search_item(self, tag: Tag) -> SearchResult:
         url = tag.find("a").get("href")
         soup = self.post_soup(url)
-        title = soup.select(".entry-title")[0].text
+        title = soup.select_one(".entry-title").text.strip()
         return SearchResult(
             title=title,
             url=url
         )
 
     def get_novel_soup(self) -> BeautifulSoup:
+        links = self.get_soup(self.novel_url).select("div.entry-content p:not([class]) a")
+        seven_seas_url = [link.get("href") for link in links if link.text == "Seven Seas"][0]
+        seven_seas_soup = self.post_soup(seven_seas_url)
+        self.seven_seas_soup = seven_seas_soup
         return self.get_soup(self.novel_url)
 
     def parse_title(self, soup: BeautifulSoup) -> str:
@@ -54,11 +57,7 @@ class Cheldra(SearchableSoupTemplate):
         return soup.select(".entry-title")[0].text
 
     def parse_cover(self, soup: BeautifulSoup) -> str:
-        links = soup.select("div.entry-content p:not([class]) a")
-        seven_seas_url = [link.get("href") for link in links if link.text == "Seven Seas"][0]
-        seven_seas_soup = self.post_soup(seven_seas_url)
-        self.seven_seas_soup = seven_seas_soup
-        all_imgs = seven_seas_soup.select("div.volumes-container a img")
+        all_imgs = self.seven_seas_soup.select("div.volumes-container a img")
         return all_imgs[0].get("src")
 
     def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
@@ -81,17 +80,16 @@ class Cheldra(SearchableSoupTemplate):
 
     def parse_summary(self, soup: BeautifulSoup) -> Generator[str, None, None]:
         soup = self.seven_seas_soup
-        yield from soup.select("div.series-description div.entry p")[0].text
+        yield soup.select("div.series-description div.entry p")[0].text
         pass
 
     def parse_chapter_list(self, soup: BeautifulSoup) -> Generator[Union[Chapter, Volume], None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         chap_list = soup.select("div.entry-content p.has-text-align-justify.has-small-font-size a")
         seen_vol_ids = set()
-        # print(chap_list)
-        print("sending chapters")
+        seen_chap_id = set()
         for i, chap in enumerate(chap_list):
-            if i < len(chap_list) and chap_list[i + 1].get("href") == chap.get("href"):
+            if i + 1 < len(chap_list) and chap_list[i + 1].get("href") == chap.get("href"):
                 chap_title = chap_list[i+1].text
             elif chap_list[i - 1].get("href") == chap.get("href"):
                 continue
@@ -105,38 +103,24 @@ class Cheldra(SearchableSoupTemplate):
                 chap_id = int(separated_title[0].strip())
                 vol_id = 1 + chap_id // 100
             except Exception as e:
-                result = re.sub(r"[A-Za-z]", "", separated_title[0].strip())
-                chap_id = int(result)
-                vol_title = re.sub(r"[1-9]", "", separated_title[0].strip())
-                vol_id = 101 + chap_id // 100
+                continue
             chap_url = chap.get("href")
-            if "vol_title" not in locals():
-                vol_title = vol_id
-            yield Chapter(
-                title=chap_title,
-                id=chap_id,
-                url=chap_url,
-                volume=vol_id
-            )
-            if vol_id in seen_vol_ids:
+            if chap_id not in seen_chap_id:
+                seen_chap_id.add(chap_id)
+                yield Chapter(
+                    title=chap_title,
+                    id=chap_id,
+                    url=chap_url,
+                    volume=vol_id
+                )
+            if vol_id not in seen_vol_ids:
+                seen_vol_ids.add(vol_id)
                 yield Volume(
                     id=vol_id,
-                    title=vol_title
                 )
-            del vol_title
-        # print(crawler.chapters, crawler.volumes)
         pass
 
-    # TODO: [REQUIRED] Select the tag containing the chapter text
     def select_chapter_body(self, soup: BeautifulSoup) -> Tag:
         # The soup here is the result of `self.get_soup(chapter.url)`
-        #
-        print(soup)
-        # Example: return soup.select_one(".m-read .txt")
-        pass
-
-    # TODO: [OPTIONAL] Return the index in self.chapters which contains a chapter URL
-    def index_of_chapter(self, url: str) -> int:
-        # To get more help, check the default implemention in the `Crawler` class.
-        pass
+        return soup.select_one("div#content #primary #main article div.entry-content")
 
