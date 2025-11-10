@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-# TODO: Read the TODOs carefully and remove all existing comments in this file.
-
 This is a sample using the SearchableSoupTemplate as the template. This template
 provides a wrapper around the GeneralSoupTemplate to support search.
 
@@ -25,21 +23,12 @@ search_url = "https://cheldra.wordpress.com"
 
 
 class Cheldra(SearchableSoupTemplate):
-    # TODO: [REQUIRED] Provide the URLs supported by this crawler.
     base_url = ["https://cheldra.wordpress.com"]
 
-    # TODO: [OPTIONAL] Set True if this crawler is for manga/manhua/manhwa.
-    has_manga = False
-
-    # TODO: [OPTIONAL] Set True if this source contains machine translations.
-    has_mtl = False
-
-    # TODO: [OPTIONAL] This is called before all other methods.
     def initialize(self) -> None:
         # You can customize `TextCleaner` and other necessary things.
         pass
 
-    # TODO: [REQUIRED] Select novel items found in search page from the query
     def select_search_items(self, query: str) -> Generator[Tag, None, None]:
         soup = self.post_soup(self.home_url)
         results = soup.select(".site-header .site-header-top .main-navigation div ul li")
@@ -48,7 +37,6 @@ class Cheldra(SearchableSoupTemplate):
         yield from filtered_results
         pass
 
-    # TODO: [REQUIRED] Parse a tag and return single search result
     def parse_search_item(self, tag: Tag) -> SearchResult:
         url = tag.find("a").get("href")
         soup = self.post_soup(url)
@@ -58,16 +46,13 @@ class Cheldra(SearchableSoupTemplate):
             url=url
         )
 
-    # TODO: [OPTIONAL] Get a BeautifulSoup instance from the self.novel_url
     def get_novel_soup(self) -> BeautifulSoup:
         return self.get_soup(self.novel_url)
 
-    # TODO: [REQUIRED] Parse and return the novel title
     def parse_title(self, soup: BeautifulSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         return soup.select(".entry-title")[0].text
 
-    # TODO: [REQUIRED] Parse and return the novel cover
     def parse_cover(self, soup: BeautifulSoup) -> str:
         links = soup.select("div.entry-content p:not([class]) a")
         seven_seas_url = [link.get("href") for link in links if link.text == "Seven Seas"][0]
@@ -76,13 +61,11 @@ class Cheldra(SearchableSoupTemplate):
         all_imgs = seven_seas_soup.select("div.volumes-container a img")
         return all_imgs[0].get("src")
 
-    # TODO: [OPTIONAL] Parse and return the novel authors
     def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
         author = soup.select("div.entry-content p:not([class])")[0].text.lstrip("Author: ")
         yield author
         pass
 
-    # TODO: [OPTIONAL] Parse and return the novel categories or tags
     def parse_genres(self, soup: BeautifulSoup) -> Generator[str, None, None]:
         soup = self.seven_seas_soup
         meta = soup.select("div.info div#series-meta")[0]
@@ -96,13 +79,11 @@ class Cheldra(SearchableSoupTemplate):
         yield from genres
         pass
 
-    # TODO: [OPTIONAL] Parse and return the novel summary or synopsis
     def parse_summary(self, soup: BeautifulSoup) -> Generator[str, None, None]:
         soup = self.seven_seas_soup
         yield from soup.select("div.series-description div.entry p")[0].text
         pass
 
-    # TODO: [REQUIRED] Parse and set the volumes and chapters
     def parse_chapter_list(self, soup: BeautifulSoup) -> Generator[Union[Chapter, Volume], None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         chap_list = soup.select("div.entry-content p.has-text-align-justify.has-small-font-size a")
