@@ -60,28 +60,29 @@ class Cheldra(SearchableSoupTemplate):
         all_imgs = self.seven_seas_soup.select("div.volumes-container a img")
         return all_imgs[0].get("src")
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
-        author = soup.select("div.entry-content p:not([class])")[0].text.lstrip("Author: ")
-        yield author
-        pass
+    def parse_authors(self, soup):
+        # renvoyer une liste de chaînes plutôt qu'un générateur
+        txt = soup.select("div.entry-content p:not([class])")[0].text.strip()
+        # Eviter lstrip("Author: ") qui enlève un ensemble de caractères :
+        author = re.sub(r'^Author:\s*', '', txt)
+        return [author]
 
-    def parse_genres(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_genres(self, soup):
         soup = self.seven_seas_soup
         meta = soup.select("div.info div#series-meta")[0]
         genre_tags = meta.find("b", string="Genre(s):")
         genres = []
         for tag in genre_tags.find_next_siblings():
             if tag.name == "a":
-                genres.append(tag.text)
+                genres.append(tag.text.strip())
             else:
-                break  # on s’arrête dès qu’on sort de la séquence de <a>
-        yield from genres
-        pass
+                break
+        return genres
 
-    def parse_summary(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_summary(self, soup):
+        # description unique -> string
         soup = self.seven_seas_soup
-        yield soup.select("div.series-description div.entry p")[0].text
-        pass
+        return soup.select("div.series-description div.entry p")[0].text.strip()
 
     def parse_chapter_list(self, soup: BeautifulSoup) -> Generator[Union[Chapter, Volume], None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
