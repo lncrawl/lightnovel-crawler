@@ -1,19 +1,9 @@
 # -*- coding: utf-8 -*-
-"""
-This is a sample using the SearchableSoupTemplate as the template. This template
-provides a wrapper around the GeneralSoupTemplate to support search.
-
-Put your source file inside the language folder. The `en` folder has too many
-files, therefore it is grouped using the first letter of the domain name.
-"""
 import logging
 import re
 from typing import Generator, Union
 
 from bs4 import BeautifulSoup, Tag
-import urllib.parse
-
-from lncrawl.core.crawler import Crawler
 from lncrawl.models import Chapter, SearchResult, Volume
 from lncrawl.templates.soup.searchable import SearchableSoupTemplate
 
@@ -94,12 +84,11 @@ class Cheldra(SearchableSoupTemplate):
                 chap_title = chap_list[i+1].text
             elif chap_list[i - 1].get("href") == chap.get("href"):
                 continue
+            chap_title = chap.text
             if "–" in chap.text:
                 separated_title = chap.text.split("–")
-                chap_title = chap.text.split("–")[1].strip()
             else:
                 separated_title = chap.text.split("-")
-                chap_title = "-".join(chap.text.split("-")[1:]).strip()
             try:
                 chap_id = int(separated_title[0].strip())
                 vol_id = 1 + chap_id // 100
