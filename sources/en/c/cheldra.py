@@ -80,11 +80,11 @@ class Cheldra(SearchableSoupTemplate):
         seen_vol_ids = set()
         seen_chap_id = set()
         for i, chap in enumerate(chap_list):
+            chap_title = chap.text
             if i + 1 < len(chap_list) and chap_list[i + 1].get("href") == chap.get("href"):
-                chap_title = chap_list[i+1].text
+                chap_title = chap_list[i + 1].text
             elif chap_list[i - 1].get("href") == chap.get("href"):
                 continue
-            chap_title = chap.text
             if "–" in chap.text:
                 separated_title = chap.text.split("–")
             else:
@@ -92,7 +92,7 @@ class Cheldra(SearchableSoupTemplate):
             try:
                 chap_id = int(separated_title[0].strip())
                 vol_id = 1 + chap_id // 100
-            except Exception as e:
+            except ValueError:
                 continue
             chap_url = chap.get("href")
             if chap_id not in seen_chap_id:
@@ -113,4 +113,3 @@ class Cheldra(SearchableSoupTemplate):
     def select_chapter_body(self, soup: BeautifulSoup) -> Tag:
         # The soup here is the result of `self.get_soup(chapter.url)`
         return soup.select_one("div#content #primary #main article div.entry-content")
-
