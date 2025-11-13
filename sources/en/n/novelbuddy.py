@@ -41,7 +41,7 @@ class MyCrawlerName(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         # The tag here comes from self.select_search_items
         return SearchResult(
             title=tag.select_one("div.title h3 a").text.strip(),
-            url=f"{self.home_url}{tag.select_one("div.title h3 a")["href"]}"
+            url=f"{self.home_url}{tag.select_one('div.title h3 a')['href']}"
         )
 
     def get_novel_soup(self) -> BeautifulSoup:
@@ -51,7 +51,7 @@ class MyCrawlerName(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         return soup.select_one("div.name.box h1").text.strip()
 
     def parse_cover(self, soup: BeautifulSoup) -> str:
-        return f"https:{soup.select_one("div.img-cover img")["data-src"]}"
+        return f"https:{soup.select_one('div.img-cover img')['data-src']}"
 
     def parse_authors(self, soup: BeautifulSoup) -> List[str]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
@@ -79,7 +79,7 @@ class MyCrawlerName(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         variables = {}
         for _, name, value in matches:
             variables[name] = value.strip()
-        chapters_soup = self.get_soup(f"https://novelbuddy.io/api/manga/{variables["bookId"]}/chapters?source=detail")
+        chapters_soup = self.get_soup(f"https://novelbuddy.io/api/manga/{variables['bookId']}/chapters?source=detail")
         yield from chapters_soup.select("ul li")[::-1]
         pass
 
@@ -88,7 +88,7 @@ class MyCrawlerName(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         return Chapter(
             id=id,
             title=tag.select_one("strong").text.strip(),
-            url=f"{self.home_url}{tag.select_one("a")['href']}",
+            url=f"{self.home_url}{tag.select_one('a')['href']}",
         )
 
     def select_chapter_body(self, soup: BeautifulSoup) -> Tag:
