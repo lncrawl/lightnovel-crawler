@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import quote_plus
+from bs4 import BeautifulSoup, Tag
 from lncrawl.core.crawler import Crawler
+from lncrawl.templates.browser.basic import BasicBrowserTemplate
+from lncrawl.models import SearchResult, Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "https://syosetu.org/search/?mode=search&word=%s"
 
 
-class SyosetuOrgCrawler(Crawler):
+class SyosetuOrgCrawler(BasicBrowserTemplate):
     has_mtl = True
     base_url = "https://syosetu.org/"
 
@@ -34,10 +37,20 @@ class SyosetuOrgCrawler(Crawler):
             )
         return results
 
-    def read_novel_info(self):
+    def read_novel_info_in_soup(self):
+        """Read novel info using regular scraper"""
         self.init_parser('lxml')
         soup = self.get_soup(self.novel_url)
+        self._parse_novel_info(soup)
 
+    def read_novel_info_in_browser(self):
+        """Read novel info using browser"""
+        self.visit(self.novel_url)
+        soup = self.browser.soup
+        self._parse_novel_info(soup)
+
+    def _parse_novel_info(self, soup: BeautifulSoup):
+        """Common logic for parsing novel info"""
         title_tag = soup.select_one("span[itemprop='name']")
         if title_tag:
             self.novel_title = title_tag.text.strip()
@@ -82,8 +95,17 @@ class SyosetuOrgCrawler(Crawler):
                             "url": self.absolute_url(a_tag["href"]),
                         })
 
-    def download_chapter_body(self, chapter):
+    def download_chapter_body_in_soup(self, chapter):
+        """Download chapter content using regular scraper"""
         soup = self.get_soup(chapter["url"])
+        contents = soup.select_one("#honbun")
+        contents = self.cleaner.extract_contents(contents)
+        return contents
+
+    def download_chapter_body_in_browser(self, chapter):
+        """Download chapter content using browser"""
+        self.visit(chapter["url"])
+        soup = self.browser.soup
         contents = soup.select_one("#honbun")
         contents = self.cleaner.extract_contents(contents)
         return contents
