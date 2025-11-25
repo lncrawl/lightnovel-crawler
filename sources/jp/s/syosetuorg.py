@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import quote_plus
-from bs4 import BeautifulSoup, Tag
-from lncrawl.core.crawler import Crawler
+from bs4 import BeautifulSoup
 from lncrawl.templates.browser.basic import BasicBrowserTemplate
-from lncrawl.models import SearchResult, Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "https://syosetu.org/search/?mode=search&word=%s"
