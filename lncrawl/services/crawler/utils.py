@@ -45,8 +45,11 @@ def __format_volume(crawler: Crawler, vol_id_map: Dict[int, int]):
 def __format_chapters(crawler: Crawler, vol_id_map: Dict[int, int]):
     crawler.chapters = [
         chap if isinstance(chap, Chapter) else Chapter(**chap)
-        for chap in sorted(crawler.chapters, key=lambda x: x.id)
+        for chap in crawler.chapters
     ]
+
+    crawler.chapters = sorted(crawler.chapters, key=lambda x: x.id)
+
     for index, item in enumerate(crawler.chapters):
         item.id = index + 1
         item.extra['crawler_version'] = getattr(crawler, 'version')
