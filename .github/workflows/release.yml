@@ -167,11 +167,14 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ghcr.io/${{ github.repository }}
 
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
+
+      - name: 🔤 Set lowercase repository
+        run: |
+          echo "REPO_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -194,9 +197,9 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.IMAGE_NAME }}:${{ steps.package_version.outputs.version }}
+            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:latest
+            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:${{ steps.package_version.outputs.version }}
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
             org.opencontainers.image.revision=${{ github.sha }}
