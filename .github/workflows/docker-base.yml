@@ -1,42 +1,39 @@
 name: Build Base Image
-
 on:
   workflow_dispatch: {}
   push:
     paths:
       - "Dockerfile.base"
       - ".github/workflows/docker-base.yml"
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   docker-base:
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       packages: write # required for GHCR pushes
-
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ghcr.io/${{ toLower(github.repository_owner) }}/lncrawl-base
-
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
-
+      
+      - name: 🔤 Set lowercase owner
+        run: |
+          echo "OWNER_LOWER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
+      
       - name: 🔐 Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      
       - name: 🏗️ Build and Push
         uses: docker/build-push-action@v6
         with:
@@ -45,8 +42,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWER }}/lncrawl-base:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER_LOWER }}/lncrawl-base:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
             org.opencontainers.image.revision=${{ github.sha }}
