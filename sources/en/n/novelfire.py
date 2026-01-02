@@ -21,7 +21,7 @@ class NovelFireCrawler(Crawler):
         self.novel_author = soup.select_one('span[itemprop="author"]').text.strip()
 
         img = soup.select_one(".cover img")
-        self.novel_cover = self.absolute_url(img["data-src"])
+        self.novel_cover = self.absolute_url(img["src"])
 
         vol_id = 1
         vol_url = self.novel_url + "/chapters"
