@@ -14,7 +14,8 @@ RUN yarn build
 ##
 # Application
 ##
-FROM ghcr.io/dipu-bd/lncrawl-base:latest AS app
+ARG BASE_IMAGE=ghcr.io/dipu-bd/lncrawl-base:latest
+FROM ${BASE_IMAGE} AS app
 
 WORKDIR /app
 
