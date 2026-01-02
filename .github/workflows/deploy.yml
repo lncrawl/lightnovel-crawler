@@ -25,6 +25,7 @@ jobs:
       - name: 🔤 Set lowercase repository
         run: |
           echo "REPO_LOWER=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "OWNER_LOWER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: 🛡️ Setup SSH Key
         run: |
@@ -50,6 +51,8 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: |
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.OWNER_LOWER }}/lncrawl-base:latest
           tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}:server
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
