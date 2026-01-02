@@ -1,3 +1,5 @@
+ARG BASE_IMAGE=ghcr.io/dipu-bd/lncrawl-base:latest
+
 ##
 # Web assets
 ##
