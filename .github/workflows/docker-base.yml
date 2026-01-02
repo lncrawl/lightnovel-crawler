@@ -5,17 +5,22 @@ on:
     paths:
       - "Dockerfile.base"
       - ".github/workflows/docker-base.yml"
+      
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   docker-base:
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write # required for GHCR pushes
+
     env:
       REGISTRY: ghcr.io
+
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
