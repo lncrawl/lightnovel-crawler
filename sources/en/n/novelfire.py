@@ -20,9 +20,16 @@ class NovelFireCrawler(Crawler):
         self.novel_title = soup.find("h1").text.strip()
         self.novel_author = soup.select_one('span[itemprop="author"]').text.strip()
 
-        img = soup.select_one(".cover img")
-        self.novel_cover = self.absolute_url(img["data-src"])
-
+        img = soup.select_one("header.novel-header .cover img")
+        if img:
+            cover_url = (
+                img.get("data-src")
+                or img.get("data-lazy-src")
+                or img.get("src")
+            )
+            if cover_url:
+                self.novel_cover = self.absolute_url(cover_url)
+ 
         vol_id = 1
         vol_url = self.novel_url + "/chapters"
 
