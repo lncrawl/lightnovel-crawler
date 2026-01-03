@@ -27,7 +27,7 @@ class NovelFireCrawler(Crawler):
                 or img.get("src")
             )
             if cover_url:
-                self.novel_cover = self.absolute_url(cover_url) 
+                self.novel_cover = self.absolute_url(cover_url)
         vol_id = 1
         vol_url = self.novel_url + "/chapters"
 
