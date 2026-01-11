@@ -1,3 +1,5 @@
+ARG BASE_IMAGE=ghcr.io/dipu-bd/lncrawl-base:latest
+
 ##
 # Web assets
 ##
@@ -14,7 +16,7 @@ RUN yarn build
 ##
 # Application
 ##
-FROM ghcr.io/dipu-bd/lncrawl-base:latest AS app
+FROM ${BASE_IMAGE} AS app
 
 WORKDIR /app
 

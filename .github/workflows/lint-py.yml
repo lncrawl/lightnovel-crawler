@@ -31,7 +31,6 @@ concurrency:
 
 jobs:
   lncrawl:
-    if: github.repository == 'lncrawl/lightnovel-crawler'
     runs-on: ubuntu-latest
     name: Python ${{ matrix.python-version }}
     strategy:

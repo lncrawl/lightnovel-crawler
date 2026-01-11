@@ -26,6 +26,7 @@
 - [Supported sources](#supported-sources)
 - [Rejected sources](#rejected-sources)
 - [Supported output formats](#supported-output-formats)
+- [For Contributors](#for-contributors)
 - [Sponsors](#sponsors)
 
 <a href="https://github.com/lncrawl/lightnovel-crawler"><img src="res/lncrawl-icon.png" width="128px" align="right"/></a>
@@ -2914,6 +2915,27 @@ We are supporting 460 sources and 390 crawlers.
 - RB
 - SNB
 - TCR
+
+## For Contributors
+
+Interested in contributing? We welcome contributions of all kinds!
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development setup and contribution guidelines
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Codebase architecture overview
+- **[docs/CREATING_CRAWLERS.md](docs/CREATING_CRAWLERS.md)** - How to add new source crawlers
+- **[docs/DOCKER.md](docs/DOCKER.md)** - Docker usage and deployment
+- **[.github/FORKING.md](.github/FORKING.md)** - Setting up CI on forks
+
+### Quick Start for Development
+
+```bash
+git clone https://github.com/lncrawl/lightnovel-crawler.git
+cd lightnovel-crawler
+make setup && make install
+make start
+```
+
+Run `make help` to see all available commands.
 
 ## Sponsors
 

@@ -33,5 +33,4 @@ package.json
 save_pid.txt
 Test Novel
 windows/
-yarn.lock
 config.cfg

@@ -21,7 +21,6 @@ concurrency:
 
 jobs:
   lncrawl_web:
-    if: github.repository == 'lncrawl/lightnovel-crawler'
     runs-on: ubuntu-latest
     name: Node.js ${{ matrix.node }}
     strategy:
