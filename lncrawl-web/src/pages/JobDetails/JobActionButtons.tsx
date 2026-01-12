@@ -1,5 +1,5 @@
 import { Auth } from '@/store/_auth';
-import { type Job } from '@/types';
+import { JobStatus, type Job } from '@/types';
 import { stringifyError } from '@/utils/errors';
 import { CloseOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Button, message, type ButtonProps } from 'antd';
@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { JobIssueReportButton } from './JobIssueReportButton';
 
 export const JobActionButtons: React.FC<{
   job: Job;
@@ -57,6 +58,9 @@ export const JobActionButtons: React.FC<{
   return (
     <>
       {contextHolder}
+      {job.status === JobStatus.FAILED && (
+        <JobIssueReportButton size={size} job={job} />
+      )}
       {job.is_done && (
         <Button size={size} onClick={replayJob} loading={busy}>
           <ReloadOutlined /> Replay

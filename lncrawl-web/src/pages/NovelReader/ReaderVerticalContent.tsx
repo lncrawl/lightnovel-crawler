@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import styles from './ReaderLayoutVertical.module.scss';
+import styles from './ReaderVerticalLayout.module.scss';
 
 import { API_BASE_URL } from '@/config';
 import { store } from '@/store';
@@ -10,7 +10,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { getVoices } from '../SettingsPage/ReaderSettings/VoiceSettings';
-import { ReaderSpeakNavVar } from './ReaderSpeakNavBar';
 
 function useSpeechSynthesis(
   contentEl: HTMLDivElement | null,
@@ -208,20 +207,16 @@ export const ReaderVerticalContent: React.FC<{
   };
 
   return (
-    <>
-      <div
-        id="chapter-content"
-        ref={setContentEl}
-        dangerouslySetInnerHTML={{
-          __html: contentHTML,
-        }}
-        onPointerUp={handleClick}
-        className={cx(styles.content, {
-          [styles.speaking]: speaking,
-        })}
-      />
-
-      {speaking && <ReaderSpeakNavVar data={data} />}
-    </>
+    <div
+      id="chapter-content"
+      ref={setContentEl}
+      dangerouslySetInnerHTML={{
+        __html: contentHTML,
+      }}
+      onPointerUp={handleClick}
+      className={cx(styles.content, {
+        [styles.speaking]: speaking,
+      })}
+    />
   );
 };

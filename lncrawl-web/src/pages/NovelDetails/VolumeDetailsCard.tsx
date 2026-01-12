@@ -119,12 +119,11 @@ export const VolumeDetailsCard: React.FC<{
         {!hideChapters && (
           <Button
             shape="round"
-            type="primary"
             onClick={createVolumeJob}
             icon={<DownloadOutlined />}
-            style={{ width: lg ? 115 : '100%' }}
+            style={{ padding: '0 12px' }}
           >
-            {lg ? 'Download' : 'Download this volume'}
+            Fetch Volume
           </Button>
         )}
       </Flex>

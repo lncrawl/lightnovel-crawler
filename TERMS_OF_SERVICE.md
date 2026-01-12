@@ -2,9 +2,6 @@
 
 **Lightnovel-Crawler**
 
-_Effective Date: December 16, 2025_
-_Last Updated: December 22, 2025_
-
 ---
 
 ## 1. Introduction and Acceptance of Terms

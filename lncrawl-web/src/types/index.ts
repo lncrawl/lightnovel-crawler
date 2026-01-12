@@ -201,5 +201,6 @@ export interface Feedback extends _Base {
   admin_notes?: string;
   extra: {
     user_name?: string;
+    job_id?: string;
   };
 }

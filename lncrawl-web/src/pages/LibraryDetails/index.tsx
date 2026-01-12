@@ -25,8 +25,8 @@ export const LibraryDetailsPage: React.FC = () => {
   const [library, setLibrary] = useState<Library>();
 
   const isOwner = useMemo(
-    () => Boolean(isAdmin || (library && user?.id === library.user_id)),
-    [isAdmin, user?.id, library]
+    () => Boolean(library && user?.id === library.user_id),
+    [user?.id, library]
   );
 
   useEffect(() => {

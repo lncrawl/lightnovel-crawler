@@ -42,10 +42,10 @@ export const NovelActionButtons: React.FC<{ novel: Novel }> = ({ novel }) => {
         </Button>
       )}
       <div style={{ flex: 1 }} />
+      <AddToLibraryButton novelId={novel.id} />
       <Button icon={<ReloadOutlined />} onClick={handleRefresh}>
         Refresh
       </Button>
-      <AddToLibraryButton novelId={novel.id} />
     </Flex>
   );
 };

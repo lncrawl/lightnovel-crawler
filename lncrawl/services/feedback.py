@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 import sqlmodel as sa
 
@@ -20,7 +20,11 @@ class FeedbackService:
         type: FeedbackType,
         subject: str,
         message: str,
+        extra: Dict[str, Any],
     ) -> Feedback:
+        extra.update({
+            "user_name": user.name
+        })
         with ctx.db.session() as sess:
             feedback = Feedback(
                 user_id=user.id,
@@ -28,7 +32,7 @@ class FeedbackService:
                 subject=subject,
                 message=message,
                 status=FeedbackStatus.PENDING,
-                extra={"user_name": user.name},
+                extra=extra,
             )
             sess.add(feedback)
             sess.commit()

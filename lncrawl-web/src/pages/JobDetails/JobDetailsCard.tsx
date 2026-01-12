@@ -7,10 +7,14 @@ import type { Job } from '@/types';
 import { formatDate, formatDuration } from '@/utils/time';
 import { ClockCircleFilled, ClockCircleOutlined } from '@ant-design/icons';
 import { Card, Flex, Grid, Tag, Typography } from 'antd';
-import { JobActionButtons } from '../JobList/JobActionButtons';
+import { JobActionButtons } from './JobActionButtons';
 import { JobProgressLine } from '../JobList/JobProgessBar';
+import { JobErrorDetailsCard } from './JobErrorDetailsCard';
 
-export const JobDetailsCard: React.FC<{ job: Job }> = ({ job }) => {
+export const JobDetailsCard: React.FC<{
+  job: Job;
+  hideActions?: boolean;
+}> = ({ job, hideActions }) => {
   const { lg } = Grid.useBreakpoint();
 
   return (
@@ -59,38 +63,16 @@ export const JobDetailsCard: React.FC<{ job: Job }> = ({ job }) => {
 
       <JobErrorDetailsCard job={job} />
 
-      <Flex justify="end" align="center" gap={'10px'} style={{ marginTop: 15 }}>
-        <JobActionButtons job={job} />
-      </Flex>
+      {!hideActions && (
+        <Flex
+          justify="end"
+          align="center"
+          gap={'10px'}
+          style={{ marginTop: 15 }}
+        >
+          <JobActionButtons job={job} />
+        </Flex>
+      )}
     </Card>
-  );
-};
-
-export const JobErrorDetailsCard: React.FC<{ job: Job }> = ({ job }) => {
-  if (!job.error) {
-    return null;
-  }
-
-  const html = job.error
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => line.replace(/^\s+/, '&nbsp;'))
-    .join('<br/>');
-
-  return (
-    <pre
-      style={{
-        fontSize: '0.775rem',
-        maxHeight: 300,
-        margin: '15px 0',
-        padding: '10px 20px',
-        whiteSpace: 'nowrap',
-        overflow: 'auto',
-        color: '#f8f749',
-        border: '1px solid #f8f749',
-        background: '#f8f74910',
-      }}
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
   );
 };

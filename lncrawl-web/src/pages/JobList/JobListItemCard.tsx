@@ -6,7 +6,7 @@ import { formatDate } from '@/utils/time';
 import { ClockCircleOutlined } from '@ant-design/icons';
 import { Card, Flex, Grid, Space, Tag, Typography } from 'antd';
 import { Link } from 'react-router-dom';
-import { JobActionButtons } from './JobActionButtons';
+import { JobActionButtons } from '../JobDetails/JobActionButtons';
 import { JobProgressCircle, JobProgressLine } from './JobProgessBar';
 
 export const JobListItemCard: React.FC<{

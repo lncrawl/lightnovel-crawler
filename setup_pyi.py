@@ -9,7 +9,15 @@ if sys.version_info[:2] < (3, 8):
 
 ROOT = Path(__file__).resolve().parent
 
-VENV_DIR = Path(os.getenv("VIRTUAL_ENV", ".venv")).relative_to(ROOT).as_posix()
+# Determine venv directory: use VIRTUAL_ENV if set, otherwise detect based on OS
+if os.getenv("VIRTUAL_ENV"):
+    VENV_DIR = Path(os.getenv("VIRTUAL_ENV")).relative_to(ROOT).as_posix()
+elif (ROOT / ".venv-win").exists():
+    VENV_DIR = ".venv-win"
+elif (ROOT / ".venv-posix").exists():
+    VENV_DIR = ".venv-posix"
+else:
+    VENV_DIR = ".venv"
 AVAILABLE_SITE_PACKAGES = list(ROOT.glob(f"{VENV_DIR}/**/site-packages"))
 if not AVAILABLE_SITE_PACKAGES:
     raise RuntimeError(f"No site-packages found in {VENV_DIR}")

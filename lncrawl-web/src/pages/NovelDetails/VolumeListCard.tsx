@@ -80,9 +80,7 @@ export const VolumeListCard: React.FC<{
       }}
       extra={
         <Button
-          size="small"
           shape="round"
-          type="primary"
           style={{ padding: '0 12px' }}
           icon={<DownloadOutlined />}
           onClick={(e) =>
@@ -92,7 +90,7 @@ export const VolumeListCard: React.FC<{
             )
           }
         >
-          Download All
+          Fetch All Volumes
         </Button>
       }
     >

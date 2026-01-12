@@ -39,7 +39,8 @@ def create_feedback(
         user=user,
         type=body.type,
         subject=body.subject,
-        message=body.message,
+        message=body.message or '',
+        extra=body.extra or {},
     )
 
 

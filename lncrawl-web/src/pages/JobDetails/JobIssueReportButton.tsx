@@ -1,25 +1,22 @@
+import type { Feedback, Job } from '@/types';
 import { FeedbackType } from '@/types';
 import { stringifyError } from '@/utils/errors';
-import { CommentOutlined } from '@ant-design/icons';
-import { Button, Flex, Form, Input, message, Modal, Select, Space } from 'antd';
+import { BugOutlined } from '@ant-design/icons';
+import type { ButtonProps } from 'antd';
+import { Button, Flex, Form, Input, message, Modal, Space } from 'antd';
 import axios from 'axios';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const { TextArea } = Input;
-
-const feedbackTypeOptions = [
-  { value: FeedbackType.GENERAL, label: 'General' },
-  { value: FeedbackType.ISSUE, label: 'Report Issue' },
-  { value: FeedbackType.FEATURE, label: 'Suggest Feature' },
-];
-
-export const FeedbackButton: React.FC<{
-  onSubmit?: () => any;
-}> = ({ onSubmit }) => {
+export const JobIssueReportButton: React.FC<{
+  job: Job;
+  size?: ButtonProps['size'];
+}> = ({ job, size }) => {
+  const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [messageApi, contextHolder] = message.useMessage();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
 
   const handleSubmit = async (values: {
     type: FeedbackType;
@@ -28,11 +25,17 @@ export const FeedbackButton: React.FC<{
   }) => {
     setLoading(true);
     try {
-      await axios.post('/api/feedback', values);
+      const { data } = await axios.post<Feedback>('/api/feedback', {
+        ...values,
+        extra: {
+          job_id: job.id,
+          novel_id: job.extra.novel_id,
+        },
+      });
       messageApi.success('Feedback submitted successfully! Thank you.');
       form.resetFields();
       setOpen(false);
-      onSubmit?.();
+      navigate(`/feedback/${data.id}`);
     } catch (err) {
       messageApi.error(stringifyError(err, 'Failed to submit feedback'));
     } finally {
@@ -45,17 +48,19 @@ export const FeedbackButton: React.FC<{
       {contextHolder}
 
       <Button
-        type="primary"
-        icon={<CommentOutlined />}
+        danger
+        size={size}
+        type="default"
+        icon={<BugOutlined />}
         onClick={() => setOpen(true)}
       >
-        Submit Feedback
+        Report
       </Button>
 
       <Modal
         title={
           <Space>
-            <CommentOutlined /> Submit Feedback
+            <BugOutlined /> Report Bug
           </Space>
         }
         open={open}
@@ -71,21 +76,13 @@ export const FeedbackButton: React.FC<{
           onFinish={handleSubmit}
           autoComplete="off"
           labelCol={{ style: { padding: 0 } }}
+          initialValues={{
+            type: FeedbackType.ISSUE,
+            subject: `Job Failed: ${job.job_title || job.id}`,
+            message: '',
+          }}
         >
-          <Form.Item
-            name="type"
-            label="Feedback Type"
-            initialValue={FeedbackType.GENERAL}
-            rules={[
-              { required: true, message: 'Please select a feedback type' },
-            ]}
-          >
-            <Select
-              placeholder="Select feedback type"
-              options={feedbackTypeOptions}
-            />
-          </Form.Item>
-
+          <Form.Item name="type" hidden />
           <Form.Item
             name="subject"
             label="Subject"
@@ -105,16 +102,15 @@ export const FeedbackButton: React.FC<{
             name="message"
             label="Message"
             rules={[
-              { required: true, message: 'Please enter a message' },
               {
                 max: 5000,
                 message: 'Message must be less than 5000 characters',
               },
             ]}
           >
-            <TextArea
-              placeholder="Please provide detailed information about your feedback..."
-              rows={6}
+            <Input.TextArea
+              placeholder="You can optionally provide more details about the issue..."
+              rows={3}
               maxLength={5000}
               showCount
             />

@@ -31,7 +31,7 @@ services:
       POSTGRES_PASSWORD: pgpass
       POSTGRES_DB: lncrawl
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
     restart: unless-stopped
     deploy:
       resources:
@@ -63,6 +63,3 @@ services:
         reservations:
           cpus: "2.00"
           memory: 3G
-
-volumes:
-  pgdata:

@@ -1,7 +1,18 @@
+import { Auth } from '@/store/_auth';
 import type { Library } from '@/types';
 import { getGradientForId } from '@/utils/gradients';
 import { BookOutlined, UserOutlined } from '@ant-design/icons';
-import { Card, Divider, Flex, Grid, Space, Switch, Typography } from 'antd';
+import {
+  Card,
+  Divider,
+  Flex,
+  Grid,
+  Space,
+  Switch,
+  Tag,
+  Typography,
+} from 'antd';
+import { useSelector } from 'react-redux';
 import { DeleteLibraryButton } from './DeleteLibraryButton';
 import { EditLibraryButton } from './EditLibraryButton';
 
@@ -21,6 +32,7 @@ export const LibraryInfoCard: React.FC<LibraryInfoCardProps> = ({
   onLibraryUpdated,
 }) => {
   const { lg } = Grid.useBreakpoint();
+  const isAdmin = useSelector(Auth.select.isAdmin);
 
   return (
     <Card
@@ -94,21 +106,32 @@ export const LibraryInfoCard: React.FC<LibraryInfoCardProps> = ({
       {!lg && <Divider size="small" />}
 
       {/* Owner Controls */}
-      {isOwner && (
+      {(isOwner || isAdmin) && (
         <Flex
           vertical
           gap={7}
           style={{ width: 300 }}
           align={lg ? 'flex-end' : 'center'}
         >
-          <Space>
-            <Typography.Text>Public</Typography.Text>
-            <Switch
-              checked={library.is_public}
-              onChange={onTogglePublic}
-              disabled={loading}
-            />
-          </Space>
+          {isOwner ? (
+            <Space>
+              <Typography.Text>Public</Typography.Text>
+              <Switch
+                checked={library.is_public}
+                onChange={onTogglePublic}
+                disabled={loading}
+              />
+            </Space>
+          ) : (
+            <Tag
+              style={{
+                color: '#000',
+                background: library.is_public ? '#0f0' : '#3cf',
+              }}
+            >
+              {library.is_public ? 'Public' : 'Private'}
+            </Tag>
+          )}
 
           <Flex gap={4} align="center" wrap justify={lg ? 'end' : 'center'}>
             <EditLibraryButton library={library} onSuccess={onLibraryUpdated} />
