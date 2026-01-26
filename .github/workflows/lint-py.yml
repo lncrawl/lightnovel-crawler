@@ -32,6 +32,8 @@ concurrency:
 jobs:
   lncrawl:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     name: Python ${{ matrix.python-version }}
     strategy:
       fail-fast: false

@@ -22,6 +22,8 @@ concurrency:
 jobs:
   lncrawl_web:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     name: Node.js ${{ matrix.node }}
     strategy:
       fail-fast: false

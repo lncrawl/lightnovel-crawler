@@ -1,39 +1,92 @@
 # Setting Up CI on Forks
 
-This guide explains how to configure GitHub Actions workflows when working with a fork of lightnovel-crawler.
+This guide explains how GitHub Actions workflows work on forks of lightnovel-crawler.
 
-## Workflows That Work on Forks (No Setup Required)
+## Full Validation on All Repositories
 
-The following workflows will run automatically on your fork for pull requests and pushes:
+All workflows are designed to provide full validation on forks, following the principle: **Anyone can validate, only authorized repos can publish**.
+
+### What Runs on Forks
+
+| Capability | Main Repo | Forks |
+|------------|-----------|-------|
+| Lint/validation | Yes | Yes |
+| Build executables | Yes | Yes |
+| Download artifacts | Yes | Yes |
+| GitHub Releases | Yes | No |
+| Docker push | Yes (lncrawl namespace) | Yes (fork namespace) |
+| PyPI publish | Yes | No |
+
+## Workflows Overview
+
+### Lint & Test (No Setup Required)
+
+These workflows run automatically on pushes and pull requests:
 
 | Workflow | File | Description |
 |----------|------|-------------|
 | Lint & Test (Python) | `lint-py.yml` | Runs flake8, builds wheel, tests installation |
 | Lint & Test (Web) | `lint-web.yml` | Runs eslint, builds frontend |
 
-These workflows require no additional setup and will run with the default `GITHUB_TOKEN`.
+### Build and Publish (`release.yml`)
 
-## Workflows That Require Secrets
+Triggered by version tags (`v*`). On forks, this workflow:
 
-The following workflows require secrets and won't work on forks without additional setup:
+1. **Validates** the build across multiple Python versions
+2. **Builds executables** for Windows, macOS, and Linux
+3. **Uploads artifacts** - downloadable from the Actions tab
+4. **Builds and pushes Docker image** to your fork's GHCR namespace
 
-| Workflow | File | Required Secrets |
-|----------|------|------------------|
-| Build and Publish | `release.yml` | `PYPI_API_TOKEN`, `SHLINK_API_KEY` |
-| Server Deployment | `deploy.yml` | `SSH_SECRET`, `SSH_HOST`, `DEPLOY_SERVER` |
+The following steps only run on the main repository:
+- GitHub Release creation
+- PyPI package publishing
+- Short link updates (SHLINK)
 
-### Setting Up Release Workflow
+### Downloading Build Artifacts
 
-If you want to publish releases from your fork:
+After a successful release workflow run on your fork:
+
+1. Go to **Actions** tab in your fork
+2. Click on the completed workflow run
+3. Scroll to **Artifacts** section
+4. Download:
+   - `lncrawl-windows` - Windows executable
+   - `lncrawl-mac` - macOS executable
+   - `lncrawl-linux` - Linux executable and wheel package
+
+## Docker Image Publishing
+
+Docker images automatically push to your fork's namespace:
+
+- **Main repo**: `ghcr.io/lncrawl/lightnovel-crawler`
+- **Your fork**: `ghcr.io/<your-username>/lightnovel-crawler`
+
+This works automatically with the default `GITHUB_TOKEN` - no additional setup required.
+
+### Viewing Your Docker Images
+
+1. Go to your GitHub profile
+2. Click on **Packages** tab
+3. Find `lightnovel-crawler` image
+
+### Using Your Fork's Image
+
+```bash
+docker pull ghcr.io/<your-username>/lightnovel-crawler:latest
+docker run --rm ghcr.io/<your-username>/lightnovel-crawler lncrawl --version
+```
+
+## Optional: Publishing to PyPI from Your Fork
+
+If you want to publish releases from your fork to PyPI:
 
 1. Go to your fork's **Settings** > **Secrets and variables** > **Actions**
 2. Add the following secrets:
-   - `PYPI_API_TOKEN`: Your PyPI API token (for publishing to PyPI)
-   - `SHLINK_API_KEY`: Optional, for updating short links
+   - `PYPI_API_TOKEN`: Your PyPI API token
 
-Note: Release builds will automatically push Docker images to GHCR using your fork's namespace.
+Note: You'll need to modify the workflow condition or publish under a different package name on PyPI.
 
-### Setting Up Deploy Workflow
+## Server Deployment
 
 The deploy workflow is designed for the main project's infrastructure. For your own deployment:
 
@@ -43,30 +96,24 @@ The deploy workflow is designed for the main project's infrastructure. For your 
    - `SSH_HOST`: Hostname of your deployment server
    - `DEPLOY_SERVER`: SSH connection string (e.g., `user@host`)
 
-## Docker Image Publishing
+## Testing Releases on Your Fork
 
-Docker workflows automatically use your fork's namespace:
+To test the full release pipeline:
 
-- Base image: `ghcr.io/<your-username>/lncrawl-base`
-- App image: `ghcr.io/<your-username>/lightnovel-crawler`
+```bash
+# Create a test tag
+git tag v0.0.0-test
+git push origin v0.0.0-test
 
-The workflows automatically lowercase usernames to ensure compatibility with Docker registries.
+# Verify in GitHub Actions:
+# - All jobs run and pass
+# - Artifacts are available for download
+# - Docker image appears in your Packages
 
-### Building Your Own Base Image
-
-If you need to customize the base image:
-
-1. Modify `Dockerfile.base` as needed
-2. Push to trigger the `docker-base.yml` workflow, or run manually:
-   ```bash
-   docker build -f Dockerfile.base -t ghcr.io/<your-username>/lncrawl-base .
-   docker push ghcr.io/<your-username>/lncrawl-base
-   ```
-
-3. Update `Dockerfile` to use your base image:
-   ```bash
-   docker build --build-arg BASE_IMAGE=ghcr.io/<your-username>/lncrawl-base -t lncrawl .
-   ```
+# Clean up
+git tag -d v0.0.0-test
+git push origin :v0.0.0-test
+```
 
 ## Common Issues
 
