@@ -55,36 +55,35 @@ export const ChapterListCard: React.FC<{
               borderTop: `1px solid ${token.colorSplit}`,
             },
           },
-          extra:
-            autoFetch || chapter.is_available ? (
-              <Button
-                size="small"
-                shape="round"
-                style={{ padding: '0 8px' }}
-                icon={<RightCircleOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  navigate(`/read/${chapter.id}`);
-                }}
-              >
-                {chapter.is_available ? 'Read' : 'Get & Read'}
-              </Button>
-            ) : (
-              <Button
-                size="small"
-                shape="round"
-                style={{ padding: '0 8px' }}
-                icon={<DownloadOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  createFetchJob(chapter.id);
-                }}
-              >
-                Get
-              </Button>
-            ),
+          extra: chapter.is_available ? (
+            <Button
+              size="small"
+              shape="round"
+              icon={<RightCircleOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                navigate(`/read/${chapter.id}`);
+              }}
+              style={{ width: '75px', borderColor: token.colorLink }}
+            >
+              Read
+            </Button>
+          ) : (
+            <Button
+              size="small"
+              shape="round"
+              style={{ width: '75px' }}
+              icon={<DownloadOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                createFetchJob(chapter.id);
+              }}
+            >
+              Fetch
+            </Button>
+          ),
         }))}
       />
     </>

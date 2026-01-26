@@ -58,7 +58,9 @@ export const JobActionButtons: React.FC<{
   return (
     <>
       {contextHolder}
-      {job.status === JobStatus.FAILED && <JobIssueReportButton job={job} />}
+      {job.status === JobStatus.FAILED && (
+        <JobIssueReportButton size={size} job={job} />
+      )}
       {job.is_done && (
         <Button size={size} onClick={replayJob} loading={busy}>
           <ReloadOutlined /> Replay

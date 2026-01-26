@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ghcr.io/dipu-bd/lncrawl-base:latest
+ARG BASE_IMAGE=ghcr.io/lncrawl/lncrawl-base:latest
 
 ##
 # Web assets

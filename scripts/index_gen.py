@@ -49,7 +49,7 @@ HELP_RESULT_QUE = "<!-- auto generated command line output -->"
 
 DATE_FORMAT = "%d %B %Y %I:%M:%S %p"
 
-REPO_OWNER = "dipu-bd"
+REPO_OWNER = "lncrawl"
 REPO_NAME = "lightnovel-crawler"
 REPO_URL = f"https://github.com/{REPO_OWNER}/{REPO_NAME}"
 FILE_DOWNLOAD_URL = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}"

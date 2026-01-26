@@ -1,24 +1,37 @@
 import LncrawlImage from '@/assets/lncrawl.svg';
-import { Avatar, Divider, Grid, Layout, Typography } from 'antd';
+import { Avatar, Grid, Layout, Typography } from 'antd';
+import { useRef, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { MobileNavbar } from './navbar';
 import { MainLayoutSidebar } from './sidebar';
 
-export const MainLayout: React.FC<any> = () => {
+export const ReaderLayout: React.FC<any> = () => {
   const navigate = useNavigate();
   const { md } = Grid.useBreakpoint();
+  const previousPosition = useRef<number>(0);
+  const [showNavbar, setShowNavbar] = useState(true);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const position = Math.round(e.currentTarget.scrollTop / 10);
+    if (position > previousPosition.current) {
+      setShowNavbar(false);
+    } else if (position < previousPosition.current) {
+      setShowNavbar(true);
+    }
+    previousPosition.current = position;
+  };
 
   return (
     <Layout>
       {md && <MainLayoutSidebar />}
 
       <Layout.Content
+        onScroll={md ? undefined : handleScroll}
         style={{
           height: '100vh',
           overflow: 'auto',
           position: 'relative',
-          padding: md ? 20 : 10,
-          paddingBottom: md ? 70 : 100,
+          padding: 0,
         }}
       >
         {!md && (
@@ -29,7 +42,7 @@ export const MainLayout: React.FC<any> = () => {
               style={{
                 textAlign: 'center',
                 fontSize: 18,
-                margin: 0,
+                margin: 7,
               }}
             >
               <Avatar
@@ -40,7 +53,6 @@ export const MainLayout: React.FC<any> = () => {
               />
               Lightnovel Crawler
             </Typography.Title>
-            <Divider size="small" />
           </>
         )}
 
@@ -48,15 +60,14 @@ export const MainLayout: React.FC<any> = () => {
           style={{
             margin: '0 auto',
             transition: 'all 0.2s ease-in-out',
-            maxWidth: 1200,
-            minHeight: 'calc(100% - 60px)',
+            minHeight: 'calc(100% - 45px)',
           }}
         >
           <Outlet />
         </div>
       </Layout.Content>
 
-      {!md && <MobileNavbar />}
+      {!md && showNavbar && <MobileNavbar />}
     </Layout>
   );
 };

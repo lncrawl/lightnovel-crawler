@@ -119,3 +119,11 @@ export const FeedbackStatus = {
 };
 export type FeedbackStatus =
   (typeof FeedbackStatus)[keyof typeof FeedbackStatus];
+
+export const TextAlign = {
+  left: 'left',
+  center: 'center',
+  right: 'right',
+  justify: 'justify',
+};
+export type TextAlign = (typeof TextAlign)[keyof typeof TextAlign];

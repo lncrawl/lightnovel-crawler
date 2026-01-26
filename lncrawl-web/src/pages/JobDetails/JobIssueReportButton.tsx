@@ -2,6 +2,7 @@ import type { Feedback, Job } from '@/types';
 import { FeedbackType } from '@/types';
 import { stringifyError } from '@/utils/errors';
 import { BugOutlined } from '@ant-design/icons';
+import type { ButtonProps } from 'antd';
 import { Button, Flex, Form, Input, message, Modal, Space } from 'antd';
 import axios from 'axios';
 import { useState } from 'react';
@@ -9,7 +10,8 @@ import { useNavigate } from 'react-router-dom';
 
 export const JobIssueReportButton: React.FC<{
   job: Job;
-}> = ({ job }) => {
+  size?: ButtonProps['size'];
+}> = ({ job, size }) => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
@@ -47,6 +49,7 @@ export const JobIssueReportButton: React.FC<{
 
       <Button
         danger
+        size={size}
         type="default"
         icon={<BugOutlined />}
         onClick={() => setOpen(true)}

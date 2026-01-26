@@ -1,15 +1,15 @@
 import cx from 'classnames';
-import styles from './ReaderLayoutVertical.module.scss';
+import styles from './ReaderVerticalLayout.module.scss';
 
+import { store } from '@/store';
 import { Reader } from '@/store/_reader';
 import type { Job, ReadChapter } from '@/types';
 import { Button, Divider, Empty, Flex, Grid, Typography } from 'antd';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { ReaderVerticalContent } from './ReaderLayoutVerticalContent';
-import { ReaderNavBar } from './ReaderNavBar';
 import { JobDetailsCard } from '../JobDetails/JobDetailsCard';
-import { store } from '@/store';
+import { ReaderNavBar } from './ReaderNavBar';
+import { ReaderVerticalContent } from './ReaderVerticalContent';
 
 export const ReaderVerticalLayout: React.FC<{
   data: ReadChapter;
@@ -19,13 +19,20 @@ export const ReaderVerticalLayout: React.FC<{
   const theme = useSelector(Reader.select.theme);
   const fontSize = useSelector(Reader.select.fontSize);
   const lineHeight = useSelector(Reader.select.lineHeight);
+  const textAlign = useSelector(Reader.select.textAlign);
   const fontFamily = useSelector(Reader.select.fontFamily);
   const autoFetch = useSelector(Reader.select.autoFetch);
 
   return (
     <Flex
       vertical
-      style={{ fontSize, lineHeight, fontFamily, ...theme, width: '100%' }}
+      style={{
+        fontSize,
+        lineHeight,
+        fontFamily,
+        textAlign: textAlign as any,
+        ...theme,
+      }}
       className={cx('novel-reader', styles.layout, { [styles.mobile]: !md })}
     >
       <div style={{ textAlign: 'center' }}>
@@ -50,7 +57,7 @@ export const ReaderVerticalLayout: React.FC<{
           vertical
           align="center"
           justify="center"
-          style={{ flex: 1, margin: 10 }}
+          style={{ flex: 1, margin: 10, height: '100%' }}
         >
           {job && !job.is_done ? (
             <>

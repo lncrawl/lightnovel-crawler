@@ -1,4 +1,4 @@
-import { FontFamily, ReaderLayout, ReaderTheme } from '@/types';
+import { FontFamily, ReaderLayout, ReaderTheme, TextAlign } from '@/types';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSelector, createSlice } from '@reduxjs/toolkit';
 import type { PersistConfig } from 'redux-persist';
@@ -20,6 +20,7 @@ export interface ReaderState {
   theme: ReaderTheme;
   layout: ReaderLayout;
   fontFamily: FontFamily;
+  textAlign: TextAlign;
   autoFetch: boolean;
 }
 
@@ -35,6 +36,7 @@ const buildInitialState = (): ReaderState => ({
   theme: ReaderTheme.Dark,
   fontFamily: FontFamily.Literata,
   autoFetch: false,
+  textAlign: TextAlign.left,
 });
 
 //
@@ -55,6 +57,9 @@ export const ReaderSlice = createSlice({
     },
     setLineHeight(state, action: PayloadAction<ReaderState['lineHeight']>) {
       state.lineHeight = action.payload;
+    },
+    setTextAlign(state, action: PayloadAction<ReaderState['textAlign']>) {
+      state.textAlign = action.payload;
     },
     setFontSize(state, action: PayloadAction<ReaderState['fontSize']>) {
       state.fontSize = action.payload;
@@ -88,6 +93,7 @@ const selectReader = (state: RootState) => state.reader;
 export const Reader = {
   action: ReaderSlice.actions,
   select: {
+    textAlign: createSelector(selectReader, (reader) => reader.textAlign),
     theme: createSelector(selectReader, (reader) => reader.theme),
     layout: createSelector(selectReader, (reader) => reader.layout),
     fontSize: createSelector(selectReader, (reader) => reader.fontSize),

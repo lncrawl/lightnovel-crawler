@@ -8,15 +8,15 @@ import {
   DeploymentUnitOutlined,
   FileDoneOutlined,
   FolderOpenOutlined,
-  HeartOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Button, Divider, Flex, Menu } from 'antd';
+import { Divider, Flex, Layout, Menu, theme } from 'antd';
 import { useSelector } from 'react-redux';
 import { Link, useLocation } from 'react-router-dom';
+import { DonateButton } from '../DonateButton';
 import { UserInfoCard } from '../UserInfoCard';
 
 function getClassName(currentPath: string, path: string): string | undefined {
@@ -27,118 +27,137 @@ function getClassName(currentPath: string, path: string): string | undefined {
 }
 
 export const MainLayoutSidebar: React.FC<{
-  isCollapsed?: boolean;
-}> = ({ isCollapsed }) => {
+  fullWidth?: boolean;
+}> = ({ fullWidth }) => {
+  const { token } = theme.useToken();
   const { pathname: currentPath } = useLocation();
   const isAdmin = useSelector(Auth.select.isAdmin);
 
   return (
-    <Flex vertical style={{ height: '100%' }}>
-      <Menu
-        key={currentPath}
-        mode="inline"
-        inlineIndent={15}
-        style={{ flex: 1, overflow: 'auto' }}
-        openKeys={isCollapsed ? undefined : ['admin']}
+    <Layout.Sider
+      theme="light"
+      collapsible={false}
+      width={fullWidth ? '100%' : 250}
+      style={{
+        height: fullWidth ? '100%' : '100vh',
+      }}
+    >
+      <Flex
+        vertical
+        style={{
+          height: '100%',
+          borderRight: `1px solid ${token.colorBorderSecondary}`,
+        }}
       >
-        <Menu.ItemGroup
-          title={<UserInfoCard />}
+        <Menu
+          key={currentPath}
+          mode="inline"
+          inlineIndent={15}
+          subMenuOpenDelay={0}
+          openKeys={['admin']}
           style={{
-            background: 'none',
-            height: 'fit-content',
+            flex: 1,
+            overflow: 'auto',
+            borderRight: 'none',
           }}
-        />
-        <Menu.Divider />
-        <Menu.Item
-          icon={<DeploymentUnitOutlined />}
-          className={getClassName(currentPath, '/')}
         >
-          <Link to="/">Requests</Link>
-        </Menu.Item>
-        <Menu.Item
-          icon={<BookOutlined />}
-          className={getClassName(currentPath, '/novels')}
-        >
-          <Link to="/novels">Novels</Link>
-        </Menu.Item>
-        <Menu.Item
-          icon={<FolderOpenOutlined />}
-          className={getClassName(currentPath, '/libraries')}
-        >
-          <Link to="/libraries">Libraries</Link>
-        </Menu.Item>
-        <Menu.Item
-          icon={<FileDoneOutlined />}
-          className={getClassName(currentPath, '/meta/sources')}
-        >
-          <Link to="/meta/sources">Crawlers</Link>
-        </Menu.Item>
-        <Menu.Item
-          icon={<CommentOutlined />}
-          className={getClassName(currentPath, '/feedbacks')}
-        >
-          <Link to="/feedbacks">Feedbacks</Link>
-        </Menu.Item>
-        <Menu.Divider />
-        <Menu.Item
-          icon={<UserOutlined />}
-          className={getClassName(currentPath, '/profile')}
-        >
-          <Link to="/profile">Profile</Link>
-        </Menu.Item>
-        <Menu.Item
-          icon={<SettingOutlined />}
-          className={getClassName(currentPath, '/settings')}
-        >
-          <Link to="/settings">Settings</Link>
-        </Menu.Item>
-        <Menu.Divider />
-        <Menu.Item
-          icon={<QuestionCircleOutlined />}
-          className={getClassName(currentPath, '/tutorial')}
-        >
-          <Link to="/tutorial">Tutorial</Link>
-        </Menu.Item>
-        {isAdmin && <Menu.Divider />}
-        {isAdmin && (
-          <Menu.SubMenu
-            key="admin"
-            title="Administration"
-            icon={<ControlOutlined />}
+          <Menu.ItemGroup
+            title={<UserInfoCard />}
+            style={{
+              background: 'none',
+              height: 'fit-content',
+            }}
+          />
+          <Menu.Divider />
+          <Menu.Item
+            icon={<DeploymentUnitOutlined />}
+            className={getClassName(currentPath, '/')}
           >
-            <Menu.Item
-              icon={<TeamOutlined />}
-              className={getClassName(currentPath, '/admin/users')}
+            <Link to="/">Requests</Link>
+          </Menu.Item>
+          <Menu.Item
+            icon={<BookOutlined />}
+            className={getClassName(currentPath, '/novels')}
+          >
+            <Link to="/novels">Novels</Link>
+          </Menu.Item>
+          <Menu.Item
+            icon={<FolderOpenOutlined />}
+            className={getClassName(currentPath, '/libraries')}
+          >
+            <Link to="/libraries">Libraries</Link>
+          </Menu.Item>
+          <Menu.Item
+            icon={<FileDoneOutlined />}
+            className={getClassName(currentPath, '/meta/sources')}
+          >
+            <Link to="/meta/sources">Crawlers</Link>
+          </Menu.Item>
+          <Menu.Item
+            icon={<CommentOutlined />}
+            className={getClassName(currentPath, '/feedbacks')}
+          >
+            <Link to="/feedbacks">Feedbacks</Link>
+          </Menu.Item>
+          <Menu.Divider />
+          <Menu.Item
+            icon={<UserOutlined />}
+            className={getClassName(currentPath, '/profile')}
+          >
+            <Link to="/profile">Profile</Link>
+          </Menu.Item>
+          <Menu.Item
+            icon={<SettingOutlined />}
+            className={getClassName(currentPath, '/settings')}
+          >
+            <Link to="/settings">Settings</Link>
+          </Menu.Item>
+          <Menu.Divider />
+          <Menu.Item
+            icon={<QuestionCircleOutlined />}
+            className={getClassName(currentPath, '/tutorial')}
+          >
+            <Link to="/tutorial">Tutorial</Link>
+          </Menu.Item>
+          {isAdmin && <Menu.Divider />}
+          {isAdmin && (
+            <Menu.SubMenu
+              key="admin"
+              title="Administration"
+              icon={<ControlOutlined />}
             >
-              <Link to="/admin/users">Users</Link>
-            </Menu.Item>
-          </Menu.SubMenu>
-        )}
-      </Menu>
+              <Menu.Item
+                icon={<TeamOutlined />}
+                className={getClassName(currentPath, '/admin/users')}
+              >
+                <Link to="/admin/users">Users</Link>
+              </Menu.Item>
+            </Menu.SubMenu>
+          )}
+        </Menu>
 
-      <div style={{ padding: '12px 16px' }}>
-        <Divider size="small" />
-        <Button
-          type="primary"
-          icon={<HeartOutlined twoToneColor="red" />}
-          block
-          href="https://paypal.me/bitan0n"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Donate
-        </Button>
-        <Divider style={{ margin: '5px 0' }} />
+        <Divider style={{ margin: 0 }} />
         <Flex
           gap={5}
           align="center"
-          justify="space-between"
-          style={{ fontSize: 11 }}
+          justify="center"
+          style={{ fontSize: 11, padding: '8px 16px' }}
+        >
+          <DonateButton />
+        </Flex>
+
+        <Divider style={{ margin: 0 }} />
+        <Flex
+          gap={5}
+          align="center"
+          justify="center"
+          style={{ fontSize: 11, padding: '4px 16px' }}
         >
           <PrivacyPolicy />
+          <Divider orientation="vertical" />
           <TermsOfService />
         </Flex>
-      </div>
-    </Flex>
+      </Flex>
+    </Layout.Sider>
   );
 };

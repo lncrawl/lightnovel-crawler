@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { ReaderVerticalLayout } from './ReaderLayoutVertical';
+import { ReaderVerticalLayout } from './ReaderVerticalLayout';
 
 const fetchJobs = new LRUCache<string, Promise<Job>>({ max: 1000 });
 const cache = new LRUCache<string, Promise<ReadChapter>>({ max: 1000 });
@@ -166,7 +166,11 @@ export const NovelReaderPage: React.FC<any> = () => {
 
   if (loading) {
     return (
-      <Flex align="center" justify="center" style={{ height: '100vh' }}>
+      <Flex
+        align="center"
+        justify="center"
+        style={{ height: 'calc(100vh - 60px)' }}
+      >
         <Spin size="large" style={{ margin: '50px 0' }} />
       </Flex>
     );
@@ -174,7 +178,11 @@ export const NovelReaderPage: React.FC<any> = () => {
 
   if (error || !data || !id) {
     return (
-      <Flex align="center" justify="center" style={{ height: '100vh' }}>
+      <Flex
+        align="center"
+        justify="center"
+        style={{ height: 'calc(100vh - 60px)' }}
+      >
         <Result
           status="404"
           title="Failed to load chapter content"

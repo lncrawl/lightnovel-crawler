@@ -49,7 +49,7 @@ export const LibraryListPage: React.FC = () => {
             {
               key: 'my',
               label: (
-                <Typography.Text style={{ color: '#39f' }}>
+                <Typography.Text style={{ color: '#3cf' }}>
                   <Space>
                     <UserOutlined /> My Libraries
                   </Space>

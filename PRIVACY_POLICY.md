@@ -2,9 +2,6 @@
 
 **Lightnovel-Crawler**
 
-_Effective Date: December 16, 2025_
-_Last Updated: December 22, 2025_
-
 ---
 
 ## 1. Introduction and Scope
@@ -139,7 +136,7 @@ The Service does **not** use any analytics software, whether first-party or thir
 
 ### 8.2 Payment Processing
 
-Optional donations may be processed through PayPal. When making donations, you will be redirected to PayPal's platform, and any payment information you provide is subject to PayPal's privacy policy. The Service does not receive, store, or process any payment or billing information.
+Optional donations may be processed through cryptocurrency. The Service does not receive, store, or process any payment or billing information.
 
 ### 8.3 Hosting and Infrastructure
 

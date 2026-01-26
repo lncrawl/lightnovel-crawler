@@ -1,4 +1,5 @@
 import { MainLayout } from '@/components/Layout';
+import { ReaderLayout } from '@/components/Layout/reader';
 import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AuthLayout } from '@/components/Layout/auth';
@@ -113,7 +114,7 @@ export const USER_ROUTES: RouteObject[] = [
   },
   {
     path: 'read',
-    element: <MainLayout noPadding />,
+    element: <ReaderLayout />,
     children: [
       {
         path: ':id',
