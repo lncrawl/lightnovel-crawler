@@ -43,7 +43,7 @@ class CrawlerService:
             url = HttpUrl(url)
         if not url.host:
             raise ServerErrors.invalid_url.with_extra(url)
-        novel_url = url.encoded_string()
+        novel_url = str(url)
 
         # get crawler
         can_close = False
@@ -137,7 +137,7 @@ class CrawlerService:
         model = ChapterModel(
             id=chapter.serial,
             title=chapter.title,
-            url=url.encoded_string(),
+            url=str(url),
             extras=chapter.extra,
         )
         model.body = crawler.download_chapter_body(model).strip()
@@ -190,7 +190,7 @@ class CrawlerService:
 
         # download image
         file = ctx.files.resolve(image.image_file)
-        download_image(crawler, url.encoded_string(), file)
+        download_image(crawler, str(url), file)
 
         # update db
         with ctx.db.session() as sess:
