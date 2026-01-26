@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: 🔐 Validate VERSION tag
+        if: github.repository == 'lncrawl/lightnovel-crawler'
         run: |
           [ "${GITHUB_REF##*/}" == "v$(head -n 1 lncrawl/VERSION)" ] || exit 100
 
