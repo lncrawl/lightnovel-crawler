@@ -52,7 +52,7 @@ jobs:
         run: |
           uv pip install --system dist/lightnovel_crawler*.whl
           lncrawl -ll sources list
-          lncrawl -s 'https://novelfull.com/the-kings-avatar-for-the-glory.html' --first 2 -f --format epub --suppress -lll
+          lncrawl -lll crawl 'https://novelfull.com/the-kings-avatar-for-the-glory.html' --first 2 --format epub --noin
 
   build-windows:
     needs: validate
