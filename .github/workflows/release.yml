@@ -191,6 +191,8 @@ jobs:
         run: sh ./scripts/publish.sh
 
   build-docker:
+    # NOTE: Forks must run the "Build Base Image" workflow (docker-base.yml) first
+    # to create ghcr.io/<owner>/lncrawl-base:latest before this job can succeed.
     needs: [validate]
     name: Build & Publish Docker
     runs-on: ubuntu-latest
@@ -209,6 +211,7 @@ jobs:
       - name: 🔧 Set lowercase image name
         run: |
           echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+          echo "BASE_IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/lncrawl-base:latest" >> $GITHUB_ENV
 
       - name: 🏗️ Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -233,6 +236,8 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: |
+            BASE_IMAGE=${{ env.BASE_IMAGE }}
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
