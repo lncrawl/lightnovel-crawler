@@ -158,6 +158,7 @@ jobs:
         run: sh ./scripts/publish.sh
 
   build-docker:
+    needs: [validate]
     name: Build & Publish Docker
     runs-on: ubuntu-latest
 

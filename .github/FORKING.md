@@ -51,7 +51,7 @@ Docker workflows automatically use your fork's namespace:
 - App image: `ghcr.io/<your-username>/lightnovel-crawler`
 
 The workflows automatically lowercase usernames to ensure compatibility with Docker registries.
-y
+
 ### Building Your Own Base Image
 
 If you need to customize the base image:
