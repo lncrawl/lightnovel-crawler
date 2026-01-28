@@ -100,12 +100,12 @@ def import_crawlers(file: Path) -> Generator[Type[Crawler], None, None]:
         mod_name = hashlib.md5(file.name.encode()).hexdigest()
         spec = importlib.util.spec_from_file_location(mod_name, file)
         if not (spec and spec.loader):
-            logger.info(f"[{file}] Unexpected spec")
+            logger.info(f"\\[{file}] Unexpected spec")
             return
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
     except Exception as e:
-        logger.info(f"[{file}] Failed to load: {repr(e)}")
+        logger.info(f"\\[{file}] Failed to load: {repr(e)}")
         return
 
     # import all valid crawlers
@@ -124,10 +124,10 @@ def import_crawlers(file: Path) -> Generator[Type[Crawler], None, None]:
 
         # required method checks
         if not has_method(crawler, 'read_novel_info'):
-            logger.info(f"[{file}] Missing required method 'read_novel_info'")
+            logger.info(f"\\[{file}] Missing required method 'read_novel_info'")
             continue
         if not has_method(crawler, 'download_chapter_body'):
-            logger.info(f"[{file}] Missing required method 'download_chapter_body'")
+            logger.info(f"\\[{file}] Missing required method 'download_chapter_body'")
             continue
 
         # base url checks
@@ -136,7 +136,7 @@ def import_crawlers(file: Path) -> Generator[Type[Crawler], None, None]:
         urls = [str(url).lower().strip("/") + "/" for url in urls]
         urls = [url for url in set(urls) if validate_url(url)]
         if not urls:
-            logger.info(f"[{file}] No base url: {crawler}")
+            logger.info(f"\\[{file}] No base url: {crawler}")
             continue
 
         # static values

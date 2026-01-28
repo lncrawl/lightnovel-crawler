@@ -37,7 +37,7 @@ def list_supported_sources():
 def get_favicon(
     url: HttpUrl = Query(description='URL'),
 ) -> FileResponse:
-    file = ctx.http.favicon(url.encoded_string())
+    file = ctx.http.favicon(str(url))
     return FileResponse(
         file,
         filename='favicon.ico',

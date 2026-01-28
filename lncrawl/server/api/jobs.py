@@ -87,7 +87,7 @@ def fetch_novel(
     user: User = Security(ensure_user),
     body: FetchNovelRequest = Body(),
 ) -> Job:
-    url = body.url.encoded_string()
+    url = str(body.url)
     return ctx.jobs.fetch_novel(user, url, full=body.full)
 
 
