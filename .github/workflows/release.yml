@@ -87,6 +87,7 @@ jobs:
         with:
           name: lncrawl-windows
           path: dist/lncrawl.exe
+          retention-days: 7
 
       - name: 🚀 Release Artifact
         if: github.repository == 'lncrawl/lightnovel-crawler'
@@ -125,6 +126,7 @@ jobs:
         with:
           name: lncrawl-mac
           path: dist/lncrawl-mac
+          retention-days: 7
 
       - name: 🚀 Release Artifact
         if: github.repository == 'lncrawl/lightnovel-crawler'
@@ -166,6 +168,7 @@ jobs:
           path: |
             dist/lncrawl-linux
             dist/*.whl
+          retention-days: 7
 
       - name: 🚀 Release Artifacts
         if: github.repository == 'lncrawl/lightnovel-crawler'
