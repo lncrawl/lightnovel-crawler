@@ -1,4 +1,5 @@
 name: Lint & Test (Web)
+run-name: "Web CI${{ github.event_name == 'pull_request' && format(' - PR #{0}', github.event.pull_request.number) || format(' - {0}', github.ref_name) }}"
 
 on:
   push:
@@ -21,8 +22,9 @@ concurrency:
 
 jobs:
   lncrawl_web:
-    if: github.repository == 'lncrawl/lightnovel-crawler'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     name: Node.js ${{ matrix.node }}
     strategy:
       fail-fast: false

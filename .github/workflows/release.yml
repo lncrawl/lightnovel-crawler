@@ -1,4 +1,5 @@
 name: Build and Publish
+run-name: "Release ${{ github.ref_name }}"
 
 on:
   push:
@@ -11,18 +12,20 @@ concurrency:
 
 jobs:
   validate:
-    if: github.repository == 'lncrawl/lightnovel-crawler'
     name: Validate Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
     steps:
       - uses: actions/checkout@v4
 
       - name: 🔐 Validate VERSION tag
+        if: github.repository == 'lncrawl/lightnovel-crawler'
         run: |
           [ "${GITHUB_REF##*/}" == "v$(head -n 1 lncrawl/VERSION)" ] || exit 100
 
@@ -30,12 +33,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: pip
+
+      - name: 📦 Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: 📦 Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt flake8 build
+        run: uv pip install --system -r requirements.txt flake8 build
 
       - name: 🧹 Lint Code
         run: flake8 -v --count --show-source --statistics
@@ -45,15 +50,16 @@ jobs:
 
       - name: 🧪 Test Wheel Installation
         run: |
-          pip install dist/lightnovel_crawler*.whl
+          uv pip install --system dist/lightnovel_crawler*.whl
           lncrawl -ll sources list
-          lncrawl -s 'https://novelfull.com/the-kings-avatar-for-the-glory.html' --first 2 -f --format epub --suppress -lll
+          lncrawl -lll crawl 'https://novelfull.com/the-kings-avatar-for-the-glory.html' --first 2 --format epub --noin
 
   build-windows:
-    if: github.repository == 'lncrawl/lightnovel-crawler'
     needs: validate
     name: Build Windows Executable
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +82,14 @@ jobs:
           PYTHONIOENCODING: utf-8
         run: .\dist\lncrawl.exe -ll sources list
 
+      - name: 📦 Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lncrawl-windows
+          path: dist/lncrawl.exe
+
       - name: 🚀 Release Artifact
+        if: github.repository == 'lncrawl/lightnovel-crawler'
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dist/lncrawl.exe"
@@ -85,10 +98,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   build-mac:
-    if: github.repository == 'lncrawl/lightnovel-crawler'
     needs: validate
     name: Build MacOS Executable
     runs-on: macos-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -106,7 +120,14 @@ jobs:
       - name: 🧪 Test Executable
         run: ./dist/lncrawl-mac -ll sources list
 
+      - name: 📦 Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lncrawl-mac
+          path: dist/lncrawl-mac
+
       - name: 🚀 Release Artifact
+        if: github.repository == 'lncrawl/lightnovel-crawler'
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dist/lncrawl-mac"
@@ -115,10 +136,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   build-linux:
-    if: github.repository == 'lncrawl/lightnovel-crawler'
     needs: validate
     name: Build & Publish Linux
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -137,7 +159,16 @@ jobs:
       - name: 🧪 Test Executable
         run: ./dist/lncrawl-linux -ll sources list
 
+      - name: 📦 Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lncrawl-linux
+          path: |
+            dist/lncrawl-linux
+            dist/*.whl
+
       - name: 🚀 Release Artifacts
+        if: github.repository == 'lncrawl/lightnovel-crawler'
         uses: ncipollo/release-action@v1
         with:
           artifacts: "dist/lncrawl-linux,dist/*.whl"
@@ -146,11 +177,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔗 Update Download Links
+        if: github.repository == 'lncrawl/lightnovel-crawler'
         env:
           SHLINK_API_KEY: ${{ secrets.SHLINK_API_KEY }}
         run: sh ./scripts/bitanon.sh
 
       - name: 📦 Publish to PyPI
+        if: github.repository == 'lncrawl/lightnovel-crawler'
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
@@ -158,6 +191,9 @@ jobs:
         run: sh ./scripts/publish.sh
 
   build-docker:
+    # NOTE: Forks must run the "Build Base Image" workflow (docker-base.yml) first
+    # to create ghcr.io/<owner>/lncrawl-base:latest before this job can succeed.
+    needs: [validate]
     name: Build & Publish Docker
     runs-on: ubuntu-latest
 
@@ -167,11 +203,18 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ghcr.io/${{ github.repository }}
 
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
+
+      - name: 🔧 Set lowercase image name
+        run: |
+          echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+          echo "BASE_IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/lncrawl-base:latest" >> $GITHUB_ENV
+
+      - name: 🏗️ Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -191,8 +234,10 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
+          build-args: |
+            BASE_IMAGE=${{ env.BASE_IMAGE }}
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}

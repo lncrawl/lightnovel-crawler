@@ -1,4 +1,5 @@
 name: Lint & Test (Python)
+run-name: "Python CI${{ github.event_name == 'pull_request' && format(' - PR #{0}', github.event.pull_request.number) || format(' - {0}', github.ref_name) }}"
 
 on:
   push:
@@ -31,8 +32,9 @@ concurrency:
 
 jobs:
   lncrawl:
-    if: github.repository == 'lncrawl/lightnovel-crawler'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     name: Python ${{ matrix.python-version }}
     strategy:
       fail-fast: false

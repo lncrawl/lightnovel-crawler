@@ -1,3 +1,5 @@
+ARG BASE_IMAGE=ghcr.io/lncrawl/lncrawl-base:latest
+
 ##
 # Web assets
 ##
@@ -14,7 +16,7 @@ RUN yarn build
 ##
 # Application
 ##
-FROM ghcr.io/lncrawl/lncrawl-base:latest AS app
+FROM ${BASE_IMAGE} AS app
 
 WORKDIR /app
 
