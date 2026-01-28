@@ -22,6 +22,7 @@
   - [Available options](#available-options)
   - [Example Usage](#example-usage)
   - [Additional Help](#additional-help)
+  - [For Contributors](#for-contributors)
   - [Adding new source](#adding-new-source)
 - [Supported sources](#supported-sources)
 - [Rejected sources](#rejected-sources)
@@ -243,6 +244,27 @@ $ lncrawl crawl -h
 ### Additional Help
 
 Visit the [discussions](https://github.com/lncrawl/lightnovel-crawler/discussions) page for more information. You can also post your query there too.
+
+## For Contributors
+
+Interested in contributing? Reference the 
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development setup and contribution guidelines
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Codebase architecture overview
+- **[docs/CREATING_CRAWLERS.md](docs/CREATING_CRAWLERS.md)** - How to add new source crawlers
+- **[docs/DOCKER.md](docs/DOCKER.md)** - Docker usage and deployment
+- **[.github/FORKING.md](.github/FORKING.md)** - Setting up CI on forks
+
+### Quick Start for Development
+
+```bash
+git clone https://github.com/lncrawl/lightnovel-crawler.git
+cd lightnovel-crawler
+make setup && make install
+make start
+```
+
+Run `make help` to see all available commands.
 
 ### Adding new source
 
