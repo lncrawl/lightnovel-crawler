@@ -14,7 +14,7 @@
     "@reduxjs/toolkit": "^2.11.2",
     "@types/node": "^25.0.3",
     "antd": "^6.1.1",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "classnames": "^2.5.1",
     "lodash": "^4.17.23",
     "lru-cache": "^11.2.4",
