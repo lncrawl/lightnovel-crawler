@@ -251,6 +251,7 @@ Visit the [discussions](https://github.com/lncrawl/lightnovel-crawler/discussion
 
 Interested in contributing? Reference the 
 
+- **[DeepWiki](https://deepwiki.com/lncrawl/lightnovel-crawler)** - Project documentation and resources
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Development setup and contribution guidelines
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Codebase architecture overview
 - **[docs/CREATING_CRAWLERS.md](docs/CREATING_CRAWLERS.md)** - How to add new source crawlers
