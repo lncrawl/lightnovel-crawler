@@ -1,2 +1,2 @@
 export const API_BASE_URL =
-  process.env.NODE_ENV === 'development' ? 'http://192.168.0.50:8080' : '';
+  process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : '';
