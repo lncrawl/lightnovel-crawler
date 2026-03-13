@@ -10,8 +10,8 @@ class MangaRosieCrawler(Crawler):
     has_manga = True
     base_url = [
         "https://mangarosie.me/",
-        "https://mangarosie.love/",
-        "https://toon69.com/",
+        #"https://mangarosie.love/",
+        #"https://toon69.com/",
     ]
 
     search_url = "%s?s=%s&post_type=wp-manga&author=&artist=&release="

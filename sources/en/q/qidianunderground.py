@@ -19,8 +19,7 @@ chapter_body_url = "/?pasteid=%s"
 
 
 class QidianComCrawler(Crawler):
-    base_url = [
-        "https://toc.qidianunderground.org/",
+    base_url = [ 
         "https://tocqidianunderground.blogspot.com/",
     ]
 

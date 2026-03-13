@@ -19,10 +19,10 @@ chapter_list_url = "/api/chapters?id=%d&index=1&limit=15000"
 
 class LightNovelsLive(Crawler):
     base_url = [
-        "http://lightnovels.me/",
+        #"http://lightnovels.me/",
         "https://lightnovels.me/",
-        "http://lightnovels.live/",
-        "https://lightnovels.live/"
+        #"http://lightnovels.live/",
+        #"https://lightnovels.live/"
     ]
 
     has_manga = False

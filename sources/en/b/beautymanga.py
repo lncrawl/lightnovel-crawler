@@ -11,7 +11,7 @@ class BeautymangaCrawler(Crawler):
     has_manga = True
     base_url = [
         "https://beautymanga.com/",
-        "https://myreadingmanga.fit/",
+        #"https://myreadingmanga.fit/",
     ]
 
     def search_novel(self, query):

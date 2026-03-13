@@ -10,7 +10,7 @@ search_url = "%ssearch/%s"
 class NovelGate(Crawler):
     base_url = [
         "https://novelgate.net/",
-        "https://home.novel-gate.com/",
+        #"https://home.novel-gate.com/",
     ]
 
     def search_novel(self, query):

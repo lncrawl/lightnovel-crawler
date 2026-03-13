@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 class AquaMangaCrawler(Crawler):
     has_manga = True
     base_url = [
-        "https://aquamanga.com/",
-        "https://aquamanga.org/",
+        #"https://aquamanga.com/",
+        #"https://aquamanga.org/",
         "https://aquareader.net/",
     ]
 

@@ -14,7 +14,7 @@ class OneKissNovelCrawler(Crawler):
     has_mtl = True
     base_url = [
         "https://1stkissnovel.org/",
-        "https://1stkissnovel.love/",
+        #"https://1stkissnovel.love/",
     ]
 
     def initialize(self) -> None:

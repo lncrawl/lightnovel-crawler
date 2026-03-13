@@ -69,19 +69,19 @@ class BatoCrawler(Crawler):
     has_manga = True
     base_url = [
         "https://bato.to/",
-        "https://battwo.com/",
-        "https://mto.to/",
-        "https://mangatoto.net/",
-        "https://dto.to/",
-        "https://batocc.com/",
-        "https://batotoo.com/",
-        "https://wto.to/",
-        "https://mangatoto.com/",
-        "https://comiko.net/",
-        "https://batotwo.com/",
-        "https://mangatoto.org/",
-        "https://hto.to/",
-        "https://mangatoto.net/",
+        #"https://battwo.com/",
+        #"https://mto.to/",
+        #"https://mangatoto.net/",
+        #"https://dto.to/",
+        #"https://batocc.com/",
+        #"https://batotoo.com/",
+        #"https://wto.to/",
+        #"https://mangatoto.com/",
+        #"https://comiko.net/",
+        #"https://batotwo.com/",
+        #"https://mangatoto.org/",
+        #"https://hto.to/",
+        #"https://mangatoto.net/",
     ]
 
     def search_novel(self, query):

@@ -5,6 +5,5 @@ from lncrawl.templates.novelpub import NovelPubTemplate
 
 class WebnovelpubCrawler(NovelPubTemplate):
     base_url = [
-        "https://www.webnovelpub.com/",
-        "https://www.webnovelpub.pro/",
+         # need to test with https://www.novelcodex.com
     ]

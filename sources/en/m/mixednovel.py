@@ -13,7 +13,7 @@ class MixedNovelNet(Crawler):
     has_mtl = True
     base_url = [
         "https://mixednovel.net/",
-        "https://earlynovel.net/",
+        #"https://earlynovel.net/",
     ]
 
     def initialize(self):
