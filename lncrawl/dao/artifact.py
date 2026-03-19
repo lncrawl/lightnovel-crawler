@@ -33,6 +33,7 @@ class Artifact(BaseTable, table=True):
     )
     file_size: int = sa.Field(
         default=0,
+        sa_type=sa.BigInteger,
         description='Artifact output file size in bytes'
     )
 
