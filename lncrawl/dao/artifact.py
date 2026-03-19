@@ -31,6 +31,10 @@ class Artifact(BaseTable, table=True):
     file_name: str = sa.Field(
         description='Artifact output file name'
     )
+    file_size: int = sa.Field(
+        default=0,
+        description='Artifact output file size in bytes'
+    )
 
     @computed_field  # type: ignore[misc]
     @property
@@ -43,13 +47,3 @@ class Artifact(BaseTable, table=True):
     def is_available(self) -> bool:
         '''Content file is available'''
         return ctx.files.exists(self.output_file)
-
-    @computed_field  # type: ignore[misc]
-    @property
-    def file_size(self) -> Optional[int]:
-        '''Output file size in bytes'''
-        try:
-            file = ctx.files.resolve(self.output_file)
-            return file.stat().st_size
-        except Exception:
-            return None

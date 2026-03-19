@@ -93,6 +93,9 @@ class BinderService:
                 artifact=artifact,
                 epub=epub
             )
+            file = ctx.files.resolve(artifact.output_file)
+            if file.is_file():
+                artifact.file_size = file.stat().st_size
             with ctx.db.session() as sess:
                 sess.add(artifact)
                 sess.commit()
