@@ -62,7 +62,7 @@ jobs:
         run: uv run python -m build --wheel --no-isolation
 
       - name: 🧪 Test Installation
-        run: uv pip install --system dist/lightnovel_crawler*.whl
+        run: pip install dist/lightnovel_crawler*.whl
 
       - name: 🧪 Check lncrawl
         run: lncrawl -ll sources list
