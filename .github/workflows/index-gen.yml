@@ -37,15 +37,11 @@ jobs:
           git submodule sync
           git submodule update --init --remote --merge
 
-      - name: 🐍 Set Up Python
-        uses: actions/setup-python@v6
+      - name: 🐍 Install uv & Python
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
-
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          enable-cache: true
 
       - name: 📦 Install Dependencies
         run: uv sync --frozen

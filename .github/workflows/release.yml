@@ -39,10 +39,11 @@ jobs:
       - name: 🧰 Install OpenSSL
         run: choco install -y --no-progress openssl
 
-      - name: 🐍 Set up Python 3.10
-        uses: actions/setup-python@v6
+      - name: 🐍 Install uv & Python 3.10
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.10"
+          enable-cache: true
 
       - name: 🏗️ Build Executable
         env:
@@ -84,10 +85,11 @@ jobs:
           git submodule sync
           git submodule update --init --remote --merge
 
-      - name: 🐍 Set up Python 3.10
-        uses: actions/setup-python@v6
+      - name: 🐍 Install uv & Python 3.10
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.10"
+          enable-cache: true
 
       - name: 🏗️ Build Executable
         run: |
@@ -128,11 +130,11 @@ jobs:
           git submodule sync
           git submodule update --init --remote --merge
 
-      - name: 🐍 Set up Python 3.10
-        uses: actions/setup-python@v6
+      - name: 🐍 Install uv & Python 3.10
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.10"
-          cache: pip
+          enable-cache: true
 
       - name: 🏗️ Build Executable
         run: |
