@@ -1,4 +1,4 @@
-from .enums import JobPriority, OutputFormat, UserTier
+from ..dao.enums import JobPriority, OutputFormat, UserTier
 
 ##
 # For Job creation
@@ -20,13 +20,20 @@ SLOT_TIMEOUT_IN_SECOND = {
 }
 
 ENABLED_FORMATS = {
-    UserTier.BASIC: [
+    UserTier.BASIC: set([
         OutputFormat.epub,
-    ],
-    UserTier.PREMIUM: [
-        OutputFormat.epub,
+    ]),
+    UserTier.PREMIUM: set([
         OutputFormat.json,
+        OutputFormat.epub,
         OutputFormat.text,
-    ],
-    UserTier.VIP: list(OutputFormat)
+        OutputFormat.mobi,
+        OutputFormat.docx,
+        OutputFormat.fb2,
+        OutputFormat.azw3,
+        OutputFormat.lit,
+        OutputFormat.pdb,
+        OutputFormat.tcr,
+    ]),
+    UserTier.VIP: set(OutputFormat),
 }

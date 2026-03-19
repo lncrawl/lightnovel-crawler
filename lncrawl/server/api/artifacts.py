@@ -1,9 +1,10 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Path, Query, Security
 
 from ...context import ctx
-from ...dao import Artifact, OutputFormat
+from ...dao import Artifact, OutputFormat, User
+from ...server.tier import ENABLED_FORMATS
 from ..models import Paginated
 from ..security import ensure_user
 
@@ -32,6 +33,13 @@ def list_artifacts(
         format=format,
         novel_id=novel_id,
     )
+
+
+@router.get("/enabled-formats", summary='Returns a list of enabled formats for the current user')
+def get_enabled_formats(
+    user: User = Security(ensure_user),
+) -> List[OutputFormat]:
+    return list(ENABLED_FORMATS[user.tier])
 
 
 @router.get(

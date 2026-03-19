@@ -7,9 +7,9 @@ from sqlmodel import Session
 from ...context import ctx
 from ...dao import (Job, JobPriority, JobStatus, JobType, OutputFormat, User,
                     UserRole)
-from ...dao.tier import JOB_PRIORITY_LEVEL
 from ...exceptions import ServerErrors
 from ...server.models import Paginated
+from ...server.tier import JOB_PRIORITY_LEVEL
 from ...utils.time_utils import current_timestamp
 from .utils import select_ancestors, select_descendends
 

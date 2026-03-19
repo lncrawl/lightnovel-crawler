@@ -2,6 +2,8 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, Path, Query, Security
 
+from lncrawl.server.tier import ENABLED_FORMATS
+
 from ...context import ctx
 from ...dao import Job, JobPriority, JobStatus, JobType, User
 from ...exceptions import ServerErrors
@@ -135,7 +137,7 @@ def make_artifacts(
     user: User = Security(ensure_user),
     body: MakeArtifactsRequest = Body()
 ) -> Job:
-    formats = list(set(body.formats))
-    if not formats:
+    formats = set(body.formats) & ENABLED_FORMATS[user.tier]
+    if len(formats) == 0:
         raise ServerErrors.no_artifacts_to_create
     return ctx.jobs.make_many_artifacts(user, body.novel_id, *formats)

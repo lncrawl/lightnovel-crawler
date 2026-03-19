@@ -7,7 +7,7 @@ from typing import Any, Dict, Iterable, Optional, Set
 from ...context import ctx
 from ...dao import (Artifact, Job, JobStatus, JobType, NotificationItem,
                     OutputFormat)
-from ...dao.tier import ENABLED_FORMATS
+from ...server.tier import ENABLED_FORMATS
 from ...exceptions import AbortedException
 from ...utils.event_lock import EventLock
 from ...utils.time_utils import current_timestamp
