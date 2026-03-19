@@ -10,6 +10,7 @@ classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Natural Language :: English",
   "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Topic :: Games/Entertainment",
   "Environment :: Console",
   "Programming Language :: Python :: 3 :: Only",
@@ -65,8 +66,6 @@ dependencies = [
 description = "Download lightnovels from various online sources and generate output in different formats, e.g. epub, mobi, json, text, docx, pdf, html etc."
 dynamic = ["version"]
 keywords = ["lightnovel", "crawler", "lncrawl", "novel", "pdf", "epub", "mobi", "scraper"]
-license = "GPL-3.0-only"
-license-files = ["LICENSE"]
 name = "lightnovel-crawler"
 readme = "README.rst"
 requires-python = ">=3.8.1"
