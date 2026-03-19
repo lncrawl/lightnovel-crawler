@@ -60,7 +60,7 @@ dependencies = [
   "uvicorn>=0.23.0",
   "websocket-client>=1.7.0",
   "zstd>=1.5.7.0",
-  "cloudscraper",
+  "cloudscraper @ git+https://github.com/lncrawl/cloudscraper.git",
 ]
 description = "Download lightnovels from various online sources and generate output in different formats, e.g. epub, mobi, json, text, docx, pdf, html etc."
 dynamic = ["version"]
@@ -134,6 +134,3 @@ extend-exclude = '''/
   | lncrawl-web
 '''
 line-length = 120
-
-[tool.uv.sources]
-cloudscraper = { git = "https://github.com/lncrawl/cloudscraper.git" }
