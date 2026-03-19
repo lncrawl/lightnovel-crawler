@@ -10,8 +10,13 @@ from base64 import b64decode, b64encode
 from hashlib import sha256
 from json import loads as json_decode
 from mimetypes import guess_type
+from typing import Any
 
 from base58 import b58decode, b58encode
+from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.Random import get_random_bytes
 
 # -----------------------------------------------------------------------------#
 
@@ -55,17 +60,6 @@ def validate_url(s):
 
 # -----------------------------------------------------------------------------#
 
-
-# try import AES cipher and check if it has GCM mode (prevent usage of pycrypto)
-try:
-    from Crypto.Cipher import AES
-    from Crypto.Random import get_random_bytes
-except ImportError:
-    PBinCLIError(
-        "pycryptodome not found.\n" "    pip install pycryptodome>=3.0.0,<4.0.0"
-    )
-
-
 CIPHER_ITERATION_COUNT = 100000
 CIPHER_SALT_BYTES = 8
 CIPHER_BLOCK_BITS = 256
@@ -75,7 +69,7 @@ CIPHER_TAG_BITS = 128
 class PasteV2:
     def __init__(self, debug=False):
         self._compression = "zlib"
-        self._data = ""
+        self._data = {}
         self._text = ""
         self._attachment = ""
         self._attachment_name = ""
@@ -87,13 +81,13 @@ class PasteV2:
         self._tag_bits = CIPHER_TAG_BITS
         self._key = get_random_bytes(int(self._block_bits / 8))
 
-    def setPassword(self, password):
+    def setPassword(self, password: str):
         self._password = password
 
-    def setText(self, text):
+    def setText(self, text: str):
         self._text = text
 
-    def setAttachment(self, path):
+    def setAttachment(self, path: str):
         check_readable(path)
         with open(path, "rb") as f:
             contents = f.read()
@@ -110,7 +104,7 @@ class PasteV2:
         self._attachment = "data:" + mime + ";base64," + b64encode(contents).decode()
         self._attachment_name = path_leaf(path)
 
-    def setCompression(self, comp):
+    def setCompression(self, comp: str):
         self._compression = comp
 
     def getText(self):
@@ -126,26 +120,27 @@ class PasteV2:
     def getJSON(self):
         return json_encode(self._data).decode()
 
-    def loadJSON(self, data):
+    def loadJSON(self, data: dict[str, Any]):
         self._data = data
 
     def getHash(self):
         return b58encode(self._key).decode()
 
-    def setHash(self, passphrase):
+    def setHash(self, passphrase: str):
         self._key = b58decode(passphrase)
 
-    def __deriveKey(self, salt):
-        from Crypto.Hash import HMAC, SHA256
-        from Crypto.Protocol.KDF import PBKDF2
+    def __deriveKey(self, salt: bytes):
 
         # Key derivation, using PBKDF2 and SHA256 HMAC
+        assert isinstance(self._key, bytes)
+        assert isinstance(self._password, str)
+
         return PBKDF2(
-            self._key + self._password.encode(),
+            self._key + self._password.encode(),  # type: ignore[arg-type]
             salt,
             dkLen=int(self._block_bits / 8),
-            count=self._iteration_count,
-            prf=lambda password, salt: HMAC.new(password, salt, SHA256).digest(),
+            count=int(self._iteration_count),
+            hmac_hash_module=SHA256,
         )
 
     @classmethod
@@ -203,11 +198,9 @@ class PasteV2:
         cipher_text_tag = b64decode(self._data["ct"])
         cipher_text = cipher_text_tag[:-cipher_tag_bytes]
         cipher_tag = cipher_text_tag[-cipher_tag_bytes:]
-        cipher_message = json_decode(
-            self.__decompress(
-                cipher.decrypt_and_verify(cipher_text, cipher_tag)
-            ).decode()
-        )
+        decompressed_data = self.__decompress(cipher.decrypt_and_verify(cipher_text, cipher_tag))
+        assert isinstance(decompressed_data, bytes)
+        cipher_message = json_decode(decompressed_data.decode())
 
         self._text = cipher_message["paste"].encode()
 
