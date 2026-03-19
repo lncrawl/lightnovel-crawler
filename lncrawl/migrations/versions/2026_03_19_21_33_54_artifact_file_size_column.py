@@ -19,11 +19,6 @@ down_revision: Union[str, Sequence[str], None] = "0d1f6e13db1a"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-try:
-    dialect = op.get_context().dialect.name
-except Exception:
-    dialect = ""
-
 
 def upgrade() -> None:
     """Upgrade schema."""
@@ -54,21 +49,20 @@ def upgrade() -> None:
             "FROM artifacts"
         )).all()
     ]
+    if not tasks:
+        return
 
     ctx.logger.info(f"Migrating {len(tasks)} artifacts")
     results = executor.resolve_futures(tasks, fail_fast=True, unit='file')
 
-    cases = ' '.join([
-        f"WHEN '{item[0]}' THEN {item[1]}"
-        for item in results if item is not None
-    ])
-    conn.execute(sa.text(f"""
-        UPDATE artifacts
-        SET file_size = CASE id
-            {cases}
-            ELSE 0
-        END;
-    """))
+    conn.execute(
+        sa.text("UPDATE artifacts SET file_size = :file_size WHERE id = :id"),
+        [
+            {"id": item[0], "file_size": item[1]}
+            for item in results
+            if item is not None
+        ]
+    )
 
 
 def downgrade() -> None:
