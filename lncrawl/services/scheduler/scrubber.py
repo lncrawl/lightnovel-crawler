@@ -6,11 +6,15 @@ import sqlmodel as sq
 
 from ...context import ctx
 from ...dao import Job, JobStatus, UserToken
+from ...dao.artifact import Artifact
 from ...exceptions import AbortedException
 from ...utils.file_tools import folder_size, format_size
 from ...utils.time_utils import current_timestamp
 
 logger = logging.getLogger(__name__)
+_hour = 3600 * 1000
+_day = 24 * _hour
+_month = 30 * _day
 
 
 class Scrubber:
@@ -26,6 +30,7 @@ class Scrubber:
         scrubber.delete_expired_tokens()
 
     def free_disk_size(self):
+        now = current_timestamp()
         size_limit = ctx.config.crawler.disk_size_limit
         if size_limit <= 0:
             return
@@ -35,12 +40,41 @@ class Scrubber:
         if current_size < size_limit:
             return
 
-        # Keep deleting novels to reach target disk size limit
-        logger.debug('Deleting novels to free up space')
+        # Delete old artifacts to reach target disk size limit
+        logger.info('Deleting artifacts to free up space')
+        with ctx.db.session() as sess:
+            to_delete = []
+            for artifact in sess.exec(
+                sq.select(Artifact)
+                .where(sq.col(Artifact.created_at) < now - _month)
+                .order_by(sq.col(Artifact.file_size).desc())
+            ):
+                if current_size < size_limit:
+                    break
+                if self.signal.is_set():
+                    raise AbortedException()
+                file_path = ctx.files.resolve(artifact.output_file)
+                try:
+                    current_size -= file_path.stat().st_size
+                    file_path.unlink()
+                except OSError:
+                    pass
+                to_delete.append(artifact.id)
+            sess.exec(
+                sq.delete(Artifact)
+                .where(sq.col(Artifact.id).in_(to_delete))
+            )
+            sess.commit()
+        logger.info(f"Current folder size: {format_size(current_size)}")
+
+        # Delete novel data to reach target disk size limit
+        logger.info('Deleting novel data to free up space')
         for folder in sorted(
             ctx.files.resolve('novels').iterdir(),
             key=lambda p: p.stat().st_mtime,
         ):
+            if current_size < size_limit:
+                break
             if self.signal.is_set():
                 raise AbortedException()
             if not folder.is_dir():
@@ -51,18 +85,20 @@ class Scrubber:
                 for file in folder.iterdir():
                     if file.is_dir():
                         shutil.rmtree(file, ignore_errors=True)
-                logger.info(f'Deleted novel: {folder.name} [{format_size(size)}]')
+                    # intentionally keeping top level files, such as cover image
+                with ctx.db.session() as sess:
+                    sess.exec(
+                        sq.delete(Artifact)
+                        .where(sq.col(Artifact.novel_id) == folder.name)
+                    )
+                    sess.commit()
+                logger.debug(f'Deleted novel: {folder.name} [{format_size(size)}]')
             except Exception:
                 current_size = folder_size(ctx.config.app.output_path)
                 logger.info(f'Error removing: {folder.name}', exc_info=True)
-            finally:
-                if current_size < size_limit:
-                    break
-
         logger.info(f"Current folder size: {format_size(current_size)}")
 
     def delete_old_jobs(self):
-        day = 24 * 3600 * 1000
         now = current_timestamp()
         with ctx.db.session() as sess:
             # find root jobs to delete
@@ -71,7 +107,7 @@ class Scrubber:
                 .where(
                     sq.col(Job.parent_job_id).is_(None),
                     Job.status != JobStatus.PENDING,
-                    Job.updated_at < now - 90 * day
+                    Job.updated_at < now - _month * 3
                 )
             ).all()
 
@@ -80,7 +116,7 @@ class Scrubber:
                 sq.delete(Job)
                 .where(
                     sq.col(Job.parent_job_id).is_not(None),
-                    sq.col(Job.updated_at) < now - 15 * day
+                    sq.col(Job.updated_at) < now - _day * 15
                 )
             )
             sess.commit()
@@ -93,7 +129,6 @@ class Scrubber:
                 ctx.jobs.delete(job_id)
 
     def cancel_long_jobs(self):
-        hour = 3600 * 1000
         now = current_timestamp()
         with ctx.db.session() as sess:
             job_ids = sess.exec(
@@ -101,7 +136,7 @@ class Scrubber:
                 .where(
                     sq.col(Job.parent_job_id).is_(None),
                     Job.status == JobStatus.RUNNING,
-                    Job.updated_at < now - 16 * hour
+                    Job.updated_at < now - _hour * 16
                 )
             ).all()
 
