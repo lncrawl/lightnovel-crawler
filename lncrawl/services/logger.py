@@ -1,10 +1,9 @@
 import os
+import inspect
 import logging
 from typing import Union
 
 from rich.logging import RichHandler
-
-logger = logging.getLogger(__name__)
 
 
 class Logger:
@@ -50,3 +49,22 @@ class Logger:
                 datefmt="[%X]",
                 force=True,
             )
+
+    def log(self, level: int, *args, **kwargs) -> None:
+        stacklevel = kwargs.pop('stacklevel', 0) + 2
+        frame = inspect.stack()[stacklevel]
+        kwargs['stacklevel'] = stacklevel
+        logger = logging.getLogger(frame.filename)
+        logger.log(level, *args, **kwargs)
+
+    def error(self, *args, **kwargs) -> None:
+        self.log(logging.ERROR, *args, **kwargs, stacklevel=1)
+
+    def warn(self, *args, **kwargs) -> None:
+        self.log(logging.WARNING, *args, **kwargs, stacklevel=1)
+
+    def info(self, *args, **kwargs) -> None:
+        self.log(logging.INFO, *args, **kwargs, stacklevel=1)
+
+    def debug(self, *args, **kwargs) -> None:
+        self.log(logging.DEBUG, *args, **kwargs, stacklevel=1)
