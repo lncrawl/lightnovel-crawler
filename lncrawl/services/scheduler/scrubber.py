@@ -13,17 +13,17 @@ from ...utils.time_utils import current_timestamp
 logger = logging.getLogger(__name__)
 
 
-class Cleaner:
+class Scrubber:
     def __init__(self, signal=Event()) -> None:
         self.signal = signal
 
     @staticmethod
     def run(signal: Event):
-        cleaner = Cleaner(signal)
-        cleaner.free_disk_size()
-        cleaner.delete_old_jobs()
-        cleaner.cancel_long_jobs()
-        cleaner.delete_expired_tokens()
+        scrubber = Scrubber(signal)
+        scrubber.free_disk_size()
+        scrubber.delete_old_jobs()
+        scrubber.cancel_long_jobs()
+        scrubber.delete_expired_tokens()
 
     def free_disk_size(self):
         size_limit = ctx.config.crawler.disk_size_limit

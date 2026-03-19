@@ -403,12 +403,12 @@ class CrawlerConfig(_Section):
         self._set("runner_cooldown", v)
 
     @property
-    def cleaner_cooldown(self) -> int:
-        """Cleaner job cooldown in seconds"""
+    def scrubber_cooldown(self) -> int:
+        """Scrubber job cooldown in seconds"""
         return self._get("cleaner_cooldown", 30 * 60)
 
-    @cleaner_cooldown.setter
-    def cleaner_cooldown(self, v: int) -> None:
+    @scrubber_cooldown.setter
+    def scrubber_cooldown(self, v: int) -> None:
         self._set("cleaner_cooldown", v)
 
     @property

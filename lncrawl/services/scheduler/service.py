@@ -5,14 +5,14 @@ from typing import Callable, List, Set
 from ...context import ctx
 from ...exceptions import AbortedException
 from ...utils.event_lock import EventLock
-from .cleaner import Cleaner
+from .scrubber import Scrubber
 from .runner import JobRunner
 
 logger = logging.getLogger(__name__)
 
 
-def run_cleaner(signal: Event) -> None:
-    Cleaner.run(signal)
+def run_scrubber(signal: Event) -> None:
+    Scrubber.run(signal)
 
 
 def run_jobs(signal: Event):
@@ -47,9 +47,9 @@ class JobScheduler:
         if self.running:
             return
         self._signal = Event()
-        self._thread(run_cleaner, ctx.config.crawler.cleaner_cooldown)
         for _ in range(ctx.config.crawler.runner_concurrency):
             self._thread(run_jobs, ctx.config.crawler.runner_cooldown)
+        self._thread(run_scrubber, ctx.config.crawler.scrubber_cooldown)
         self._thread(run_artifact_maker, ctx.config.crawler.runner_cooldown)
         self._thread(reset_runner, ctx.config.crawler.runner_reset_interval)
         logger.info("Scheduler started")
