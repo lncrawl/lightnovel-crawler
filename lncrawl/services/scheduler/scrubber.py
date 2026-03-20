@@ -5,8 +5,7 @@ from threading import Event
 import sqlmodel as sq
 
 from ...context import ctx
-from ...dao import Job, JobStatus, UserToken
-from ...dao.artifact import Artifact
+from ...dao import Artifact, Job, JobStatus, UserToken
 from ...exceptions import AbortedException
 from ...utils.file_tools import folder_size, format_size
 from ...utils.time_utils import current_timestamp
@@ -14,6 +13,7 @@ from ...utils.time_utils import current_timestamp
 logger = logging.getLogger(__name__)
 _hour = 3600 * 1000
 _day = 24 * _hour
+_week = 7 * _day
 _month = 30 * _day
 
 
@@ -24,79 +24,106 @@ class Scrubber:
     @staticmethod
     def run(signal: Event):
         scrubber = Scrubber(signal)
-        scrubber.free_disk_size()
+        scrubber.free_disk_space()
         scrubber.delete_old_jobs()
         scrubber.cancel_long_jobs()
         scrubber.delete_expired_tokens()
 
-    def free_disk_size(self):
-        now = current_timestamp()
+    def free_disk_space(self):
+        # Check if disk size limit is set
         size_limit = ctx.config.crawler.disk_size_limit
         if size_limit <= 0:
             return
 
+        # Check current folder size
         current_size = folder_size(ctx.config.app.output_path)
         logger.info(f"Current folder size: {format_size(current_size)}")
         if current_size < size_limit:
             return
 
-        # Delete old artifacts to reach target disk size limit
-        logger.info('Deleting artifacts to free up space')
+        # Delete old artifacts
+        logger.info('Deleting big artifacts to free up space')
+        self.delete_artifacts(current_size, size_limit)
+
+        # Check current folder size
+        current_size = folder_size(ctx.config.app.output_path)
+        logger.info(f"Current folder size: {format_size(current_size)}")
+        if current_size < size_limit:
+            return
+
+        # Delete novel data directories
+        logger.info('Deleting novel data to free up space')
+        self.delete_novel_data(current_size, size_limit)
+
+        # Check current folder size
+        current_size = folder_size(ctx.config.app.output_path)
+        logger.info(f"Current folder size: {format_size(current_size)}")
+
+    def delete_artifacts(self, current_size: int, size_limit: int) -> None:
+        now = current_timestamp()
+
+        to_delete = []
         with ctx.db.session() as sess:
-            to_delete = []
             for artifact in sess.exec(
                 sq.select(Artifact)
-                .where(sq.col(Artifact.created_at) < now - _month)
+                .where(sq.col(Artifact.created_at) < now - _week)
                 .order_by(sq.col(Artifact.file_size).desc())
             ):
                 if current_size < size_limit:
                     break
                 if self.signal.is_set():
                     raise AbortedException()
+
+                to_delete.append(artifact.id)
                 file_path = ctx.files.resolve(artifact.output_file)
                 try:
                     current_size -= file_path.stat().st_size
                     file_path.unlink()
                 except OSError:
-                    pass
-                to_delete.append(artifact.id)
-            sess.exec(
-                sq.delete(Artifact)
-                .where(sq.col(Artifact.id).in_(to_delete))
-            )
-            sess.commit()
-        logger.info(f"Current folder size: {format_size(current_size)}")
+                    logger.debug(f'Error removing: {artifact.id}', exc_info=True)
 
-        # Delete novel data to reach target disk size limit
-        logger.info('Deleting novel data to free up space')
-        for folder in sorted(
-            ctx.files.resolve('novels').iterdir(),
-            key=lambda p: p.stat().st_mtime,
-        ):
+        # delete all unavailable artifacts
+        if len(to_delete) > 0:
+            with ctx.db.session() as sess:
+                sess.exec(
+                    sq.delete(Artifact)
+                    .where(sq.col(Artifact.id).in_(to_delete))
+                )
+                sess.commit()
+
+    def delete_novel_data(self, current_size: int, size_limit: int) -> None:
+        to_delete = []
+
+        novel_dirs = list(ctx.files.resolve('novels').iterdir())
+        for folder in sorted(novel_dirs, key=lambda p: p.stat().st_mtime):
             if current_size < size_limit:
                 break
             if self.signal.is_set():
                 raise AbortedException()
             if not folder.is_dir():
                 continue
+
+            to_delete.append(folder.name)
             try:
-                size = folder_size(folder)
-                current_size -= size
+                # empty directory leaving only the cover image
                 for file in folder.iterdir():
                     if file.is_dir():
+                        current_size -= folder_size(file)
                         shutil.rmtree(file, ignore_errors=True)
-                    # intentionally keeping top level files, such as cover image
-                with ctx.db.session() as sess:
-                    sess.exec(
-                        sq.delete(Artifact)
-                        .where(sq.col(Artifact.novel_id) == folder.name)
-                    )
-                    sess.commit()
-                logger.debug(f'Deleted novel: {folder.name} [{format_size(size)}]')
-            except Exception:
-                current_size = folder_size(ctx.config.app.output_path)
-                logger.info(f'Error removing: {folder.name}', exc_info=True)
-        logger.info(f"Current folder size: {format_size(current_size)}")
+                    elif file.name != 'cover.jpg':
+                        current_size -= file.stat().st_size
+                        file.unlink(missing_ok=True)
+            except OSError:
+                logger.debug(f'Error removing: {folder.name}', exc_info=True)
+
+        # delete all unavailable novel objects
+        if len(to_delete) > 0:
+            with ctx.db.session() as sess:
+                sess.exec(
+                    sq.delete(Artifact)
+                    .where(sq.col(Artifact.novel_id).in_(to_delete))
+                )
+                sess.commit()
 
     def delete_old_jobs(self):
         now = current_timestamp()
