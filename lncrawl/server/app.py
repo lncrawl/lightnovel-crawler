@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -13,15 +14,20 @@ from .middleware.staticfiles import CustomStaticFiles, StaticFilesGuard
 
 web_dir = (Path(__file__).parent / 'web').absolute()
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    ctx.setup()
+    ctx.scheduler.start()
+    yield
+    ctx.destroy()
+
+
 app = FastAPI(
     version=get_version(),
     title="Lightnovel Crawler",
     description="Download novels from online sources and generate e-books",
-    on_startup=[
-        ctx.setup,
-        ctx.scheduler.start,
-    ],
-    on_shutdown=[ctx.destroy],
+    lifespan=lifespan,
 )
 
 # Add exception handlers
