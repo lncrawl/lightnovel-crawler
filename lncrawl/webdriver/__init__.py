@@ -4,7 +4,7 @@
 import logging
 from typing import Optional
 
-from selenium.webdriver import ChromeOptions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from ..context import ctx
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_new(
-    options: Optional["ChromeOptions"] = None,
+    options: Optional[ChromeOptions] = None,
     timeout: Optional[float] = None,
     user_data_dir: Optional[str] = None,
     soup_maker: Optional[SoupMaker] = None,

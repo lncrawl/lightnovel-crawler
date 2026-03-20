@@ -5,8 +5,9 @@ import logging
 import os
 from typing import Optional
 
-from selenium.webdriver import Remote as WebDriver
-from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.webdriver import WebDriver as Chrome
 from selenium.webdriver.remote.remote_connection import LOGGER
 
 from ..core.soup import SoupMaker
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_local(
-    options: Optional["ChromeOptions"] = None,
+    options: Optional[ChromeOptions] = None,
     timeout: Optional[float] = None,
     headless: bool = False,
     user_data_dir: Optional[str] = None,
@@ -51,11 +52,6 @@ def create_local(
     options.add_argument("--disable-client-side-phishing-detection")
     options.add_argument("--disable-blink-features=AutomationControlled")
 
-    # options.add_argument("--disable-dev-shm-usage")
-    # options.add_argument("--disable-extensions")
-    # options.add_argument("--disable-gpu")
-    # options.add_argument("--disable-popup-blocking")
-
     # Configure window behavior
     if headless:
         options.add_argument("--window-size=1920,1080")
@@ -69,16 +65,8 @@ def create_local(
         height = int(os.getenv("CHROME_HEIGHT", height))
         options.add_argument(f"--window-size={width},{height}")
 
-    # # Set remote debuging host and port
-    # debug_host = "127.0.0.1"
-    # debug_port = free_port(debug_host)
-    # options.add_argument(f"--remote-debugging-host={debug_host}")
-    # options.add_argument(f"--remote-debugging-port={debug_port}")
-    # options.debugger_address = f"{debug_host}:{debug_port}"
-
     # Add capabilities
     options.set_capability("acceptInsecureCerts", True)
-    # options.set_capability("quietExceptions", True)
 
     # Chrome specific experimental options
     options.accept_insecure_certs = True
@@ -107,8 +95,8 @@ def create_local(
 
     if not soup_maker:
         soup_maker = SoupMaker()
-    chrome._soup_maker = soup_maker  # type:ignore
-    chrome._web_element_cls = WebElement
+    setattr(chrome, "_soup_maker", soup_maker)
+    setattr(chrome, "_web_element_cls", WebElement)
 
     # _add_virtual_authenticator(chrome)
     _override_get(chrome)

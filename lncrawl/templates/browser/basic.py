@@ -61,6 +61,7 @@ class BasicBrowserTemplate(CrawlerTemplate):
             headless=self.headless,
             timeout=self.timeout,
             soup_maker=self,
+            cookie_store=self.scraper.cookies,
         )
         self._visit = self._browser.visit
         self._browser.visit = self.visit  # type:ignore

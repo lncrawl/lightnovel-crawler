@@ -3,11 +3,11 @@
 import json
 import logging
 import re
-from typing import Callable, List, Optional
+from typing import Callable, Generator, Optional
 from urllib.parse import quote_plus, urlencode
 
 from bs4 import Tag
-from lncrawl.core.browser import Browser
+
 from lncrawl.exceptions import FallbackToBrowser, LNException
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.basic import BasicBrowserTemplate
@@ -20,23 +20,6 @@ class NoveLightCrawler(BasicBrowserTemplate):
 
     def initialize(self) -> None:
         self.cleaner.bad_css.update(["div.advertisment"])
-
-    def init_browser(self):
-        if not self.can_use_browser:
-            raise
-        if self.using_browser:
-            return
-        self._max_workers = self.workers
-        self.init_executor(1)
-        # Keep cookies synced between browser and requests session.
-        self._browser = Browser(
-            headless=self.headless,
-            timeout=self.timeout,
-            soup_maker=self,
-            cookie_store=self.scraper.cookies,
-        )
-        self._visit = self._browser.visit
-        self._browser.visit = self.visit  # type:ignore
 
     def _ensure_browser_ready(self):
         if not self.browser.current_url or not str(self.browser.current_url).startswith(self.home_url):
@@ -65,22 +48,22 @@ class NoveLightCrawler(BasicBrowserTemplate):
             raise LNException(f"Browser fetch error for {url}: {data['__error__']}")
         return data
 
-    def _parse_search_results(self, soup) -> List[SearchResult]:
-        return [
+    def _parse_search_results(self, soup) -> Generator[SearchResult, None, None]:
+        yield from [
             SearchResult(title=a.text.strip(), url=self.absolute_url(a["href"]))
             for a in soup.select(".manga-grid-list a.item")
             if isinstance(a, Tag)
         ]
 
-    def search_novel_in_soup(self, query) -> List[SearchResult]:
+    def search_novel_in_soup(self, query) -> Generator[SearchResult, None, None]:
         soup = self.get_soup(
             f"{self.home_url}catalog/?search={quote_plus(query.lower())}"
         )
-        return self._parse_search_results(soup)
+        yield from self._parse_search_results(soup)
 
-    def search_novel_in_browser(self, query) -> List[SearchResult]:
+    def search_novel_in_browser(self, query) -> Generator[SearchResult, None, None]:
         self.browser.visit(f"{self.home_url}catalog/?search={quote_plus(query.lower())}")
-        return self._parse_search_results(self.browser.soup)
+        yield from self._parse_search_results(self.browser.soup)
 
     def _extract_book_tokens(self, soup):
         page_scripts = soup.select("body > script:not([src])")
@@ -152,14 +135,15 @@ class NoveLightCrawler(BasicBrowserTemplate):
             for a in reversed(chapters_soup.select("a[href^='/book/chapter/']")):
                 if a.select_one(".chapter-info .cost"):
                     encountered_paid_chapter = True
-                else:
-                    self.chapters.append(
-                        Chapter(
-                            id=len(self.chapters) + 1,
-                            title=a.select_one(".title").text.strip(),
-                            url=self.absolute_url(a["href"]),
-                        )
+                    continue
+                title = a.select_one(".title")
+                self.chapters.append(
+                    Chapter(
+                        id=len(self.chapters) + 1,
+                        url=self.absolute_url(a["href"]),
+                        title=(title or a).get_text(strip=True),
                     )
+                )
             bar.update()
         bar.close()
         if encountered_paid_chapter:

@@ -1,11 +1,10 @@
 import json
-import locale
 import logging
 import os
 from typing import Optional
 
-from selenium.webdriver import ChromeOptions
-from selenium.webdriver import Remote as WebDriver
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.remote.remote_connection import LOGGER
 
 from ..exceptions import LNException
@@ -19,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def create_remote(
     address: str = "http://localhost:4444",
-    options: Optional["ChromeOptions"] = None,
+    options: Optional[ChromeOptions] = None,
     timeout: Optional[float] = None,
     soup_maker: Optional[SoupMaker] = None,
     **kwargs,
@@ -56,7 +55,6 @@ def create_remote(
 
     # Add capabilities
     options.set_capability("acceptInsecureCerts", True)
-    # options.set_capability("quietExceptions", True)
 
     # Chrome specific experimental options
     options.accept_insecure_certs = True
@@ -64,15 +62,6 @@ def create_remote(
     options.strict_file_interactability = False
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    # if not is_debug:
-    #     options.add_experimental_option("excludeSwitches", ["enable-logging"])
-
-    # Set default language
-    try:
-        language = locale.getdefaultlocale()[0].replace("_", "-")
-    except Exception:
-        pass
-    options.add_argument("--lang=%s" % (language or "en-US"))
 
     # Configure user data dir
     user_data_dir = "/home/seluser"
@@ -106,8 +95,8 @@ def create_remote(
 
     if not soup_maker:
         soup_maker = SoupMaker()
-    chrome._soup_maker = soup_maker
-    chrome._web_element_cls = WebElement
+    setattr(chrome, "_soup_maker", soup_maker)
+    setattr(chrome, "_web_element_cls", WebElement)
 
     _add_virtual_authenticator(chrome)
     _override_get(chrome)

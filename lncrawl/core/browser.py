@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Iterable, List, Optional, Type
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type
 
 from bs4 import BeautifulSoup
 from requests.cookies import RequestsCookieJar
@@ -19,9 +19,9 @@ class Browser:
         self,
         headless: bool = True,
         timeout: Optional[int] = 120,
-        options: Optional["ChromeOptions"] = None,
+        options: Optional[ChromeOptions] = None,
         cookie_store: Optional[RequestsCookieJar] = None,
-        browser_storage: Optional[dict] = None,
+        browser_storage: Optional[Dict[str, Any]] = None,
         soup_maker: Optional[SoupMaker] = None,
     ) -> None:
         """
@@ -32,7 +32,7 @@ class Browser:
         - timeout (Optional[int], optional): Maximum wait duration in seconds for an element to be available. Default: 120.
         - options (Optional[&quot;ChromeOptions&quot;], optional): Webdriver options. Default: None.
         - cookie_store (Optional[RequestsCookieJar], optional): A cookie store to synchronize cookies. Default: None.
-        - browser_storage (Optional[dict], optional): A Storage to save some user info that is saved in your Browser storage. Default: None.
+        - browser_storage (Optional[Dict[str, Any]], optional): A Storage to save some user info that is saved in your Browser storage. Default: None.
         - soup_parser (Optional[str], optional): Parser for page content. Default: None.
         """
         self.options = options
@@ -89,17 +89,14 @@ class Browser:
                 )
             logger.debug("Cookies applied: %s", self._driver.get_cookies())
         if isinstance(self.browser_storage, dict):
-            for key, value in self.browser_storage["localStorage"].items():
+            for name, raw_store in self.browser_storage.items():
+                if not isinstance(raw_store, dict):
+                    continue
                 self._driver.execute_script(
-                    "window.localStorage.setItem(arguments[0], arguments[1]);",
-                    key,
-                    value,
-                )
-            for key, value in self.browser_storage["sessionStorage"].items():
-                self._driver.execute_script(
-                    "window.sessionStorage.setItem(arguments[0], arguments[1]);",
-                    key,
-                    value,
+                    "arguments.forEach(function(item) {"
+                    f"  window.{name}.setItem(item[0], item[1]);"
+                    "});",
+                    *raw_store.items(),
                 )
             logger.debug("Storage applied: %s", self.browser_storage)
 
@@ -121,18 +118,15 @@ class Browser:
                     )
             logger.debug("Cookies retrieved: %s", self.cookie_store)
         if isinstance(self.browser_storage, dict):
-            self.browser_storage["localStorage"] = self._driver.execute_script(
-                "var ls = window.localStorage, items = {}; "
-                "for (var i = 0, k; i < ls.length; ++i) "
-                "  items[k = ls.key(i)] = ls.getItem(k); "
-                "return items; "
-            )
-            self.browser_storage["sessionStorage"] = self._driver.execute_script(
-                "var ls = window.sessionStorage, items = {}; "
-                "for (var i = 0, k; i < ls.length; ++i) "
-                "  items[k = ls.key(i)] = ls.getItem(k); "
-                "return items; "
-            )
+            for name in ["localStorage", "sessionStorage"]:
+                self.browser_storage[name] = self._driver.execute_script(
+                    "var items = {};"
+                    f"var ls = window.{name};"
+                    "Object.keys(ls).forEach(function(key) {"
+                    "  items[key] = ls[key];"
+                    "});"
+                    "return items;"
+                )
             logger.debug("Storage retrieved: %s", self.browser_storage)
 
     @property
@@ -233,7 +227,7 @@ class Browser:
                 elem.clear()
             elem.send_keys(text)
 
-    def execute_js(self, script: str, *args, is_async=False) -> Any:
+    def execute_js(self, script: str, *args, is_async: bool = False) -> Any:
         """
         Executes JavaScript in the current browser window.
 
@@ -256,8 +250,8 @@ class Browser:
         timeout: Optional[float] = 30,
         poll_frequency: Optional[float] = 0.25,
         ignored_exceptions: Optional[Iterable[Type[Exception]]] = None,
-        expected_conditon=EC.presence_of_element_located,
-        reversed: bool = False,
+        expected_conditon: Callable[..., Any] = EC.presence_of_element_located,
+        inverse: bool = False,
     ):
         """Waits for a element to be visible on the current page by CSS selector.
 
@@ -266,7 +260,7 @@ class Browser:
         - timeout: Number of seconds before timing out
         - poll_frequency: Sleep interval between calls. Default: 0.5
         - ignored_exceptions: List of exception classes to ignore. Default: [NoSuchElementException]
-        - reversed: Wait until the condition not matched
+        - inverse: Wait until the condition is not matched
         """
         if not self._driver:
             return
@@ -283,7 +277,7 @@ class Browser:
                 ignored_exceptions=ignored_exceptions,
             )
             condition = expected_conditon((str(by), selector))
-            if reversed:
+            if inverse:
                 waiter.until_not(condition)  # type: ignore
             else:
                 waiter.until(condition)  # type: ignore
