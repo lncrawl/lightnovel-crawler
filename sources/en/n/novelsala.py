@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 import json
 
@@ -64,20 +65,20 @@ class NovelSalaCrawler(Crawler):
                     )["data"]["chapterListChunks"]
                 )[vol_id - 1]
 
-            self.volumes.append({"id": vol_id})
+            self.volumes.append(Volume(id=vol_id))
 
             for chapter in volume["items"]:
                 self.chapters.append(
-                    {
-                        "id": chapter["chapNum"],
-                        "volume": vol_id,
-                        "title": f"Chapter {chapter['chapNum']}: " + chapter["title"],
-                        "url": self.home_url.rstrip("/") + chapter["url"],
-                        "json_url": (
+                    Chapter(
+                        id=chapter["chapNum"],
+                        volume=vol_id,
+                        title=f"Chapter {chapter['chapNum']}: " + chapter["title"],
+                        url=self.home_url.rstrip("/") + chapter["url"],
+                        json_url=(
                             data_url % (buildId, book_data["url"])
                             + f"chapter-{chapter['chapNum']}.json"
                         ),
-                    }
+                    )
                 )
 
     def download_chapter_body(self, chapter):

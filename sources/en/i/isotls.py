@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +31,14 @@ class IsotlsCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({'id': vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
-            self.chapters.append({
-                'id': chap_id,
-                'volume': vol_id,
-                'title': a.text.strip(),
-                'url': self.absolute_url(a['href']),
-            })
+            self.chapters.append(Chapter(
+                id=chap_id,
+                volume=vol_id,
+                title=a.text.strip(),
+                url=self.absolute_url(a['href']),
+            ))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter['url'])

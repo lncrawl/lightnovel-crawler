@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class ChrysanthemumGarden(Crawler):
         novel_info = soup.select_one(".novel-info")
         for e in novel_info:
             if e.text.strip().startswith("Author: "):
-                self.novel_author = e.replace("Author: ", "").strip()
+                self.novel_author = e.text.replace("Author: ", "").strip()
                 logger.info("Novel author: %s", self.novel_author)
                 break
 
@@ -52,18 +52,18 @@ class ChrysanthemumGarden(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
             self.chapters.append(
-                {
-                    "id": ch_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    id=ch_id,
+                    volume=vol_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a['href']),
+                )
             )
 
-        self.volumes = [{"id": x, "title": ""} for x in volumes]
+        self.volumes = [Volume(id=vol_id) for vol_id in volumes]
 
-    def login(self, email, password):
-        self.password = password
+    def login(self, username_or_email, password_or_token):
+        self.password = password_or_token
 
     def download_chapter_body(self, chapter):
         chapter_url = chapter["url"]

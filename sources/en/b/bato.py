@@ -5,16 +5,13 @@ import logging
 import re
 from hashlib import md5
 
-from lncrawl.core.crawler import Crawler
+from Crypto.Cipher import AES
+
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 BLOCK_SIZE = 16
 search_url = "https://bato.to/search?word=%s"
-
-try:
-    from Crypto.Cipher import AES
-except ImportError:
-    logger.info("Crypto not found. Run `pip install pycryptodome` to install.")
 
 
 def decode_pass(code):
@@ -126,30 +123,27 @@ class BatoCrawler(Crawler):
             chap_id = 1 + len(self.chapters)
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
-            self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text,
-                    "url": self.absolute_url(a["href"]),
-                }
-            )
+            self.chapters.append(Chapter(
+                id=chap_id,
+                volume=vol_id,
+                title=a.text,
+                url=self.absolute_url(a["href"]),
+            ))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
         soup = soup.find("script", string=re.compile(r"const imgHttps = \["))
 
-        img_list = json.loads(
-            re.search(r"const imgHttps = (.*);", soup.text).group(1)
-        )
+        match = re.search(r"const imgHttps = (.*);", soup.text)
+        img_list = json.loads(match.group(1)) if match else []
 
-        bato_pass = decode_pass(
-            re.search(r"const batoPass = (.*);", soup.text).group(1)
-        )
+        match = re.search(r"const batoPass = (.*);", soup.text)
+        bato_pass = decode_pass(match.group(1)) if match else ""
 
-        bato_word = re.search(r"const batoWord = (.*);", soup.text).group(1).strip('"')
+        match = re.search(r"const batoWord = (.*);", soup.text)
+        bato_word = match.group(1).strip('"') if match else ""
 
         # looks like some kind of "access" GET args that may be necessary, not always though
         query_args = json.loads(decrypt(bato_word, bato_pass).decode())

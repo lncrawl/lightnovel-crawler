@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
 from lncrawl.core.crawler import Crawler
 import urllib.parse
 
@@ -38,7 +37,7 @@ class sixnineshu(Crawler):
     ]
 
     def initialize(self):
-        self.init_parser("html.parser")
+        self.parser = "html.parser"
         self.init_executor(ratelimit=20)
 
     def search_novel(self, query):
@@ -76,17 +75,17 @@ class sixnineshu(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one("div.bookimg2 img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = soup.select_one('.booknav2 p a')
-        if isinstance(possible_author, Tag):
+        if possible_author:
             self.novel_author = possible_author.text.strip()
         logger.info("Novel Author: %s", self.novel_author)
 
         possible_tag = soup.select_one('div.booknav2 > p:nth-child(4) > a')
-        if isinstance(possible_tag, Tag):
+        if possible_tag:
             self.novel_tags = [possible_tag.text.strip()]
         logger.info("Novel Tag: %s", self.novel_tags)
 

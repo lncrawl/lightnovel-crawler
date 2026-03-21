@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import urlencode, urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -61,15 +61,15 @@ class MTLNation(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if vol_id > len(self.volumes):
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": item["title"],
-                    "url": f"https://mtlnation.com/novel/{slug}/{item['slug']}",
-                    "data_url": f"https://api.mtlnation.com/api/v2/chapters/{slug}/{item['slug']}",
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=item["title"],
+                    url=f"https://mtlnation.com/novel/{slug}/{item['slug']}",
+                    data_url=f"https://api.mtlnation.com/api/v2/chapters/{slug}/{item['slug']}",
+                )
             )
 
     def download_chapter_body(self, chapter):

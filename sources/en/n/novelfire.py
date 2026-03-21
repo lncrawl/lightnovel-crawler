@@ -1,5 +1,6 @@
 import logging
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +33,14 @@ class NovelFireCrawler(Crawler):
             chapters = soup.select("ul.chapter-list li a")
             for a in chapters:
                 chap_id = len(self.chapters) + 1
-                self.chapters.append({
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a["title"],
-                    "url": self.absolute_url(a["href"]),
-                })
+                self.chapters.append(Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a["title"],
+                    url=self.absolute_url(a["href"]),
+                ))
 
-            self.volumes.append({"id": vol_id})
+            self.volumes.append(Volume(id=vol_id))
 
             next_vol_a = soup.select_one("a.page-link[rel='next']")
             if next_vol_a:

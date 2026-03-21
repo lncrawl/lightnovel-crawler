@@ -2,7 +2,7 @@
 
 import logging
 import requests
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -72,12 +72,7 @@ class Chireads(Crawler):
             for chapter in tome.find_all("a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "url": self.absolute_url(chapter.get("href")),
-                        "title": chapter.text.replace("\xa0", " "),
-                    }
+                    Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(chapter.get('href')), title=chapter.text.replace('\xa0', ' '))
                 )
 
     def download_chapter_body(self, chapter):

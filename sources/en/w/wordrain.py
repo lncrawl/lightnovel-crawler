@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://wordrain69.com/?s=%s"
@@ -55,12 +54,11 @@ class WordRain(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_title = soup.select_one('meta[property="og:title"]')
-        assert isinstance(possible_title, Tag), "No novel title"
         self.novel_title = possible_title["content"]
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one('meta[property="og:image"]')
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = possible_image["content"]
         logger.info("Novel cover: %s", self.novel_cover)
 
@@ -86,14 +84,9 @@ class WordRain(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = chap_id // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

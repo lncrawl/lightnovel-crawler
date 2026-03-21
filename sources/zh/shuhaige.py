@@ -2,7 +2,7 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -141,15 +141,10 @@ class ShuhaigeCrawler(Crawler):
             chapter_url = self.absolute_url(a["href"])
 
             self.chapters.append(
-                {
-                    "id": ch_id,
-                    "volume": vol_id,
-                    "title": chapter_title,
-                    "url": chapter_url,
-                }
+                Chapter(id=ch_id, volume=vol_id, title=chapter_title, url=chapter_url)
             )
 
-        self.volumes = [{"id": x, "title": f"Volume {x}"} for x in sorted(volumes)]
+        self.volumes = [Volume(id=x, title=f"Volume {x}") for x in sorted(volumes)]
         logger.info("Found %d chapters in %d volumes", len(self.chapters), len(self.volumes))
 
     def download_chapter_body(self, chapter):

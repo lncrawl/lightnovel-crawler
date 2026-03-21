@@ -2,8 +2,6 @@
 import logging
 import re
 
-from bs4 import Tag
-
 from lncrawl.core.crawler import Crawler
 from lncrawl.models import Volume, Chapter
 
@@ -20,7 +18,6 @@ class HostedNovelCom(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_title = soup.select_one('.text-center h1.font-extrabold')
-        assert isinstance(possible_title, Tag)
         self.novel_title = possible_title.text.strip()
 
         details = soup.select_one('section[aria-labelledby="novel-details-heading"]')

@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://booknet.com/en/search?q=%s"
@@ -66,12 +66,11 @@ class LitnetCrawler(Crawler):
             self.novel_author = author.text.strip()
         logger.info("Novel author: %s", self.novel_author)
 
-        chapters = soup.find("select", {"name": "chapter"})
-        if chapters is None:
+        container = soup.select_one("select[name='chapter']")
+        if container is None:
             chapters = soup.select(".collapsible-body a.collection-item")
         else:
-            chapters = chapters.find_all("option")
-            chapters = [a for a in chapters if a.attrs["value"]]
+            chapters = [a for a in container.find_all("option") if a["value"]]
 
         volumes = set([])
         for a in chapters:
@@ -82,15 +81,15 @@ class LitnetCrawler(Crawler):
             abs_url = self.last_soup_url.replace("/en/book/", "/en/reader/")
             chap_url = abs_url + ("?c=%s" % a.attrs["value"])
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": 1,
-                    "url": chap_url,
-                    "chapter_id": a.attrs["value"],
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=1,
+                    url=chap_url,
+                    chapter_id=a.attrs['value'],
+                )
             )
 
-        self.volumes = [{"id": x} for x in volumes]
+        self.volumes = [Volume(id=x) for x in volumes]
 
     def download_chapter_body(self, chapter):
         data = self._get_chapter_page(chapter)

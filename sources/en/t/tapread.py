@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import urlparse
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -47,15 +47,10 @@ class TapreadCrawler(Crawler):
             vol_id = (chap_id - 1) // 100 + 1
             volumes.add(vol_id)
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": chap["chapterName"],
-                    "url": chapter_url % (chap["bookId"], chap["chapterId"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=chap['chapterName'], url=chapter_url % (chap['bookId'], chap['chapterId']))
             )
 
-        self.volumes = [{"id": x} for x in volumes]
+        self.volumes = [Volume(id=x) for x in volumes]
 
     def download_chapter_body(self, chapter):
         data = self.get_json(chapter["url"])

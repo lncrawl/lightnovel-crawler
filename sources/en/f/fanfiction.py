@@ -4,7 +4,7 @@ import logging
 import re
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 chapter_url = "https://www.fanfiction.net/s/%s/%s"
@@ -63,32 +63,32 @@ class FanFictionCrawler(Crawler):
         if soup.select_one("#pre_story_links"):
             origin_book = soup.select("#pre_story_links a")[-1]
             self.volumes.append(
-                {
-                    "id": 1,
-                    "title": origin_book.text.strip(),
-                }
+                Volume(
+                    id=1,
+                    title=origin_book.text.strip(),
+                )
             )
         else:
-            self.volumes.append({"id": 1})
+            self.volumes.append(Volume(id=1))
 
         chapter_select = soup.select_one("#chap_select, select#jump")
         if chapter_select:
             for option in chapter_select.select("option"):
                 self.chapters.append(
-                    {
-                        "volume": 1,
-                        "id": int(option["value"]),
-                        "title": option.text.strip(),
-                        "url": chapter_url % (self.novel_id, option["value"]),
-                    }
+                    Chapter(
+                        volume=1,
+                        id=int(option["value"]),
+                        title=option.text.strip(),
+                        url=chapter_url % (self.novel_id, option["value"]),
+                    )
                 )
         else:
             self.chapters.append(
-                {
-                    "id": 1,
-                    "volume": 1,
-                    "url": self.novel_url,
-                }
+                Chapter(
+                    id=1,
+                    volume=1,
+                    url=self.novel_url,
+                )
             )
 
     def download_chapter_body(self, chapter):

@@ -1,7 +1,7 @@
 import logging
 import json
 from lncrawl.core.crawler import Crawler
-from lncrawl.models import Chapter
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -51,15 +51,15 @@ class SkyDemonOrder(Crawler):
             vol_id = 1 + len(self.chapters) // 100
 
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self._make_url(item["slug"], item["project"]["slug"]),
-                    "title": item["full_title"],
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self._make_url(item["slug"], item["project"]["slug"]),
+                    title=item["full_title"],
+                )
             )
 
     def download_chapter_body(self, chapter: Chapter) -> str:

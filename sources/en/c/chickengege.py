@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import Tag
-
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler
 from lncrawl.exceptions import LNException
 
 logger = logging.getLogger(__name__)
@@ -19,24 +17,23 @@ class ChickenGegeCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         title_tag = soup.select_one("h1.entry-title")
-        if not isinstance(title_tag, Tag):
+        if not title_tag:
             raise LNException("No title found")
 
         self.novel_title = title_tag.text.strip()
 
         image_tag = soup.select_one("img.novelist-cover-image")
-        if isinstance(image_tag, Tag):
-            self.novel_cover = self.absolute_url(image_tag["src"])
+        self.novel_cover = self.absolute_url(image_tag["src"])
 
         logger.info("Novel cover: %s", self.novel_cover)
 
         for a in soup.select("ul#novelList a, ul#extraList a, table#novelList a"):
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    id=len(self.chapters) + 1,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a['href']),
+                )
             )
 
     def download_chapter_body(self, chapter):

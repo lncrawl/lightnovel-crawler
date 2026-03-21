@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -67,15 +67,15 @@ class GenesisTlsCrawler(Crawler):
             chapter_url = ep_list_item.select_one("a")["href"]
 
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
             self.chapters.append(
-                {
-                    "id": chapter_id,
-                    "volume": vol_id,
-                    "title": chapter_title,
-                    "url": self.absolute_url(chapter_url)
-                }
+                Chapter(
+                    id=chapter_id,
+                    volume=vol_id,
+                    title=chapter_title,
+                    url=self.absolute_url(chapter_url),
+                )
             )
 
         logger.debug(

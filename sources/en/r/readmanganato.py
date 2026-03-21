@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +38,7 @@ class ReadMangaNato(Crawler):
         for a in reversed(soup.select(".row-content-chapter li.a-h a.chapter-name")):
             chap_id = len(self.chapters) + 1
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

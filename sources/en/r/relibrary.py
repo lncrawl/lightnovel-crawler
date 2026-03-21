@@ -1,7 +1,7 @@
 import logging
 from typing import Generator, Optional
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.models import Chapter
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
@@ -31,30 +31,30 @@ class ReLibraryCrawler(ChapterOnlyBrowserTemplate):
             }
         )
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one(".entry-title")
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one(".entry-content table img")
         src = tag.get("data-src") or tag.get("src")
         return self.absolute_url(src)
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         for a in soup.select_one(".entry-content").select("a[href*='/nauthor/']"):
             yield a.text.strip()
 
-    def select_chapter_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
+    def select_chapter_tags(self, soup: PageSoup) -> Generator[PageSoup, None, None]:
         yield from soup.select(".page_item > a")
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         return Chapter(
             id=id,
             title=tag.text.strip(),
             url=self.absolute_url(tag["href"]),
         )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one(".entry-content")
 
     def parse_chapter_body(self, chapter: Chapter, text: str) -> str:

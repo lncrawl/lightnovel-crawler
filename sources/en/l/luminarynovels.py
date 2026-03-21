@@ -1,6 +1,6 @@
 import logging
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.templates.madara import MadaraTemplate
 
@@ -16,7 +16,7 @@ class Luminarynovels(MadaraTemplate):
         # contains self-promo and discord link
         self.cleaner.bad_css.add("div.chapter-warning.alert.alert-warning")
 
-    def select_chapter_tags(self, soup: BeautifulSoup):
+    def select_chapter_tags(self, soup: PageSoup):
         try:
             clean_novel_url = self.novel_url.split("?")[0].strip("/")
             response = self.submit_form(f"{clean_novel_url}/ajax/chapters/")
@@ -26,7 +26,6 @@ class Luminarynovels(MadaraTemplate):
                 raise Exception("No chapters on first URL")
         except Exception:
             nl_id = soup.select_one("#manga-chapters-holder[data-id]")
-            assert isinstance(nl_id, Tag)
             response = self.submit_form(
                 f"{self.home_url}wp-admin/admin-ajax.php",
                 data={

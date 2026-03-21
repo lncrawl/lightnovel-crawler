@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://phoenixnovels.com.br/?s=%s&post_type=wp-manga"
@@ -52,7 +52,7 @@ class PhoenixNovels(Crawler):
 
         # CORRIGIR CAPA
         image = soup.select_one(".summary_image img")
-        if isinstance(image, Tag):
+        if image:
             cover_url = image.get("data-src") or image.get("src")
             self.novel_cover = self.absolute_url(cover_url)
         logger.info("Novel cover: %s", self.novel_cover)
@@ -74,19 +74,19 @@ class PhoenixNovels(Crawler):
             volume_title = li.select_one("a.has-child")
             if not volume_title:
                 continue
-            self.volumes.append({"id": volume_id, "title": volume_title.text.strip()})
+            self.volumes.append(Volume(id=volume_id, title=volume_title.text.strip()))
 
             chapter_links = li.select(".wp-manga-chapter a[href]")
             for a in reversed(chapter_links):
-                for span in a.findAll("span"):
+                for span in a.find_all("span"):
                     span.extract()
                 chap_id += 1
-                self.chapters.append({
-                    "id": chap_id,
-                    "volume": volume_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                })
+                self.chapters.append(Chapter(
+                    id=chap_id,
+                    volume=volume_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]),
+                ))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

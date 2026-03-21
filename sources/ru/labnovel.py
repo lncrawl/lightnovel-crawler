@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +30,7 @@ class LabnovelCrawler(Crawler):
             chap_id = 1 + (len(self.chapters))
 
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "title": chapter["title"],
-                    "url": self.absolute_url(chapter["href"]),
-                }
+                Chapter(id=chap_id, title=chapter['title'], url=self.absolute_url(chapter['href']))
             )
 
     def download_chapter_body(self, chapter):

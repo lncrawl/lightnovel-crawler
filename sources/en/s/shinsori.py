@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -41,15 +41,10 @@ class ShinsoriCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(x["href"]),
-                    "title": x["title"] or ("Chapter %d" % chap_id),
-                }
+                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(x['href']), title=x['title'] or 'Chapter %d' % chap_id)
             )
 
-        self.volumes = [{"id": x + 1} for x in range(len(self.chapters) // 100 + 1)]
+        self.volumes = [Volume(id=x + 1) for x in range(len(self.chapters) // 100 + 1)]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

@@ -2,7 +2,7 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -37,15 +37,10 @@ class TomoTransCrawler(Crawler):
             vol_id = int(possible_vol[0])
             volumes.add(vol_id)
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": chap_url,
-                    "title": a.text.strip(),
-                }
+                Chapter(id=chap_id, volume=vol_id, url=chap_url, title=a.text.strip())
             )
 
-        self.volumes = [{"id": x} for x in volumes]
+        self.volumes = [Volume(id=x) for x in volumes]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

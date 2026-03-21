@@ -3,9 +3,8 @@ import logging
 import re
 from concurrent import futures
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,6 @@ class NovelUniverseCrawler(Crawler):
             raise Exception("Invalid content")
 
         possible_novel_title = book_info.select_one("h1.books_name")
-        assert isinstance(possible_novel_title, Tag), "No novel title"
         self.novel_title = possible_novel_title.text.strip()
         logger.info("Title: %s", self.novel_title)
 
@@ -41,7 +39,7 @@ class NovelUniverseCrawler(Crawler):
         logger.info(self.novel_author)
 
         possible_image = book_info.select_one(".img img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Cover: %s", self.novel_cover)
 
@@ -62,7 +60,7 @@ class NovelUniverseCrawler(Crawler):
         [x.result() for x in futures.as_completed(tasks)]
 
         self.chapters.sort(key=lambda x: x["id"])
-        self.volumes = [{"id": x, "title": ""} for x in set(self.volumes)]
+        self.volumes = [Volume(id=x, title="") for x in set(self.volumes)]
 
     def get_chapter_list(self, url):
         soup = self.get_soup(url)
@@ -77,12 +75,7 @@ class NovelUniverseCrawler(Crawler):
             chapter_title = "Chapter %d: %s" % (chapter_id, chapter_title)
             self.volumes.append(volume_id)
             self.chapters.append(
-                {
-                    "id": chapter_id,
-                    "url": self.absolute_url(a["href"]),
-                    "title": chapter_title,
-                    "volume": volume_id,
-                }
+                Chapter(id=chapter_id, url=self.absolute_url(a['href']), title=chapter_title, volume=volume_id)
             )
 
     def download_chapter_body(self, chapter):

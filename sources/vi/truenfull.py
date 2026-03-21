@@ -4,9 +4,10 @@ from concurrent.futures import Future
 from typing import List, Optional
 from urllib.parse import quote, urlencode
 
-from bs4.element import Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +19,9 @@ class TruenFull(Crawler):
     base_url = ["https://truyenfull.vn/", "https://truyentr.info/"]
 
     @staticmethod
-    def __select_value(tag: Tag, css: str, attr: Optional[str] = None):
+    def __select_value(tag: PageSoup, css: str, attr: Optional[str] = None):
         possible_item = tag.select_one(css)
-        if not isinstance(possible_item, Tag):
+        if not possible_item:
             return ""
         if attr:
             return (getattr(possible_item, "attrs") or {}).get(attr)
@@ -33,7 +34,7 @@ class TruenFull(Crawler):
         results = []
         for div in soup.select(".cate-list-books .list-item"):
             a = div.select_one(".truyen-title a")
-            if not isinstance(a, Tag):
+            if not a:
                 continue
 
             status_info = self.__select_value(div, ".status-info")
@@ -56,7 +57,6 @@ class TruenFull(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_title = soup.select_one("h3.title, h1.title")
-        assert isinstance(possible_title, Tag)
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
@@ -66,7 +66,7 @@ class TruenFull(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         authors = soup.select('.info a[itemprop="author"]')
-        self.novel_author = ", ".join([x.text for x in authors if isinstance(x, Tag)])
+        self.novel_author = ", ".join([x.text for x in authors if x])
         logger.info("Novel author: %s", self.novel_author)
 
         if "//truyentr.info/" in self.novel_url:
@@ -74,7 +74,7 @@ class TruenFull(Crawler):
         else:
             self.parse_truyenfull_chapters(soup)
 
-    def parse_truyentr_chapters(self, soup: Tag):
+    def parse_truyentr_chapters(self, soup: PageSoup):
         total_page = 1
         pagination = soup.select(".pagination li a")
         if len(pagination):
@@ -97,7 +97,7 @@ class TruenFull(Crawler):
             soup = f.result()
             self.parse_all_links(soup.select(".list-chapters a"))
 
-    def parse_truyenfull_chapters(self, soup: Tag):
+    def parse_truyenfull_chapters(self, soup: PageSoup):
         truyen_id = self.__select_value(soup, "input#truyen-id", "value")
         total_page = self.__select_value(soup, "input#total-page", "value")
         truyen_ascii = self.__select_value(soup, "input#truyen-ascii", "value")
@@ -127,19 +127,19 @@ class TruenFull(Crawler):
             soup = self.make_soup(data["chap_list"])
             self.parse_all_links(soup.select(".list-chapter a"))
 
-    def parse_all_links(self, links: List[Tag]):
+    def parse_all_links(self, links: List[PageSoup]):
         for a in links:
             chap_id = 1 + len(self.chapters)
             vol_id = 1 + len(self.chapters) // 100
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a["title"],
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a["title"],
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     def initialize(self) -> None:

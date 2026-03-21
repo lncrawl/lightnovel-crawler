@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from bs4 import Tag
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 import urllib.parse
 
 headers = {
@@ -41,7 +40,7 @@ class sixnineshu(Crawler):
 
     def initialize(self):
         # the default lxml parser cannot handle the huge gbk encoded sites (fails after 4.3k chapters)
-        self.init_parser("html.parser")
+        self.parser = "html.parser"
         self.init_executor(ratelimit=20)
 
     def search_novel(self, query):
@@ -77,12 +76,12 @@ class sixnineshu(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one("div.bookimg2 img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = soup.select_one('.booknav2 p a[href*="author"]')
-        if isinstance(possible_author, Tag):
+        if possible_author:
             self.novel_author = possible_author.text.strip()
         logger.info("Novel Author: %s", self.novel_author)
 
@@ -98,13 +97,13 @@ class sixnineshu(Crawler):
         logger.info("Novel Tags: %s", self.novel_tags)
 
         possible_synopsis = soup.select_one("div.navtxt")
-        if isinstance(possible_synopsis, Tag):
+        if possible_synopsis:
             self.novel_synopsis = self.cleaner.extract_contents(possible_synopsis)
         logger.info("Novel Synopsis: %s", self.novel_synopsis)
 
         # Only one category per novel on this website
         possible_tag = soup.select_one('.booknav2 p a[href*="top"]')
-        if isinstance(possible_tag, Tag):
+        if possible_tag:
             self.novel_tags = [possible_tag.text.strip()]
         logger.info("Novel Tag: %s", self.novel_tags)
 
@@ -116,17 +115,11 @@ class sixnineshu(Crawler):
         volumes = set([])
         for li in soup.select("div#catalog ul li"):
             a = li.select_one("a")
-            assert isinstance(a, Tag)
             ch_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
             self.chapters.append(
-                {
-                    "id": ch_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=ch_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

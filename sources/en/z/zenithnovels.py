@@ -3,9 +3,8 @@
 import logging
 import re
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -39,14 +38,9 @@ class ZenithNovelsCrawler(Crawler):
                 chap_id = len(self.chapters) + 1
                 vol_id = 1 + len(self.chapters) // 100
                 if len(self.volumes) < vol_id:
-                    self.volumes.append({"id": vol_id})
+                    self.volumes.append(Volume(id=vol_id))
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "title": a["title"],
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(id=chap_id, volume=vol_id, title=a['title'], url=self.absolute_url(a['href']))
                 )
 
             next_link = soup.select_one("ul.lcp_paginator a.lcp_nextlink")
@@ -56,7 +50,7 @@ class ZenithNovelsCrawler(Crawler):
                 break
 
         self.chapters.sort(key=lambda x: x["volume"] * 1e6 + x["id"])
-        self.volumes = [{"id": x, "title": ""} for x in set(self.volumes)]
+        self.volumes = [Volume(id=x, title="") for x in set(self.volumes)]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
@@ -73,7 +67,7 @@ class ZenithNovelsCrawler(Crawler):
 
         body = ""
         for tag in entry.children:
-            if isinstance(tag, Tag) and tag.name == "p" and len(tag.text.strip()):
+            if tag and tag.name == "p" and len(tag.text.strip()):
                 p = " ".join(self.cleaner.extract_contents(tag))
                 if len(p.strip()):
                     body += "<p>%s</p>" % p

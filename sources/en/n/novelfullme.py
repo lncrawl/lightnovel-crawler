@@ -5,7 +5,6 @@ import re
 from typing import List
 from urllib.parse import quote_plus
 
-from bs4 import Tag
 
 from lncrawl.core.crawler import Crawler
 from lncrawl.exceptions import LNException
@@ -23,7 +22,7 @@ class NovelFullMeCrawler(Crawler):
         return [
             SearchResult(title=a.text.strip(), url=self.absolute_url(a["href"]))
             for a in soup.select(".meta .title a")
-            if isinstance(a, Tag)
+            if a
         ]
 
     def read_novel_info(self):
@@ -31,7 +30,7 @@ class NovelFullMeCrawler(Crawler):
         slug = re.search(rf"{self.home_url}(.*?)(/|\?|#|$)", self.novel_url).group(1)
 
         title_tag = soup.select_one(".book-info .name h1")
-        if not isinstance(title_tag, Tag):
+        if not title_tag:
             raise LNException("No title found")
 
         self.novel_title = title_tag.get_text().strip()
@@ -39,7 +38,7 @@ class NovelFullMeCrawler(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         img_tag = soup.select_one(".img-cover img")
-        if isinstance(img_tag, Tag):
+        if img_tag:
             self.novel_cover = self.absolute_url(img_tag["data-src"])
 
         logger.info("Novel cover: %s", self.novel_cover)

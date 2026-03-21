@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import quote_plus
-from bs4 import BeautifulSoup
+from lncrawl.core.soup import PageSoup
+from lncrawl.models import Chapter, Volume
 from lncrawl.templates.browser.basic import BasicBrowserTemplate
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,6 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
 
     def read_novel_info_in_soup(self):
         """Read novel info using regular scraper"""
-        self.init_parser('lxml')
         soup = self.get_soup(self.novel_url)
         self._parse_novel_info(soup)
 
@@ -47,7 +47,7 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
         soup = self.browser.soup
         self._parse_novel_info(soup)
 
-    def _parse_novel_info(self, soup: BeautifulSoup):
+    def _parse_novel_info(self, soup: PageSoup):
         """Common logic for parsing novel info"""
         title_tag = soup.select_one("span[itemprop='name']")
         if title_tag:
@@ -65,7 +65,7 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
         # Syosetu.org chapters are in a table
         volume_id = 1
         chapter_id = 0
-        self.volumes.append({'id': 1})
+        self.volumes.append(Volume(id=1))
 
         table = soup.select_one("table")
         if table:
@@ -77,33 +77,31 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
                     strong = tds[0].select_one("strong")
                     if strong:
                         volume_id += 1
-                        self.volumes.append({
-                            'id': volume_id,
-                            'title': strong.text.strip(),
-                        })
+                        self.volumes.append(Volume(
+                            id=volume_id,
+                            title=strong.text.strip(),
+                        ))
                 elif len(tds) == 2:
                     # Chapter row
                     a_tag = tds[0].select_one("a")
                     if a_tag and "href" in a_tag.attrs:
                         chapter_id += 1
-                        self.chapters.append({
-                            "id": chapter_id,
-                            "volume": volume_id,
-                            "title": a_tag.text.strip(),
-                            "url": self.absolute_url(a_tag["href"]),
-                        })
+                        self.chapters.append(Chapter(
+                            id=chapter_id,
+                            volume=volume_id,
+                            title=a_tag.text.strip(),
+                            url=self.absolute_url(a_tag["href"]),
+                        ))
 
     def download_chapter_body_in_soup(self, chapter):
         """Download chapter content using regular scraper"""
         soup = self.get_soup(chapter["url"])
         contents = soup.select_one("#honbun")
-        contents = self.cleaner.extract_contents(contents)
-        return contents
+        return self.cleaner.extract_contents(contents)
 
     def download_chapter_body_in_browser(self, chapter):
         """Download chapter content using browser"""
         self.visit(chapter["url"])
         soup = self.browser.soup
         contents = soup.select_one("#honbun")
-        contents = self.cleaner.extract_contents(contents)
-        return contents
+        return self.cleaner.extract_contents(contents)

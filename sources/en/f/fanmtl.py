@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import Generator, List, Optional
-from concurrent.futures import Future
+from typing import Generator, Optional
 from urllib.parse import parse_qs, urlparse
 
-from bs4 import BeautifulSoup, Tag
-
+from lncrawl.core.soup import PageSoup
 from lncrawl.models import Chapter
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 
@@ -22,37 +20,46 @@ class FanMTLCrawler(ChapterOnlyBrowserTemplate):
             'div[align="center"]',
         })
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         possible_title = soup.select_one(".novel-info .novel-title")
         assert possible_title, "No novel title"
         return possible_title.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> Optional[str]:
+    def parse_cover(self, soup: PageSoup) -> Optional[str]:
         possible_image = soup.select_one(".novel-header figure.cover img")
         if not possible_image:
             return None
         src = possible_image.get("data-src") or possible_image["src"]
         return self.absolute_url(src)
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         possible_author = soup.select_one('.novel-info .author span[itemprop="author"]')
         if possible_author:
             yield possible_author.text.strip()
 
-    def select_chapter_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
-        last_page = soup.select('.pagination a[data-ajax-update="#chpagedlist"]')[-1]
-        last_page_url = self.absolute_url(last_page["href"])
+    def select_chapter_tags(self, soup: PageSoup) -> Generator[PageSoup, None, None]:
+        all_pages = soup.select('.pagination a[data-ajax-update="#chpagedlist"]')
+        if not all_pages:
+            yield from soup.select("ul.chapter-list li a")
+            return
+
+        last_page_url = self.absolute_url(all_pages[-1]["href"])
         common_page_url = last_page_url.split("?")[0]
         params = parse_qs(urlparse(last_page_url).query)
         page_count = int(params["page"][0]) + 1
-        futures: List[Future[BeautifulSoup]] = []
-        for page in range(page_count):
-            page_url = f"{common_page_url}?page={page}&wjm={params['wjm'][0]}"
-            futures.append(self.executor.submit(self.get_soup, page_url))
-        for soup in self.resolve_futures(futures, desc="TOC", unit="page"):
-            yield from soup.select("ul.chapter-list li a")
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+        futures = [
+            self.executor.submit(
+                self.get_soup,
+                f"{common_page_url}?page={page}&wjm={params['wjm'][0]}"
+            )
+            for page in range(page_count)
+        ]
+        for page in self.resolve_futures(futures, desc="TOC", unit="page"):
+            if page:
+                yield from page.select("ul.chapter-list li a")
+
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         chapter_title = tag.select_one(".chapter-title")
         assert chapter_title, "No chapter title"
         return Chapter(
@@ -61,5 +68,5 @@ class FanMTLCrawler(ChapterOnlyBrowserTemplate):
             title=chapter_title.get_text(strip=True),
         )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one("#chapter-article .chapter-content")

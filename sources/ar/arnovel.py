@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "https://arnovel.me/?s=%s&post_type=wp-manga&author=&artist=&release="
@@ -18,6 +20,8 @@ class ArNovel(Crawler):
         results = []
         for tab in soup.select(".c-tabs-item__content"):
             a = tab.select_one(".post-title h3 a")
+            if not a:
+                continue
             title = tab.select_one(".mg_alternative .summary-content")
             latest = tab.select_one(".latest-chap .chapter a").text
             votes = tab.select_one(".rating .total_votes").text
@@ -59,19 +63,13 @@ class ArNovel(Crawler):
 
         response = self.submit_form(self.novel_url.strip("/") + "/ajax/chapters")
         soup = self.make_soup(response)
-        for a in reversed(soup.select(".wp-manga-chapter a")):
-            chap_id = len(self.chapters) + 1
-            vol_id = 1 + len(self.chapters) // 100
-            if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
-            self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
-            )
+        chapters = soup.select(".wp-manga-chapter a")
+        for a in reversed(list(chapters)):
+            self.chapters.append(Chapter(
+                id=len(self.chapters) + 1,
+                title=a.text.strip(),
+                url=self.absolute_url(a["href"]),
+            ))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import Tag
-
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -34,20 +33,19 @@ class DemonTranslations(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
-                self.volumes.append({'id': vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
-            self.chapters.append({
-                'id': chap_id,
-                'volume': vol_id,
-                'url': self.absolute_url(a['href']),
-                'title': a.text.strip() or ('Chapter %d' % chap_id),
-            })
+            self.chapters.append(Chapter(
+                id=chap_id,
+                volume=vol_id,
+                url=self.absolute_url(a['href']),
+                title=a.text.strip() or ('Chapter %d' % chap_id),
+            ))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter['url'])
 
         body_parts = soup.select_one('div.entry-content')
-        assert isinstance(body_parts, Tag), 'No chapter body'
 
         # Remoeves Nav Button from top and bottom of chapters.
         for content in body_parts.select("p"):

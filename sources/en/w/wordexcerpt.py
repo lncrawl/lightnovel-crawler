@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "https://wordexcerpt.com/?s=%s&post_type=wp-manga"
@@ -69,12 +69,7 @@ class WordExcerptCrawler(Crawler):
                 for chapter in chapter_list:
                     chap_id = len(self.chapters) + 1
                     self.chapters.append(
-                        {
-                            "id": chap_id,
-                            "volume": volume["id"],
-                            "url": chapter["href"],
-                            "title": chapter.text.strip(),
-                        }
+                        Chapter(id=chap_id, volume=volume['id'], url=chapter['href'], title=chapter.text.strip())
                     )
                     if last_vol != volume["id"]:
                         last_vol = volume["id"]
@@ -94,12 +89,7 @@ class WordExcerptCrawler(Crawler):
                         }
                     )
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "url": chapter["href"],
-                        "title": chapter.text.strip(),
-                    }
+                    Chapter(id=chap_id, volume=vol_id, url=chapter['href'], title=chapter.text.strip())
                 )
 
     def download_chapter_body(self, chapter):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 import json
 
 logger = logging.getLogger(__name__)
@@ -68,14 +68,14 @@ class WuxiaClick(Crawler):
             chap_id = chapter["index"]
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": chapter["title"],
-                    "url": home_url + "chapter/" + chapter["novSlugChapSlug"],
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=chapter["title"],
+                    url=home_url + "chapter/" + chapter["novSlugChapSlug"],
+                )
             )
 
     def download_chapter_body(self, chapter):

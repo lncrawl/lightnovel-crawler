@@ -5,7 +5,7 @@ import re
 from typing import Generator, Optional
 from urllib.parse import quote_plus, urljoin
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
@@ -25,13 +25,13 @@ class RanobeLibCrawler(SearchableBrowserTemplate):
     def initialize(self) -> None:
         self.cleaner.bad_css.update([".free-support", 'div[id^="adfox_"]'])
 
-    def select_search_items_in_browser(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items_in_browser(self, query: str) -> Generator[PageSoup, None, None]:
         self.visit(urljoin(self.home_url, "/search/{}/".format(quote_plus(query))))
         self.browser.wait(".breadcrumbs-panel")
         for elem in self.browser.select(".short-cont .title a"):
             yield elem
 
-    def select_search_items(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
         soup = self.get_soup(
             urljoin(self.home_url, "/search/{}/".format(quote_plus(query)))
         )
@@ -39,23 +39,23 @@ class RanobeLibCrawler(SearchableBrowserTemplate):
         for elem in soup.select(".short-cont .title a"):
             yield elem
 
-    def parse_search_item(self, tag: Tag) -> SearchResult:
+    def parse_search_item(self, tag: PageSoup) -> SearchResult:
         return SearchResult(
             title=tag.text.strip(),
             url=self.absolute_url(tag["href"]),
         )
 
-    def visit_novel_page_in_browser(self) -> BeautifulSoup:
+    def visit_novel_page_in_browser(self) -> PageSoup:
         self.visit(self.novel_url)
         self.browser.wait(".body_left_in")
         self.novel_id = digit_regex.search(self.novel_url).group(1)
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one("h1.title")
         assert tag
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one(".r-fullstory-poster .poster a img")
         assert tag
         if tag.has_attr("data-src"):
@@ -63,7 +63,7 @@ class RanobeLibCrawler(SearchableBrowserTemplate):
         if tag.has_attr("src"):
             return self.absolute_url(tag["src"])
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         for a in soup.select('.tag_list a[href*="/authors/"]'):
             yield a.text.strip()
 
@@ -89,7 +89,7 @@ class RanobeLibCrawler(SearchableBrowserTemplate):
             next_page.scroll_into_view()
             next_page.click()
 
-    def parse_chapter_list(self, soup: BeautifulSoup) -> Generator[Chapter, None, None]:
+    def parse_chapter_list(self, soup: PageSoup) -> Generator[Chapter, None, None]:
         self.novel_id = digit_regex.search(self.novel_url).group(1)
         chapter_list_link = urljoin(self.home_url, f"/chapters/{self.novel_id}/")
         soup = self.get_soup(chapter_list_link)
@@ -120,16 +120,15 @@ class RanobeLibCrawler(SearchableBrowserTemplate):
         self.visit(chapter.url)
         self.browser.wait("#arrticle")
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one("div#arrticle")
 
-    def extract_page_data(self, soup: BeautifulSoup) -> dict:
+    def extract_page_data(self, soup: PageSoup) -> dict:
         script = soup.find(
-            lambda tag: isinstance(tag, Tag)
+            lambda tag: bool(tag)
             and tag.name == "script"
             and tag.text.startswith("window.__DATA__")
         )
-        assert isinstance(script, Tag)
 
         content = script.text.strip()
         content = content.replace("window.__DATA__ = ", "")

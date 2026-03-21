@@ -3,7 +3,7 @@
 import logging
 from typing import Generator, Optional, Union
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.models import Chapter, Volume
 from lncrawl.templates.browser.general import GeneralBrowserTemplate
@@ -39,16 +39,16 @@ class NovelsOnline(GeneralBrowserTemplate):
         )
 
     # TODO: [OPTIONAL] Open the Novel URL in the browser
-    def visit_novel_page_in_browser(self) -> BeautifulSoup:
+    def visit_novel_page_in_browser(self) -> PageSoup:
         self.visit(self.novel_url)
         self.browser.wait(".container--content")
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one(".block-title h1")
         assert tag
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.find("img", {"alt": self.novel_title})
         assert tag
         if tag.has_attr("data-src"):
@@ -56,12 +56,12 @@ class NovelsOnline(GeneralBrowserTemplate):
         elif tag.has_attr("src"):
             return self.absolute_url(tag["src"])
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         for a in soup.select("a[href*=author]"):
             yield a.text.strip()
 
     def parse_chapter_list(
-        self, soup: BeautifulSoup
+        self, soup: PageSoup
     ) -> Generator[Union[Chapter, Volume], None, None]:
         _id = 0
         for a in soup.select(".chapters .chapter-chs li a"):
@@ -74,5 +74,5 @@ class NovelsOnline(GeneralBrowserTemplate):
         self.visit(chapter.url)
         self.browser.wait(".container--content")
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one("#contentall")

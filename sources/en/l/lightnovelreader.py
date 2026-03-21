@@ -2,9 +2,9 @@
 import logging
 from urllib.parse import quote
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.models import Volume
 
 logger = logging.getLogger(__name__)
 
@@ -67,25 +67,24 @@ class LightnovelReader(Crawler):
         soup = self.make_soup(html_text)
 
         possible_title = soup.select_one(".section-header-title")
-        assert isinstance(possible_title, Tag)
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".novels-detail-left img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        possibles_syn = soup.select(".row .col-md-12.mb-3")
+        possibles_syn = list(soup.select(".row .col-md-12.mb-3"))
         for i, e in enumerate(possibles_syn):
             if e.text.strip() == "DESCRIPTION":
                 break
-        if (len(possibles_syn) >= i + 1) and isinstance(possibles_syn[i + 1], Tag):
+        if (len(possibles_syn) >= i + 1) and possibles_syn[i + 1]:
             self.novel_synopsis = self.cleaner.extract_contents(possibles_syn[i + 1])
         logger.info("Novel synopsis: %s", self.novel_synopsis)
 
         tags = soup.select(".novels-detail-right-in-right a[href*=category]")
-        self.novel_tags = [tag.text.strip() for tag in tags if isinstance(tag, Tag)]
+        self.novel_tags = [tag.text.strip() for tag in tags if tag]
         logger.info("Novel genre: %s", self.novel_tags)
 
         self.novel_author = ', '.join([
@@ -95,7 +94,7 @@ class LightnovelReader(Crawler):
         logger.info("Novel author: %s", self.novel_author)
 
         # possible_novel_id = soup.select_one('.js-load-chapters')
-        # assert isinstance(possible_novel_id, Tag)
+        # assert bool(possible_novel_id)
         # novel_id = str(possible_novel_id['data-novel-id']).strip()
         # logger.info('# novel id = %s', novel_id)
 
@@ -130,18 +129,13 @@ class LightnovelReader(Crawler):
             soup.select(".novels-detail-chapters-btn-list a[data-tab]")
         ):
             vol_id = len(self.volumes) + 1
-            self.volumes.append({"id": vol_id})
+            self.volumes.append(Volume(id=vol_id))
             for a in reversed(
                 soup.select(".novels-detail-chapters#%s a" % tab["data-tab"])
             ):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "title": a.text.strip(),
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
                 )
 
     def download_chapter_body(self, chapter):

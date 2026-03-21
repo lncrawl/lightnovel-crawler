@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 search_url = (
@@ -56,11 +56,7 @@ class WebNovelOnlineNet(Crawler):
         for li in reversed(soup.select(".listing-chapters_wrap ul li")):
             a = li.select_one("a")
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.text.strip(),
-                }
+                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a['href']), title=a.text.strip())
             )
 
     def download_chapter_body(self, chapter):

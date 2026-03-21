@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "%ssearch/%s"
@@ -68,12 +68,7 @@ class NovelGate(Crawler):
                 ch_id = [int(x) for x in re.findall(r"\d+", ch_title)]
                 ch_id = ch_id[0] if len(ch_id) else len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": ch_id,
-                        "volume": vol_id,
-                        "title": ch_title,
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(id=ch_id, volume=vol_id, title=ch_title, url=self.absolute_url(a['href']))
                 )
 
         logger.debug(

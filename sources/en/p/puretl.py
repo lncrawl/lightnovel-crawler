@@ -3,9 +3,8 @@
 import logging
 import re
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 from lncrawl.exceptions import LNException
 
 logger = logging.getLogger(__name__)
@@ -28,7 +27,7 @@ class PureTL(Crawler):
         slug = re.search(rf"{self.home_url}(.*?)(/|\?|$)", self.novel_url).group(1)
 
         title_tag = soup.select_one("meta[property='og:title']")
-        if not isinstance(title_tag, Tag):
+        if not title_tag:
             raise LNException("No title found")
 
         self.novel_title = (
@@ -38,29 +37,25 @@ class PureTL(Crawler):
         )
 
         possible_image = soup.select_one("meta[property='og:image']")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["content"])
 
         logger.info("Novel cover: %s", self.novel_cover)
 
         novel_author = soup.find("h4", string=re.compile(r"^By:"))
-        if isinstance(novel_author, Tag):
+        if novel_author:
             self.novel_author = novel_author.text.split(":")[1].strip()
 
         logger.info("Novel author: %s", self.novel_author)
 
         chapter_div = soup.find("div", class_="accordion-block")
-        if not isinstance(chapter_div, Tag):
+        if not chapter_div:
             return
 
         content = chapter_div.find_parent("section")
         for a in content.select(f"a[href*='{slug}/']"):
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.text.strip(),
-                }
+                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a['href']), title=a.text.strip())
             )
 
     def download_chapter_body(self, chapter):
@@ -69,7 +64,7 @@ class PureTL(Crawler):
 
         contents = soup.select_one(".blog-item-content")
         nav = contents.find("a", string=re.compile("Index"))
-        if isinstance(nav, Tag):
+        if nav:
             nav.parent.extract()
 
         return self.cleaner.extract_contents(contents)

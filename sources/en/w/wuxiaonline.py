@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://wuxiaworld.online/search.ajax?type=&query=%s"
@@ -51,17 +51,12 @@ class WuxiaOnlineCrawler(Crawler):
         for a in reversed(soup.select(".chapter-list .row span a")):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + (chap_id - 1) // 100
-            volume = {"id": vol_id, "title": ""}
+            volume = Volume(id=vol_id, title="")
             if last_vol != vol_id:
                 self.volumes.append(volume)
                 last_vol = vol_id
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a["title"],
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=a['title'], url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

@@ -4,7 +4,8 @@ import re
 from time import time
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.exceptions import LNException
 
 logger = logging.getLogger(__name__)
 
@@ -18,17 +19,17 @@ class WattpadCrawler(Crawler):
     def initialize(self):
         self.home_url = "https://www.wattpad.com/"
 
-    def login(self, email: str, password: str) -> None:
+    def login(self, username_or_email: str, password_or_token: str) -> None:
         resp = self.submit_form(
             f"{self.home_url}login?nextUrl=/home",
             data={
-                "username": email,
-                "password": password,
+                "username": username_or_email,
+                "password": password_or_token,
             },
         )
         apiAuthKey = re.findall(r"wattpad\.apiAuthKey = '([^']+)';", resp.text)
         if not apiAuthKey:
-            raise Exception("Failed to login")
+            raise LNException("Failed to login")
         logger.info("authorization", apiAuthKey[0])
         self.set_header("authorization", apiAuthKey[0])
 
@@ -36,15 +37,15 @@ class WattpadCrawler(Crawler):
             f"{self.home_url}api/v3/internal/current_user?fields=email,username,name",
         )
         logger.debug("current user", data)
-        if email.lower() != data["username"].lower():
-            raise Exception("Failed to login")
-        print(
-            "Logged in as %s[%s]<%s>" % (data["name"], data["username"], data["email"])
-        )
+        if username_or_email.lower() != data["username"].lower():
+            raise LNException("Failed to login")
+        logger.info(f"Logged in as {data['name']}[{data['username']}]<{data['email']}>")
 
     def read_novel_info(self):
         search_id = re.compile(r"(\d+)")
         id_no = search_id.search(self.novel_url)
+        if not id_no:
+            raise LNException("No story ID found")
         response = self.get_response(f"{self.home_url}api/v3/stories/{id_no.group()}")
         story_info = response.json()
 
@@ -59,11 +60,11 @@ class WattpadCrawler(Crawler):
 
         for a in story_info["parts"]:
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "url": self.absolute_url(a["url"]),
-                    "title": a["title"],
-                }
+                Chapter(
+                    id=len(self.chapters) + 1,
+                    url=self.absolute_url(a['url']),
+                    title=a['title'],
+                )
             )
 
     def download_chapter_body(self, chapter):

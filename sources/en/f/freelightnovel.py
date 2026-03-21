@@ -2,7 +2,7 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class FreeLightNovel(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.volumes.append({"id": 1})
+        self.volumes.append(Volume(id=1))
         for a in soup.select(".book-toc .dropdown-menu li.leaf a"):
             title = a.text.strip()
 
@@ -34,12 +34,12 @@ class FreeLightNovel(Crawler):
                 chap_id = int(match[0][1])
 
             self.chapters.append(
-                {
-                    "volume": 1,
-                    "id": chap_id,
-                    "title": title,
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    volume=1,
+                    id=chap_id,
+                    title=title,
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     def download_chapter_body(self, chapter):

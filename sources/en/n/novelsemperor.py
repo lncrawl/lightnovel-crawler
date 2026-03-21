@@ -2,6 +2,7 @@
 import logging
 import re
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://novelsemperor.com/series?title=%s&type=&status="
@@ -87,14 +88,14 @@ class NovelsEmperorCrawler(Crawler):
             ch_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": ch_id,
-                    "volume": vol_id,
-                    "title": element.select_one("div div span").text,
-                    "url": self.absolute_url(element["href"]),
-                }
+                Chapter(
+                    id=ch_id,
+                    volume=vol_id,
+                    title=element.select_one("div div span").text,
+                    url=self.absolute_url(element["href"]),
+                )
             )
         logger.debug(
             "%d chapters and %d volumes found", len(self.chapters), len(self.volumes)

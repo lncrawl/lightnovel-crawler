@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = (
@@ -36,7 +36,6 @@ class BroNovel(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_title = soup.select_one('meta[property="og:title"]')
-        assert isinstance(possible_title, Tag), "No novel title"
         self.novel_title = possible_title["content"]
         self.novel_title = self.novel_title.rsplit(" ", 1)[0].strip()
         logger.info("Novel title: %s", self.novel_title)
@@ -64,15 +63,13 @@ class BroNovel(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
-            self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text,
-                    "url": self.absolute_url(a["href"]),
-                }
-            )
+                self.volumes.append(Volume(id=vol_id))
+            self.chapters.append(Chapter(
+                id=chap_id,
+                volume=vol_id,
+                title=a.text,
+                url=self.absolute_url(a['href']),
+            ))
 
     def download_chapter_body(self, chapter):
         logger.info("Visiting %s", chapter["url"])

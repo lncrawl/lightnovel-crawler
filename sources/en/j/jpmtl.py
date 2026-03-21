@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -51,14 +51,7 @@ class JpmtlCrawler(Crawler):
             for chapter in volume["chapters"]:
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": volume["volume"],
-                        "url": self.absolute_url(
-                            self.novel_url + "/" + str(chapter["id"])
-                        ),
-                        "title": chapter["title"] or ("Chapter %d" % chap_id),
-                    }
+                    Chapter(id=chap_id, volume=volume['volume'], url=self.absolute_url(self.novel_url + '/' + str(chapter['id'])), title=chapter['title'] or 'Chapter %d' % chap_id)
                 )
 
     def download_chapter_body(self, chapter):

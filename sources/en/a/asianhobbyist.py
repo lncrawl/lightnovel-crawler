@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +27,14 @@ class AsianHobbyistCrawler(Crawler):
             title = a.text.strip()
             chap_id = len(self.chapters) + 1
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "title": title,
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    id=chap_id,
+                    title=title,
+                    url=self.absolute_url(a['href']),
+                )
             )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
         content = soup.select_one(".entry-content")
-        self.cleaner.extract_contents(content)
-        return content.decode_contents()
+        return self.cleaner.extract_contents(content)

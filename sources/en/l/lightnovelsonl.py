@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import BeautifulSoup
+from lncrawl.core.soup import PageSoup
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.models import Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://lightnovelsonl.com/getsearchstory"
@@ -27,7 +28,7 @@ class LightNovelsOnl(Crawler):
 
         results = []
         for novel in data:
-            titleSoup = BeautifulSoup(novel["name"], "lxml")
+            titleSoup = PageSoup.create(novel["name"], parser="lxml")
             results.append(
                 {
                     "title": titleSoup.body.text.title(),
@@ -60,14 +61,9 @@ class LightNovelsOnl(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

@@ -5,7 +5,7 @@ import re
 from typing import Generator, Optional, Union
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.exceptions import FallbackToBrowser, LNException
 from lncrawl.models import Chapter, SearchResult, Volume
@@ -45,31 +45,31 @@ class ScribbleHubCrawler(SearchableBrowserTemplate):
             ]
         )
 
-    def select_search_items_in_browser(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items_in_browser(self, query: str) -> Generator[PageSoup, None, None]:
         raise LNException("Browser Search not supported")
 
-    def select_search_items(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
         raise FallbackToBrowser()
 
-    def parse_search_item(self, tag: Tag) -> SearchResult:
+    def parse_search_item(self, tag: PageSoup) -> SearchResult:
         return SearchResult(
             title=tag.text.strip(),
             url=self.absolute_url(tag["href"]),
         )
 
-    def visit_novel_page_in_browser(self) -> BeautifulSoup:
+    def visit_novel_page_in_browser(self) -> PageSoup:
         url_parts = self.novel_url.split("/")
         self.novel_url = f"{url_parts[0]}/{url_parts[2]}/{url_parts[3]}/{url_parts[4]}/"
         logger.debug(self.novel_url)
         self.visit(self.novel_url)
         self.browser.wait(".fictionposts-template-default")
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one(".fic_title")
         assert tag, "No title found"
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one(".fic_image img")
         if not tag:
             return
@@ -78,15 +78,15 @@ class ScribbleHubCrawler(SearchableBrowserTemplate):
         if tag.has_attr("src"):
             return self.absolute_url(tag["src"])
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         for a in soup.select(".auth_name_fic"):
             yield a.text.strip()
 
-    def parse_genres(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_genres(self, soup: PageSoup) -> Generator[str, None, None]:
         for a in soup.select("a.fic_genre"):
             yield a.text.strip()
 
-    def parse_summary(self, soup: BeautifulSoup) -> str:
+    def parse_summary(self, soup: PageSoup) -> str:
         tag = soup.select_one(".wi_fic_desc")
         return self.cleaner.extract_contents(tag)
 
@@ -114,15 +114,14 @@ class ScribbleHubCrawler(SearchableBrowserTemplate):
             )
 
     def parse_chapter_list(
-        self, soup: BeautifulSoup
+        self, soup: PageSoup
     ) -> Generator[Union[Chapter, Volume], None, None]:
         chapter_count = soup.find("span", {"class": "cnt_toc"})
         chapter_count = (
-            int(chapter_count.text) if isinstance(chapter_count, Tag) else -1
+            int(chapter_count.text) if chapter_count else -1
         )
 
         possible_mypostid = soup.select_one("input#mypostid")
-        assert isinstance(possible_mypostid, Tag)
         mypostid = int(str(possible_mypostid["value"]))
         logger.info("#mypostid = %d", mypostid)
 
@@ -146,5 +145,5 @@ class ScribbleHubCrawler(SearchableBrowserTemplate):
         self.visit(chapter.url)
         self.browser.wait("main#main")
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one("#chp_raw")

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 # import urllib.parse
 
@@ -110,12 +110,7 @@ class Novel543(Crawler):
             chap_url = self.absolute_url(a_tag["href"])
             if chap_title and chap_url:
                 self.chapters.append(
-                    {
-                        "id": idx + 1,
-                        "volume": 1,
-                        "url": chap_url,
-                        "title": chap_title,
-                    }
+                    Chapter(id=idx + 1, volume=1, url=chap_url, title=chap_title)
                 )
 
         logger.info("Found %d chapters for %s", len(self.chapters), self.novel_title)

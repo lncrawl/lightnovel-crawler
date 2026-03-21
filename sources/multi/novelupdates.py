@@ -4,7 +4,7 @@ import time
 from typing import Mapping, Optional
 from urllib.parse import urlencode, urlparse
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 from readability import Document
 
 from lncrawl.core.browser import EC
@@ -65,7 +65,7 @@ class NovelupdatesCrawler(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate)
         self.browser.wait(".l-main .search_main_box_nu")
         yield from self.browser.soup.select(".l-main .search_main_box_nu")
 
-    def parse_search_item(self, tag: Tag) -> SearchResult:
+    def parse_search_item(self, tag: PageSoup) -> SearchResult:
         a = tag.select_one(".search_title a[href]")
 
         info = []
@@ -91,23 +91,23 @@ class NovelupdatesCrawler(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate)
             url=self.absolute_url(a["href"]),
         )
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         return soup.select_one(".seriestitlenu").text
 
     def parse_title_in_browser(self) -> str:
         self.browser.wait(".seriestitlenu")
         return self.parse_title(self.browser.soup)
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         img_tag = soup.select_one(".seriesimg img[src]")
         if img_tag:
             return img_tag["src"]
 
-    def parse_authors(self, soup: BeautifulSoup):
+    def parse_authors(self, soup: PageSoup):
         for a in soup.select("#showauthors a#authtag"):
             yield a.text.strip()
 
-    def select_chapter_tags(self, soup: BeautifulSoup):
+    def select_chapter_tags(self, soup: PageSoup):
         postid = soup.select_one("input#mypostid")["value"]
         response = self.submit_form(
             "https://www.novelupdates.com/wp-admin/admin-ajax.php",
@@ -130,7 +130,7 @@ class NovelupdatesCrawler(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate)
         tag = self.browser.find("#my_popupreading").as_tag()
         yield from reversed(tag.select("li.sp_li_chp a[data-id]"))
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         title = tag.text.strip().title()
         title_match = self._title_matcher.match(title)
         if title_match:  # skip simple titles
@@ -158,7 +158,7 @@ class NovelupdatesCrawler(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate)
         chapter.url = self.browser.current_url
         return self.parse_chapter_body(chapter, self.browser.html)
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return super().select_chapter_body(soup)
 
     def parse_chapter_body(self, chapter: Chapter, text: str) -> str:

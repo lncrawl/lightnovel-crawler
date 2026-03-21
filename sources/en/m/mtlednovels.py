@@ -2,9 +2,9 @@
 
 import logging
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://mtled-novels.com/search_novel.php?q=%s"
@@ -38,7 +38,7 @@ class MtledNovelsCrawler(Crawler):
         if "response" in data and data["response"] == "true":
             print("Logged In")
         else:
-            soup = BeautifulSoup(data["response"], "lxml")
+            soup = PageSoup.create(data["response"], parser="lxml")
             soup.find("button").extract()
             error = soup.find("div").text.strip()
             raise PermissionError(error)
@@ -82,14 +82,9 @@ class MtledNovelsCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.text.strip() or ("Chapter %d" % chap_id),
-                }
+                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
             )
 
     def download_chapter_body(self, chapter):
@@ -98,7 +93,7 @@ class MtledNovelsCrawler(Crawler):
         contents = soup.select("div.translated p")
         for p in soup.select("div.translated p"):
             for span in p.find_all("span"):
-                if isinstance(span, Tag):
+                if span:
                     span.unwrap()
 
         body = [str(p) for p in contents if p.text.strip()]

@@ -2,7 +2,7 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -49,16 +49,16 @@ class NovelPassion(Crawler):
         for a in soup.select("#stq a.c_000"):
             vol_id = chap_id // 100 + 1
             if vol_id > len(self.volumes):
-                self.volumes.append({"id": vol_id, "title": "Volume %d" % vol_id})
+                self.volumes.append(Volume(id=vol_id, title="Volume %d" % vol_id))
 
             chap_id += 1
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": ("Chapter %d" % chap_id),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=("Chapter %d" % chap_id),
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     def download_chapter_body(self, chapter):

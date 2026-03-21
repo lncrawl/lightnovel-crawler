@@ -3,7 +3,7 @@ import logging
 import re
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 novel_page = "https://myoniyonitranslations.com/%s"
@@ -55,29 +55,29 @@ class MyOniyOniTranslation(Crawler):
             for div in accordian:
                 a = div.select_one("a.x-accordion-toggle")
                 vol_id = len(self.volumes) + 1
-                self.volumes.append({"id": vol_id, "title": a.text.strip()})
+                self.volumes.append(Volume(id=vol_id, title=a.text.strip()))
                 for chap in div.select(".x-accordion-body a"):
                     self.chapters.append(
-                        {
-                            "volume": vol_id,
-                            "id": len(self.chapters) + 1,
-                            "title": chap.text.strip(" []"),
-                            "url": self.absolute_url(chap["href"]),
-                        }
+                        Chapter(
+                            volume=vol_id,
+                            id=len(self.chapters) + 1,
+                            title=chap.text.strip(" []"),
+                            url=self.absolute_url(chap["href"]),
+                        )
                     )
         else:
-            self.volumes.append({"id": 1})
+            self.volumes.append(Volume(id=1))
             for a in soup.select(".entry-content p a"):
                 possible_url = self.absolute_url(a["href"].lower())
                 if not possible_url.startswith(self.novel_url):
                     continue
                 self.chapters.append(
-                    {
-                        "volume": 1,
-                        "id": len(self.chapters) + 1,
-                        "url": possible_url,
-                        "title": a.text.strip(" []"),
-                    }
+                    Chapter(
+                        volume=1,
+                        id=len(self.chapters) + 1,
+                        url=possible_url,
+                        title=a.text.strip(" []"),
+                    )
                 )
 
         logger.debug(

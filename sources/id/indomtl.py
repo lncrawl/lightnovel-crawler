@@ -3,7 +3,7 @@
 import logging
 import re
 from urllib.parse import quote
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -65,15 +65,10 @@ class IndoMTLCrawler(Crawler):
 
         for item in reversed(all_items):
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "volume": len(self.chapters) // 100 + 1,
-                    "title": item["title"],
-                    "url": item["permalink"],
-                }
+                Chapter(id=len(self.chapters) + 1, volume=len(self.chapters) // 100 + 1, title=item['title'], url=item['permalink'])
             )
 
-        self.volumes = [{"id": x + 1} for x in range(len(self.chapters) // 100 + 1)]
+        self.volumes = [Volume(id=x + 1) for x in range(len(self.chapters) // 100 + 1)]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

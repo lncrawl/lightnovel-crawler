@@ -3,11 +3,11 @@ import logging
 from lxml import etree
 import json
 import base64
-from bs4 import BeautifulSoup
+from lncrawl.core.soup import PageSoup
 import re
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -78,11 +78,7 @@ class Reaperscans(Crawler):
             chap_id = 1 + (len(self.chapters))
             chap_name = item["chapter_name"]
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "url": f"{self.novel_url}/{item['chapter_slug']}",
-                    "title": chap_name if chap_name else item["chapter_title"],
-                }
+                Chapter(id=chap_id, url=f"{self.novel_url}/{item['chapter_slug']}", title=chap_name if chap_name else item['chapter_title'])
             )
 
     def extract_nextjs_flight_text(self, html: str) -> str:
@@ -149,5 +145,5 @@ class Reaperscans(Crawler):
         response = self.get_response(chapter["url"], timeout=10)
         html_text = response.content.decode("utf8", "ignore")
         content = self.extract_nextjs_flight_text(html_text)[0]
-        chapter_body = BeautifulSoup(content, "lxml")
+        chapter_body = PageSoup.create(content, parser="lxml")
         return self.cleaner.extract_contents(chapter_body)

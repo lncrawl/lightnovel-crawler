@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 
 import regex
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -81,11 +81,7 @@ class QidianComCrawler(Crawler):
                 )
                 for j in range(int(start_ch), int(final_ch) + 1):
                     self.chapters.append(
-                        {
-                            "id": j,
-                            "volume": vol_id,
-                            "url": item["Href"],
-                        }
+                        Chapter(id=j, volume=vol_id, url=item['Href'])
                     )
             else:
                 self.volumes.append(
@@ -95,11 +91,7 @@ class QidianComCrawler(Crawler):
                     }
                 )
                 self.chapters.append(
-                    {
-                        "id": int(item["Text"]),
-                        "volume": vol_id,
-                        "url": item["Href"],
-                    }
+                    Chapter(id=int(item['Text']), volume=vol_id, url=item['Href'])
                 )
 
     def download_chapter_body(self, chapter):

@@ -1,6 +1,9 @@
 import logging
 import re
+from typing import List
+
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +22,7 @@ class Xbanxia(Crawler):
     has_manga = False
     has_mtl = False
 
-    def search_novel(self, query):
+    def search_novel(self, query: str) -> List[SearchResult]:
         logger.debug(f"Searching {query} on Xbanxia")
 
         # The search URL redirect to the closest match instead of a list of results
@@ -30,39 +33,39 @@ class Xbanxia(Crawler):
             headers,
         )
 
-        title = soup.select_one("div.book-describe h1")
-        if title:
+        title = soup.select_one("div.book-describe h1").text
+        if not title:
+            return []
 
-            possible_last_update = ""
-            for p in soup.select("div.book-describe p"):
-                if p.text.startswith("最近更新︰"):
-                    possible_last_update = p.text.replace("最近更新︰", "").strip()
+        last_update = ""
+        for p in soup.select("div.book-describe p"):
+            if p.text.startswith("最近更新︰"):
+                last_update = p.text.replace("最近更新︰", "").strip()
+                break
 
-            possible_last_chap = soup.select_one("div.book-describe p")
-            for p in soup.select("div.book-describe p"):
-                if p.text.startswith("最新章節︰"):
-                    possible_last_chap = p.text.replace("最新章節︰", "").strip()
-                    break
+        last_chapter = ""
+        for p in soup.select("div.book-describe p"):
+            if p.text.startswith("最新章節︰"):
+                last_chapter = p.text.replace("最新章節︰", "").strip()
+                break
 
-            canonical_link = soup.select_one("link[rel='canonical']")
-            if canonical_link and "href" in canonical_link.attrs:
-                novel_url = canonical_link["href"]
-            else:
-                novel_url = self.absolute_url(
-                    soup.select_one("div.book-describe a")["href"]
-                )
+        canonical_link = soup.select_one("link[rel='canonical']")
+        if canonical_link and "href" in canonical_link.attrs:
+            novel_url = canonical_link["href"]
+        else:
+            novel_url = self.absolute_url(
+                soup.select_one("div.book-describe a")["href"]
+            )
 
-            chapter_count = len(soup.select("div.book-list ul li a"))
+        chapter_count = len(soup.select("div.book-list ul li a"))
 
-            return [
-                {
-                    "title": title.text,
-                    "url": novel_url,
-                    "info": f"Chapters: {chapter_count} | Latest: {possible_last_chap} | Last update: {possible_last_update}",
-                }
-            ]
-
-        return []
+        return [
+            SearchResult(
+                title=title,
+                url=novel_url,
+                info=f"Chapters: {chapter_count} | Latest: {last_chapter} | Last update: {last_update}",
+            )
+        ]
 
     def read_novel_info(self):
         logger.debug("Visiting %s", self.novel_url)
@@ -100,19 +103,17 @@ class Xbanxia(Crawler):
         for div in soup.select("div.book-list ul li"):
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
             for a in div.select("a"):
-                ch_title = a.text
-                ch_id = [int(x) for x in re.findall(r"\d+", ch_title)]
-                ch_id = ch_id[0] if len(ch_id) else len(self.chapters) + 1
+                ch_id = len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": ch_id,
-                        "volume": vol_id,
-                        "title": ch_title,
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(
+                        id=ch_id,
+                        volume=vol_id,
+                        title=a.text,
+                        url=self.absolute_url(a["href"]),
+                    )
                 )
 
         logger.debug(

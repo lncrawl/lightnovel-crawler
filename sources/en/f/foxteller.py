@@ -4,7 +4,7 @@ import base64
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.foxteller.com/search"
@@ -49,17 +49,17 @@ class FoxtellerCrawler(Crawler):
 
         for card in soup.select("#myTabContent #accordion .card"):
             vol_id = len(self.chapters) // 100 + 1
-            self.volumes.append({"id": vol_id})
+            self.volumes.append(Volume(id=vol_id))
 
             for a in card.select(".card-body a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "title": a.text.strip(),
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(
+                        id=chap_id,
+                        volume=vol_id,
+                        title=a.text.strip(),
+                        url=self.absolute_url(a["href"]),
+                    )
                 )
 
     def download_chapter_body(self, chapter):

@@ -1,7 +1,6 @@
 import logging
-from typing import Optional
 
-from bs4 import Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.exceptions import LNException
 from lncrawl.templates.mangastream import MangaStreamTemplate
@@ -14,8 +13,8 @@ class Arcanetranslations(MangaStreamTemplate):
     has_manga = False
     base_url = ["https://arcanetranslations.com/"]
 
-    def select_chapter_body(self, tag) -> Optional[Tag]:
-        result = super().select_chapter_body(tag)
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
+        result = super().select_chapter_body(soup)
         if not result:
             raise LNException('No chapter content')
         if "Login to buy access to this content" in result.text:

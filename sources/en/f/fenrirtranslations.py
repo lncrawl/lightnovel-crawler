@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import BeautifulSoup
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.templates.madara import MadaraTemplate
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class FenrirTranslationsCrawler(MadaraTemplate):
             ]
         )
 
-    def parse_authors(self, soup: BeautifulSoup):
+    def parse_authors(self, soup: PageSoup):
         for a in soup.select('.manga-authors a[href*="author"]'):
             yield a.text.strip()
 
@@ -26,7 +26,7 @@ class FenrirTranslationsCrawler(MadaraTemplate):
         possible_summary = soup.select_one(".manga-summary")
         return self.cleaner.extract_contents(possible_summary)
 
-    def select_chapter_tags(self, soup: BeautifulSoup):
+    def select_chapter_tags(self, soup: PageSoup):
         try:
             clean_novel_url = self.novel_url.split("?")[0].strip("/")
             response = self.submit_form(f"{clean_novel_url}/ajax/chapters/")

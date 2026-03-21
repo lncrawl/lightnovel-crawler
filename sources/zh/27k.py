@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
 from lncrawl.core.crawler import Crawler
 import urllib.parse
 
@@ -41,7 +40,7 @@ class LeYueDu(Crawler):
     ]
 
     def initialize(self):
-        self.init_parser("html.parser")
+        self.parser = "html.parser"
         self.init_executor(ratelimit=20)
 
     def search_novel(self, query):
@@ -75,18 +74,18 @@ class LeYueDu(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one("div.bookimg2 img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = soup.select_one('.booknav2 p a[href*="/author/"]')
-        if isinstance(possible_author, Tag):
+        if possible_author:
             self.novel_author = possible_author.text.strip()
         logger.info("Novel Author: %s", self.novel_author)
 
         # Only one category per novel on this website
         possible_tag = soup.select_one('.booknav2 p a[href*="/sort/"]')
-        if isinstance(possible_tag, Tag):
+        if possible_tag:
             self.novel_tags = [possible_tag.text.strip()]
         logger.info("Novel Tag: %s", self.novel_tags)
 
@@ -95,7 +94,7 @@ class LeYueDu(Crawler):
 
         # Synopsis in chapter list page is cleaner than in book info page
         possible_synopsis = soup.select_one("div.newnav .ellipsis_2")
-        if isinstance(possible_synopsis, Tag):
+        if possible_synopsis:
             self.novel_synopsis = possible_synopsis.text.strip()
         logger.info("Novel Synopsis: %s", self.novel_synopsis)
 

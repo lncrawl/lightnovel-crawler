@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +48,7 @@ class MyDramaNovel(Crawler):
         preview_chapters = soup.select("a.td-image-wrap")[0:5]
         for preview_chapter in preview_chapters:
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "volume": 0,
-                    "url": self.absolute_url(preview_chapter.get("href")),
-                    "title": preview_chapter.get("title"),
-                }
+                Chapter(id=len(self.chapters) + 1, volume=0, url=self.absolute_url(preview_chapter.get('href')), title=preview_chapter.get('title'))
             )
 
         for chapter in soup.select(
@@ -63,12 +58,7 @@ class MyDramaNovel(Crawler):
             if not chapter_title:
                 continue
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "volume": 0,
-                    "url": self.absolute_url(chapter_title.get("href")),
-                    "title": chapter_title.text,
-                }
+                Chapter(id=len(self.chapters) + 1, volume=0, url=self.absolute_url(chapter_title.get('href')), title=chapter_title.text)
             )
 
     def download_chapter_body(self, chapter):

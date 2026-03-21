@@ -41,7 +41,6 @@ class WuxiaComCrawler(BasicBrowserTemplate):
             self.bearer_token = email + " " + password
         else:
             logger.debug("login type: Email(%s)", email)
-            self.init_browser()
             self.visit("https://www.wuxiaworld.com/manage/profile/")
             self.browser.wait("h6 button")
             self.browser.find("h6 button").click()

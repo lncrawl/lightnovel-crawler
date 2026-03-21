@@ -2,7 +2,7 @@
 import hashlib
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -60,15 +60,10 @@ class NovelSpreadCrawler(Crawler):
         for chap in data["data"]:
             volumes.add(chap["volume"])
             self.chapters.append(
-                {
-                    "id": chap["chapter_number"],
-                    "volume": chap["volume"],
-                    "title": chap["title"],
-                    "url": self.absolute_url(chap["link"]),
-                }
+                Chapter(id=chap['chapter_number'], volume=chap['volume'], title=chap['title'], url=self.absolute_url(chap['link']))
             )
 
-        self.volumes = [{"id": x, "title": ""} for x in volumes]
+        self.volumes = [Volume(id=x, title="") for x in volumes]
 
         logger.debug(
             "%d chapters and %d volumes found", len(self.chapters), len(self.volumes)

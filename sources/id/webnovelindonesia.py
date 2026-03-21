@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from concurrent import futures
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -52,11 +52,16 @@ class WebnovelIndonesia(Crawler):
 
         logger.info("Building sorted chapter list...")
         for page in sorted(temp_chapters.keys()):
-            self.volumes.append({"id": page})
+            self.volumes.append(Volume(id=page))
             for chap in temp_chapters[page]:
-                chap["volume"] = page
-                chap["id"] = 1 + len(self.chapters)
-                self.chapters.append(chap)
+                self.chapters.append(
+                    Chapter(
+                        id=1 + len(self.chapters),
+                        volume=page,
+                        title=chap["title"],
+                        url=chap["url"],
+                    )
+                )
 
     def extract_chapter_list(self, url):
         temp_list = []

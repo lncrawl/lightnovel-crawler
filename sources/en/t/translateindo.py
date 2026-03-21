@@ -2,7 +2,7 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -65,12 +65,7 @@ class TranslateIndoCrawler(Crawler):
             for a in div.select("ol.cl-body li a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "url": self.absolute_url(a["href"]),
-                        "title": a.text.strip() or ("Chapter %d" % chap_id),
-                    }
+                    Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
                 )
 
     def download_chapter_body(self, chapter):

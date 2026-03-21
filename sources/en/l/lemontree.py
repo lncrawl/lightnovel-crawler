@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import Tag
-
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.models import Volume
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +15,6 @@ class LemonTreeTranslations(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_novel_title = soup.find("h1", {"class": "entry-title"})
-        assert isinstance(possible_novel_title, Tag), "No novel title"
         self.novel_title = possible_novel_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
@@ -30,7 +28,6 @@ class LemonTreeTranslations(Crawler):
 
         # Removes none TOC links from bottom of page.
         toc_parts = soup.select_one(".entry-content")
-        assert isinstance(toc_parts, Tag), "No table of contents"
         for notoc in toc_parts.select(".sharedaddy"):
             notoc.extract()
 
@@ -43,14 +40,9 @@ class LemonTreeTranslations(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.text.strip() or ("Chapter %d" % chap_id),
-                }
+                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
             )
 
     def download_chapter_body(self, chapter):

@@ -5,8 +5,6 @@ import re
 
 from urllib.parse import quote
 
-from bs4.element import Tag
-
 from lncrawl.core.crawler import Crawler
 from lncrawl.models import Volume
 from lncrawl.models import Chapter
@@ -47,7 +45,6 @@ class LightNovelsLive(Crawler):
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
         script = soup.select_one('script#__NEXT_DATA__')
-        assert isinstance(script, Tag), "No available novel info."
 
         data = json.loads(script.text)
 

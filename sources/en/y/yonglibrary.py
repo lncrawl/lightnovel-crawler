@@ -2,7 +2,7 @@
 import logging
 from typing import Generator, List, Optional, Union
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 from lncrawl.models import Chapter, SearchResult, Volume
 from lncrawl.templates.browser.general import GeneralBrowserTemplate
 
@@ -37,24 +37,24 @@ class YongLibraryCrawler(GeneralBrowserTemplate):
             results.append(SearchResult(title=title, url=novel_url))
         return results
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one("h1.novel-hero__title")
         assert tag, "Could not find novel title"
         return tag.get_text(strip=True)
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one(".novel-hero__cover img, img.novel-hero__image")
         if tag:
             return self.absolute_url(tag.get("src", ""))
         return ""
 
-    def parse_genres(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_genres(self, soup: PageSoup) -> Generator[str, None, None]:
         for tag in soup.select(".novel-hero__tags .badge--genre"):
             text = tag.get_text(strip=True)
             if text:
                 yield text
 
-    def parse_summary(self, soup: BeautifulSoup) -> str:
+    def parse_summary(self, soup: PageSoup) -> str:
         tag = soup.select_one(".insight-content")
         if tag:
             first_p = tag.find("p")
@@ -64,7 +64,7 @@ class YongLibraryCrawler(GeneralBrowserTemplate):
         return ""
 
     def parse_chapter_list(
-        self, soup: BeautifulSoup
+        self, soup: PageSoup
     ) -> Generator[Union[Chapter, Volume], None, None]:
         items = soup.select("li.chapter-item")
         items.reverse()
@@ -80,5 +80,5 @@ class YongLibraryCrawler(GeneralBrowserTemplate):
                 title=title,
             )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one(".chapter-content__body")

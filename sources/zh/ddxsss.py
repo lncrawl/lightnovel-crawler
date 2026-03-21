@@ -2,7 +2,6 @@
 import logging
 import re
 
-from bs4 import Tag
 from lncrawl.core.crawler import Crawler
 
 from lncrawl.models import Volume, Chapter, SearchResult
@@ -20,7 +19,7 @@ class DdxSss(Crawler):
         self.init_executor(ratelimit=20)
 
         # the default lxml parser cannot handle the huge gbk encoded sites (fails after 4.3k chapters)
-        self.init_parser("html.parser")
+        self.parser = "html.parser"
         self.cleaner.bad_tags.update(["script", "a"])
         self.cleaner.bad_css.update(
             [
@@ -76,44 +75,31 @@ class DdxSss(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = meta.select_one(".cover > img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = meta.find(".small span", text=r"作者：")
-        if isinstance(possible_author, Tag):
+        if possible_author:
             self.novel_author = possible_author.text.strip().replace("作者：", "")
         logger.info("Novel Author: %s", self.novel_author)
 
         possible_synopsis = meta.select_one(".intro")
-        if isinstance(possible_synopsis, Tag):
+        if possible_synopsis:
             self.novel_synopsis = possible_synopsis.text.strip()
         logger.info("Novel Synopsis: %s", self.novel_synopsis)
 
-        for idx, a in enumerate(soup.select("div.listmain a")):
-            if not isinstance(a, Tag):
-                logger.info("Skipping fake anchor? %s", a)
-                continue
-            if str(book_id) not in a["href"]:
-                logger.info("Skipping non-chapter link: %s", a["href"])
-                continue
-
-            chap_id = int(
-                re.match(re.compile(f".*/book/{book_id}/(\\d+).*"), a["href"])[1]
-            )
-            vol_id = len(self.chapters) // 100 + 1
-            if len(self.chapters) % 100 == 0:
-                self.volumes.append(Volume(vol_id))
+        for a in soup.select("div.listmain a"):
             if not a:
-                # this should not occur with html.parser, if it does, likely due to parser/encoding issue
-                logger.info("Failed to get Chapter %d! Missing Link", chap_id)
-                continue
+                continue  # Skipping fake anchor
+            if str(book_id) not in a["href"]:
+                continue  # Skipping non-chapter link
+
             self.chapters.append(
                 Chapter(
-                    chap_id,
+                    id=len(self.chapters) + 1,
                     url=self.absolute_url(a["href"]),
-                    title=a.text.strip(),  # .replace(f"第{chap_id}章 ", ""),
-                    volume=vol_id,
+                    title=a.text.strip(),
                 )
             )
 

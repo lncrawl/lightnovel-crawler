@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
-
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://mostnovel.com/?s=%s&post_type=wp-manga"
@@ -42,7 +40,6 @@ class MostNovel(Crawler):
         soup = self.get_soup(self.novel_url)
 
         image = soup.select_one(".summary_image a img")
-        assert isinstance(image, Tag), "No title found"
 
         self.novel_title = image["alt"]
         logger.info("Novel title: %s", self.novel_title)
@@ -68,14 +65,9 @@ class MostNovel(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

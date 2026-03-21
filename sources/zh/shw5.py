@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -44,15 +44,10 @@ class Shw5Crawler(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
             self.chapters.append(
-                {
-                    "id": ch_id,
-                    "volume": vol_id,
-                    "title": a.text,
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=ch_id, volume=vol_id, title=a.text, url=self.absolute_url(a['href']))
             )
 
-        self.volumes = [{"id": x, "title": ""} for x in volumes]
+        self.volumes = [Volume(id=x, title="") for x in volumes]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
