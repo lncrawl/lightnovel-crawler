@@ -69,7 +69,7 @@ If you used a folder other than Applications during installation, replace `/Appl
 
 📦 A python package named `lightnovel-crawler` is available at [pypi](https://pypi.org/project/lightnovel-crawler).
 
-> Make sure you have installed **Python v3.8** or higher and have **pip** enabled.
+> Make sure you have installed **Python v3.9** or higher and have **pip** enabled.
 > Visit these links to install python with pip in
 > [Windows](https://stackoverflow.com/a/44437176/1583052),
 > [Linux](https://stackoverflow.com/a/51799221/1583052),
@@ -154,7 +154,7 @@ $ git clone https://github.com/lncrawl/lightnovel-crawler
 $ uv sync --extra dev
 ```
 
-- Run the program (use python v3.8 or higher):
+- Run the program (use python v3.9 or higher):
 
 ```bash
 $ uv run python -m lncrawl
@@ -181,10 +181,11 @@ $ make docker-up
 ### Available options
 
 <!-- auto generated command line output -->
+
 ```text
 $ lncrawl -h
-Usage: lncrawl [OPTIONS] COMMAND [ARGS]...                                     
-                                                                                
+Usage: lncrawl [OPTIONS] COMMAND [ARGS]...
+
 ╭─ Options ────────────────────────────────────────────────────────────────────╮
 │ --verbose             -l            Log levels: -l = warn, -ll = info, -lll  │
 │                                     = debug                                  │
@@ -205,6 +206,7 @@ Usage: lncrawl [OPTIONS] COMMAND [ARGS]...
 │ server   Run web server.                                                     │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
+
 <!-- auto generated command line output -->
 
 ### Example Usage
@@ -476,7 +478,6 @@ We are supporting 461 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `ar` Arabic
 
 <table>
@@ -503,7 +504,6 @@ We are supporting 461 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `en` English
 
@@ -2227,7 +2227,6 @@ We are supporting 461 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `es` Spanish; Castilian
 
 <table>
@@ -2254,7 +2253,6 @@ We are supporting 461 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `fr` French
 
@@ -2302,7 +2300,6 @@ We are supporting 461 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `id` Indonesian
 
@@ -2411,7 +2408,6 @@ We are supporting 461 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `ja` Japanese
 
 <table>
@@ -2433,7 +2429,6 @@ We are supporting 461 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `pt` Portuguese
 
@@ -2466,7 +2461,6 @@ We are supporting 461 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `ru` Russian
 
@@ -2540,7 +2534,6 @@ We are supporting 461 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `tr` Turkish
 
 <table>
@@ -2557,7 +2550,6 @@ We are supporting 461 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `vi` Vietnamese
 
@@ -2590,7 +2582,6 @@ We are supporting 461 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `zh` Chinese
 

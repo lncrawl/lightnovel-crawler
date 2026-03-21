@@ -1,4 +1,4 @@
-.PHONY: all version clean setup install add-dep add-dev rm-dep rm-dev build-wheel build-exe build start watch lint pull remove-tag push-tag push-tag-force docker-build docker-up docker-down docker-logs
+.PHONY: all version clean setup install upgrade add-dep add-dev rm-dep rm-dev build-wheel build-exe build start watch lint pull remove-tag push-tag push-tag-force docker-build docker-up docker-down docker-logs
 all: version install
 
 VERSION := $(strip $(file < lncrawl/VERSION))
@@ -35,6 +35,9 @@ endif
 
 install: setup
 	$(UV) sync --extra dev
+
+upgrade: setup
+	$(UV) sync --upgrade --extra dev
 
 lint:
 	$(UV) run flake8 --config .flake8 -v --count --show-source --statistics
