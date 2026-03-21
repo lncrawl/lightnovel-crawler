@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Callable, Dict, Iterable, List, Optional, Type
 
-from bs4 import BeautifulSoup
 from requests.cookies import RequestsCookieJar
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
@@ -9,7 +8,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from ..webdriver import ChromeOptions, WebDriver, create_new
 from ..webdriver.elements import EC, By, WebElement
 from ..webdriver.job_queue import check_active
-from .soup import SoupMaker
+from .soup import PageSoup
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,6 @@ class Browser:
         options: Optional[ChromeOptions] = None,
         cookie_store: Optional[RequestsCookieJar] = None,
         browser_storage: Optional[Dict[str, Any]] = None,
-        soup_maker: Optional[SoupMaker] = None,
     ) -> None:
         """
         Interface to interact with chrome webdriver.
@@ -40,7 +38,6 @@ class Browser:
         self.headless = headless
         self.cookie_store = cookie_store
         self.browser_storage = browser_storage
-        self.soup_maker = soup_maker or SoupMaker()
         self._driver: Optional[WebDriver] = None
 
     def __del__(self):
@@ -66,7 +63,6 @@ class Browser:
             options=self.options,
             timeout=self.timeout,
             headless=self.headless,
-            soup_maker=self.soup_maker,
         )
         self._driver.implicitly_wait(30)
         self._driver.set_page_load_timeout(30)
@@ -164,14 +160,14 @@ class Browser:
         return str(self._driver.page_source)
 
     @property
-    def soup(self) -> BeautifulSoup:
+    def soup(self) -> PageSoup:
         """Get the current page soup"""
         # Return from cache if available
         old_html = getattr(self, "_html_", None)
         if old_html == self.html:
             return getattr(self, "_soup_")
         # Create new soup and save to cache
-        soup = self.soup_maker.make_soup(self.html)
+        soup = PageSoup.create(self.html)
         setattr(self, "_html_", self.html)
         setattr(self, "_soup_", soup)
         return soup
@@ -185,12 +181,18 @@ class Browser:
     def find_all(self, selector: str, by: By = By.CSS_SELECTOR) -> List[WebElement]:
         if not self._driver:
             return []
-        return self._driver.find_elements(str(by), selector)  # type:ignore
+        return [
+            WebElement(self._driver, el)
+            for el in self._driver.find_elements(str(by), selector)
+        ]
 
     def find(self, selector: str, by: By = By.CSS_SELECTOR) -> Optional[WebElement]:
         if not self._driver:
             return None
-        return self._driver.find_element(str(by), selector)  # type:ignore
+        return WebElement(
+            self._driver,
+            self._driver.find_element(str(by), selector),
+        )
 
     def click(self, selector: str, by: By = By.CSS_SELECTOR) -> None:
         "Select and click on an element."

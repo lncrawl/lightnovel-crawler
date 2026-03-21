@@ -9,10 +9,9 @@ Put your source file inside the language folder. The `en` folder has too many
 files, therefore it is grouped using the first letter of the domain name.
 """
 import logging
-from typing import Generator, Optional, Union
+from typing import Generator, Union
 
-from bs4 import BeautifulSoup, Tag
-
+from lncrawl.core.soup import PageSoup
 from lncrawl.models import Chapter, Volume
 from lncrawl.templates.soup.general import GeneralSoupTemplate
 
@@ -39,22 +38,22 @@ class MyCrawlerName(GeneralSoupTemplate):
     def login(self, username_or_email: str, password_or_token: str) -> None:
         pass
 
-    # TODO: [OPTIONAL] Get a BeautifulSoup instance from the self.novel_url
-    def get_novel_soup(self) -> BeautifulSoup:
+    # TODO: [OPTIONAL] Get a PageSoup instance from the self.novel_url
+    def get_novel_soup(self) -> PageSoup:
         return super().get_novel_soup()
 
     # TODO: [REQUIRED] Parse and return the novel title
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         raise NotImplementedError()
 
     # TODO: [REQUIRED] Parse and return the novel cover
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         return ''
 
     # TODO: [OPTIONAL] Parse and return the novel authors
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         #
         # Example 1: <a single author example>
@@ -68,32 +67,27 @@ class MyCrawlerName(GeneralSoupTemplate):
         yield from []
 
     # TODO: [OPTIONAL] Parse and return the novel categories or tags
-    def parse_genres(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_genres(self, soup: PageSoup) -> Generator[str, None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         #
         # See the `parse_authors` example above for a similar implementation.
         yield from []
 
     # TODO: [OPTIONAL] Parse and return the novel summary or synopsis
-    def parse_summary(self, soup: BeautifulSoup) -> str:
+    def parse_summary(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         return ''
 
     # TODO: [REQUIRED] Parse and set the volumes and chapters
     def parse_chapter_list(
-        self, soup: BeautifulSoup
+        self, soup: PageSoup
     ) -> Generator[Union[Chapter, Volume], None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         yield from []
 
     # TODO: [REQUIRED] Select the tag containing the chapter text
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         # The soup here is the result of `self.get_soup(chapter.url)`
         #
         # Example: return soup.select_one(".m-read .txt")
         raise NotImplementedError()
-
-    # TODO: [OPTIONAL] Return the index in self.chapters which contains a chapter URL
-    def index_of_chapter(self, url: str) -> int:
-        # To get more help, check the default implemention in the `Crawler` class.
-        return super().index_of_chapter(url)

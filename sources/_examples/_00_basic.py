@@ -66,8 +66,3 @@ class MyCrawlerName(Crawler):
         # You can use `chapter['url']` to get the contents.
         # To keep it simple, check `self.cleaner.extract_contents`.
         raise NotImplementedError()
-
-    # TODO: [OPTIONAL] Return the index in self.chapters which contains a chapter URL
-    def index_of_chapter(self, url: str) -> int:
-        # To get more help, check the default implemention in the `Crawler` class.
-        return super().index_of_chapter(url)

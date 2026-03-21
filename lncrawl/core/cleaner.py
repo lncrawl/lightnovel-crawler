@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Set, Union
 
 from bs4 import Comment, Tag
 
+from .soup import PageSoup
+
 
 class TextCleaner:
     def __init__(self) -> None:
@@ -151,6 +153,10 @@ class TextCleaner:
         }
 
     def extract_contents(self, tag) -> str:
+        if isinstance(tag, PageSoup):
+            tag = tag.tag
+        if not isinstance(tag, Tag):
+            return ""
         self.clean_contents(tag)
         body = self.extract_paragraphs(tag)
         paragraphs = " ".join(body).split(self.line_separator)

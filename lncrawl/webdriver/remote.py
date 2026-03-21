@@ -3,12 +3,11 @@ import logging
 import os
 from typing import Optional
 
-from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.remote.remote_connection import LOGGER
+from selenium.webdriver.remote.webdriver import WebDriver
 
 from ..exceptions import LNException
-from ..core.soup import SoupMaker
 from .elements import WebElement, _add_virtual_authenticator
 from .job_queue import _acquire_queue, _release_queue
 from .scripts import _override_get
@@ -20,7 +19,6 @@ def create_remote(
     address: str = "http://localhost:4444",
     options: Optional[ChromeOptions] = None,
     timeout: Optional[float] = None,
-    soup_maker: Optional[SoupMaker] = None,
     **kwargs,
 ) -> WebDriver:
     """
@@ -93,11 +91,7 @@ def create_remote(
 
     logger.info("Created remote instance > %s", chrome.session_id)
 
-    if not soup_maker:
-        soup_maker = SoupMaker()
-    setattr(chrome, "_soup_maker", soup_maker)
     setattr(chrome, "_web_element_cls", WebElement)
-
     _add_virtual_authenticator(chrome)
     _override_get(chrome)
     _release_queue(chrome)

@@ -60,7 +60,6 @@ class BasicBrowserTemplate(CrawlerTemplate):
         self._browser = Browser(
             headless=self.headless,
             timeout=self.timeout,
-            soup_maker=self,
             cookie_store=self.scraper.cookies,
         )
         self._visit = self._browser.visit
@@ -107,11 +106,8 @@ class BasicBrowserTemplate(CrawlerTemplate):
         fail_fast=False,
         signal=Event(),
     ) -> Generator[Chapter, None, None]:
-        yield from ()  # start generator
-
         # Try to use scraper first (since it is faster)
         try:
-
             def _downloader(chapter: Chapter):
                 chapter.body = ""
                 chapter.images = {}
@@ -121,7 +117,15 @@ class BasicBrowserTemplate(CrawlerTemplate):
                 return chapter
 
             futures = [self.executor.submit(_downloader, chapter) for chapter in chapters]
-            yield from self.resolve_as_generator(futures, desc="Chapters", unit="item", fail_fast=True, signal=signal)
+            for chapter in self.resolve_as_generator(
+                futures,
+                desc="Chapters",
+                unit="item",
+                signal=signal,
+                fail_fast=True,
+            ):
+                if chapter:
+                    yield chapter
             return  # successfully downloaded all the chapters
         except ScraperErrorGroup as e:
             if logger.isEnabledFor(logging.DEBUG):

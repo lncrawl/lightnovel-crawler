@@ -10,10 +10,9 @@ Put your source file inside the language folder. The `en` folder has too many
 files, therefore it is grouped using the first letter of the domain name.
 """
 import logging
-from typing import Generator, Optional
+from typing import Generator
 
-from bs4 import BeautifulSoup, Tag
-
+from lncrawl.core.soup import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
@@ -38,7 +37,7 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         pass
 
     # TODO: [REQUIRED] Select novel items found by the query using the browser
-    def select_search_items_in_browser(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items_in_browser(self, query: str) -> Generator[PageSoup, None, None]:
         # The query here is the input from user.
         #
         # Example:
@@ -49,7 +48,7 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         yield from []
 
     # TODO: [REQUIRED] Select novel items found in search page from the query
-    def select_search_items(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
         # The query here is the input from user.
         #
         # Example:
@@ -61,7 +60,7 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         yield from []
 
     # TODO: [REQUIRED] Parse a tag and return single search result
-    def parse_search_item(self, tag: Tag) -> SearchResult:
+    def parse_search_item(self, tag: PageSoup) -> SearchResult:
         # The tag here comes from self.select_search_items
         return SearchResult(
             title=tag.get_text(strip=True),
@@ -72,8 +71,8 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
     def visit_novel_page_in_browser(self) -> None:
         self.visit(self.novel_url)
 
-    # TODO: [OPTIONAL] Get a BeautifulSoup instance from the self.novel_url
-    def get_novel_soup(self) -> BeautifulSoup:
+    # TODO: [OPTIONAL] Get a PageSoup instance from the self.novel_url
+    def get_novel_soup(self) -> PageSoup:
         return self.get_soup(self.novel_url)
 
     # TODO: [OPTIONAL] Parse and return the novel title in the browser
@@ -81,7 +80,7 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         return self.parse_title(self.browser.soup)
 
     # TODO: [REQUIRED] Parse and return the novel title
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         raise NotImplementedError()
 
@@ -90,7 +89,7 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         return self.parse_cover(self.browser.soup)
 
     # TODO: [REQUIRED] Parse and return the novel cover
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         return ''
 
@@ -99,7 +98,7 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         yield from self.parse_authors(self.browser.soup)
 
     # TODO: [OPTIONAL] Parse and return the novel authors
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         #
         # Example 1: <a single author example>
@@ -117,7 +116,7 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         yield from self.parse_genres(self.browser.soup)
 
     # TODO: [OPTIONAL] Parse and return the novel categories or tags
-    def parse_genres(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_genres(self, soup: PageSoup) -> Generator[str, None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         #
         # See the `parse_authors` example above for a similar implementation.
@@ -128,7 +127,7 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         return self.parse_summary(self.browser.soup)
 
     # TODO: [OPTIONAL] Parse and return the novel summary or synopsis
-    def parse_summary(self, soup: BeautifulSoup) -> str:
+    def parse_summary(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         return ''
 
@@ -137,18 +136,18 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         self.visit(chapter.url)
 
     # TODO: [OPTIONAL] Select chapter list item tags from the browser
-    def select_chapter_tags_in_browser(self) -> Generator[Tag, None, None]:
+    def select_chapter_tags_in_browser(self) -> Generator[PageSoup, None, None]:
         return self.select_chapter_tags(self.browser.soup)
 
     # TODO: [REQUIRED] Select chapter list item tags from the page soup
-    def select_chapter_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
+    def select_chapter_tags(self, soup: PageSoup) -> Generator[PageSoup, None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         #
         # Example: yield from soup.select(".m-newest2 li > a")
         yield from []
 
     # TODO: [REQUIRED] Parse a single chapter from chapter list item tag
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         return Chapter(
             id=id,
@@ -157,17 +156,12 @@ class MyCrawlerName(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         )
 
     # TODO: [OPTIONAL] Select the tag containing the chapter text in the browser
-    def select_chapter_body_in_browser(self) -> Optional[Tag]:
+    def select_chapter_body_in_browser(self) -> PageSoup:
         return self.select_chapter_body(self.browser.soup)
 
     # TODO: [REQUIRED] Select the tag containing the chapter text
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         # The soup here is the result of `self.get_soup(chapter.url)`
         #
         # Example: return soup.select_one(".m-read .txt")
         raise NotImplementedError()
-
-    # TODO: [OPTIONAL] Return the index in self.chapters which contains a chapter URL
-    def index_of_chapter(self, url: str) -> int:
-        # To get more help, check the default implemention in the `Crawler` class.
-        return super().index_of_chapter(url)
