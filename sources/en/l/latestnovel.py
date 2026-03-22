@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://latestnovel.net/?s=%s&post_type=wp-manga"
@@ -14,9 +13,7 @@ class LatestNovelCrawler(Crawler):
     base_url = "https://latestnovel.net/"
 
     def initialize(self) -> None:
-        self.cleaner.bad_text_regex.update(
-            ["You can read the novel online free at LatestNovel.Net or NovelZone.Net"]
-        )
+        self.cleaner.bad_text_regex.update(["You can read the novel online free at LatestNovel.Net or NovelZone.Net"])
 
     def search_novel(self, query):
         query = query.lower().replace(" ", "+")
@@ -55,21 +52,14 @@ class LatestNovelCrawler(Crawler):
             self.novel_cover = self.absolute_url(possible_image["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
         possible_id = soup.select_one("#manga-chapters-holder")
         self.novel_id = possible_id["data-id"]
         logger.info("Novel id: %s", self.novel_id)
 
-        response = self.submit_form(
-            chapter_list_url, data=f"action=manga_get_chapters&manga={self.novel_id}"
-        )
+        response = self.submit_form(chapter_list_url, data=f"action=manga_get_chapters&manga={self.novel_id}")
         soup = self.make_soup(response)
 
         for a in reversed(soup.select(".wp-manga-chapter a")):
@@ -78,7 +68,7 @@ class LatestNovelCrawler(Crawler):
             if chap_id % 100 == 1:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
     def download_chapter_body(self, chapter):

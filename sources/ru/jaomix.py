@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -14,9 +14,7 @@ class JaomixCrawler(Crawler):
     ]
 
     def initialize(self):
-        self.init_executor(
-            workers=1
-        )
+        self.init_executor(workers=1)
 
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
@@ -46,7 +44,7 @@ class JaomixCrawler(Crawler):
         if img_src:
             self.novel_cover = self.absolute_url(img_src["src"])
 
-        for a in reversed(soup.select('.flex-dow-txt a')):
+        for a in reversed(soup.select(".flex-dow-txt a")):
             chap_id = 1 + len(self.chapters)
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
@@ -57,7 +55,7 @@ class JaomixCrawler(Crawler):
                     id=chap_id,
                     volume=vol_id,
                     title=a.text.strip(),
-                    url=self.absolute_url(a['href']),
+                    url=self.absolute_url(a["href"]),
                 )
             )
 

@@ -7,10 +7,11 @@ This is a sample of directly using the base Crawler as the template.
 Put your source file inside the language folder. The `en` folder has too many
 files, therefore it is grouped using the first letter of the domain name.
 """
+
 import logging
 from typing import List
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, SearchResult
 
 logger = logging.getLogger(__name__)

@@ -3,7 +3,8 @@ import logging
 import re
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 novel_page = "https://myoniyonitranslations.com/%s"
@@ -25,9 +26,7 @@ class MyOniyOniTranslation(Crawler):
         if not soup.select_one("article.page.type-page"):
             a = soup.select_one("header.entry-header p span:nth-of-type(3) a")
             if not a:
-                raise Exception(
-                    "Fail to recognize url as a novel page: " + self.novel_url
-                )
+                raise Exception("Fail to recognize url as a novel page: " + self.novel_url)
             self.novel_url = a["href"]
             return self.read_novel_info()
 
@@ -80,9 +79,7 @@ class MyOniyOniTranslation(Crawler):
                     )
                 )
 
-        logger.debug(
-            "%d chapters & %d volumes found", len(self.chapters), len(self.volumes)
-        )
+        logger.debug("%d chapters & %d volumes found", len(self.chapters), len(self.volumes))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

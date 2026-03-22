@@ -1,8 +1,7 @@
 from typing import Optional
 
 from fastapi import Depends, Security
-from fastapi.security import (HTTPAuthorizationCredentials, HTTPBasic,
-                              HTTPBasicCredentials, HTTPBearer, SecurityScopes)
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBasic, HTTPBasicCredentials, HTTPBearer, SecurityScopes
 
 from ..context import ctx
 from ..dao.user import User, UserRole
@@ -26,10 +25,7 @@ def ensure_user(
         user = ctx.users.verify(login)
     elif bearer:
         required_scopes = security_scopes.scopes
-        user = ctx.users.verify_token(
-            bearer.credentials,
-            required_scopes
-        )
+        user = ctx.users.verify_token(bearer.credentials, required_scopes)
     else:
         raise ServerErrors.unauthorized
     if not user.is_active:

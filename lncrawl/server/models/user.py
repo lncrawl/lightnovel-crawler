@@ -40,7 +40,7 @@ class UpdateRequest(BaseModel):
     role: Optional[UserRole] = Field(default=None, description="User role")
     is_active: Optional[bool] = Field(default=None, description="Active status")
     tier: Optional[UserTier] = Field(default=None, description="User tier")
-    extra: Optional[Dict[str, Any]] = Field(default=None, description='Extra field')
+    extra: Optional[Dict[str, Any]] = Field(default=None, description="Extra field")
 
 
 class PasswordUpdateRequest(BaseModel):
@@ -61,4 +61,4 @@ class ResetPasswordRequest(BaseModel):
 
 
 class PutNotificationRequest(BaseModel):
-    email_alerts: Dict[Union[int, str], Union[int, bool]] = Field(description='Notification config')
+    email_alerts: Dict[Union[int, str], Union[int, bool]] = Field(description="Notification config")

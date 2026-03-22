@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
-search_url = (
-    "https://webnovelonline.net/?s=%s&post_type=wp-manga&author=&artist=&release="
-)
+search_url = "https://webnovelonline.net/?s=%s&post_type=wp-manga&author=&artist=&release="
 chapter_list_url = "https://webnovelonline.net/wp-admin/admin-ajax.php"
 
 
@@ -56,7 +56,7 @@ class WebNovelOnlineNet(Crawler):
         for li in reversed(soup.select(".listing-chapters_wrap ul li")):
             a = li.select_one("a")
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a['href']), title=a.text.strip())
+                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a["href"]), title=a.text.strip())
             )
 
     def download_chapter_body(self, chapter):

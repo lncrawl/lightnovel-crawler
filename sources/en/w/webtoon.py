@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from urllib.parse import urlparse, parse_qs
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from urllib.parse import parse_qs, urlparse
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -29,22 +31,12 @@ class WebToonsCrawler(Crawler):
         for tab in soup.select("ul.card_lst li"):
             a = tab.select_one("a")
             title = tab.select_one("p.subj").get_text()
-            results.append(
-                {
-                    "title": title,
-                    "url": self.absolute_url(a["href"])
-                }
-            )
+            results.append({"title": title, "url": self.absolute_url(a["href"])})
 
         for tab in soup1.select("div.challenge_lst.search ul"):
             a = tab.select_one("a.challenge_item")
             title = tab.select_one("p.subj").get_text()
-            results.append(
-                {
-                    "title": title,
-                    "url": self.absolute_url(a["href"])
-                }
-            )
+            results.append({"title": title, "url": self.absolute_url(a["href"])})
 
         return results
 
@@ -67,13 +59,10 @@ class WebToonsCrawler(Crawler):
 
         parsed_url = urlparse(url)
         query_params = parse_qs(parsed_url.query)
-        page_number = query_params.get('page', [])[0] if 'page' in query_params else None
+        page_number = query_params.get("page", [])[0] if "page" in query_params else None
         page_number = int(page_number)
 
-        futures = [
-            self.executor.submit(self.get_soup, f"{self.novel_url}&page={i}")
-            for i in range(1, page_number + 1)
-        ]
+        futures = [self.executor.submit(self.get_soup, f"{self.novel_url}&page={i}") for i in range(1, page_number + 1)]
         page_soups = [f.result() for f in futures]
         # url_selector : element["href"] , chap_title : element.select_one("span.subj").text
 
@@ -82,9 +71,7 @@ class WebToonsCrawler(Crawler):
         chap_links = []
         chap_titles = []
 
-        for element in reversed(
-            [a for soup in page_soups for a in soup.select("#_listUl a")]
-        ):
+        for element in reversed([a for soup in page_soups for a in soup.select("#_listUl a")]):
             numbers.append(num)
             chap_links.append(element["href"])
             chap_titles.append(element.select_one("span.subj").text)
@@ -115,7 +102,7 @@ class WebToonsCrawler(Crawler):
 
     def download_chapter_body(self, chapter):
         logger.info("Visiting %s", chapter["url"])
-        soup = self.get_soup(chapter["url"], headers={'Referer': f'{self.novel_url}'})
+        soup = self.get_soup(chapter["url"], headers={"Referer": f"{self.novel_url}"})
         contents = soup.select_one("#_imageList")
 
         for img in contents.findAll("img"):

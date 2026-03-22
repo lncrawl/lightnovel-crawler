@@ -14,11 +14,7 @@ def select_ancestors(job_id: str, inclusive: bool = False):
     ) SELECT ancestors.id FROM ancestors
     """
     anchor = Job.id if inclusive else Job.parent_job_id
-    par = (
-        select(col(anchor).label('id'))
-        .where(Job.id == job_id)
-        .cte("ancestors", recursive=True)
-    )
+    par = select(col(anchor).label("id")).where(Job.id == job_id).cte("ancestors", recursive=True)
     par = par.union_all(
         select(col(Job.parent_job_id).label("id"))
         .join(par, col(Job.id) == par.c.id)
@@ -37,15 +33,8 @@ def select_descendends(job_id: str, inclusive: bool = False):
             JOIN descendends ON jobs.parent_job_id = descendends.id
     ) SELECT descendends.id FROM descendends
     """
-    des = (
-        select(col(Job.id).label('id'))
-        .where(Job.id == job_id)
-        .cte("descendends", recursive=True)
-    )
-    des = des.union_all(
-        select(col(Job.id).label('id'))
-        .join(des, col(Job.parent_job_id) == des.c.id)
-    )
+    des = select(col(Job.id).label("id")).where(Job.id == job_id).cte("descendends", recursive=True)
+    des = des.union_all(select(col(Job.id).label("id")).join(des, col(Job.parent_job_id) == des.c.id))
     stmt = select(des.c.id)
     if not inclusive:
         stmt = stmt.where(des.c.id != job_id)

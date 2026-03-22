@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -34,9 +35,7 @@ class SuperNovelCrawler(Crawler):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = " ".join(
-            [str(x) for x in soup.select_one(".post-title h1").contents if not x.name]
-        ).strip()
+        self.novel_title = " ".join([str(x) for x in soup.select_one(".post-title h1").contents if not x.name]).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         possible_novel_cover = soup.select_one('meta[property="og:image"]')
@@ -54,9 +53,7 @@ class SuperNovelCrawler(Crawler):
         self.novel_id = soup.select_one("#manga-chapters-holder")["data-id"]
         logger.info("Novel id: %s", self.novel_id)
 
-        response = self.submit_form(
-            chapter_list_url, data="action=manga_get_chapters&manga=" + self.novel_id
-        )
+        response = self.submit_form(chapter_list_url, data="action=manga_get_chapters&manga=" + self.novel_id)
         soup = self.make_soup(response)
         for a in reversed(soup.select(".wp-manga-chapter a")):
             chap_id = len(self.chapters) + 1

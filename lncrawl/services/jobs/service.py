@@ -5,15 +5,14 @@ from sqlalchemy.orm import aliased
 from sqlmodel import Session
 
 from ...context import ctx
-from ...dao import (Job, JobPriority, JobStatus, JobType, OutputFormat, User,
-                    UserRole)
+from ...dao import Job, JobPriority, JobStatus, JobType, OutputFormat, User, UserRole
 from ...exceptions import ServerErrors
 from ...server.models import Paginated
 from ...server.tier import JOB_PRIORITY_LEVEL
 from ...utils.time_utils import current_timestamp
 from .utils import select_ancestors, select_descendends
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 job_status_type = Job.__table__.c.status.type  # type: ignore
 job_failed_literal = sq.cast(sq.literal(JobStatus.FAILED.name), job_status_type)
@@ -132,10 +131,7 @@ class JobService:
         with ctx.db.session() as sess:
             sa_pars = select_ancestors(job_id)
             return sess.exec(
-                sq.select(Job)
-                .where(sq.col(Job.id).in_(sa_pars))
-                .where(sq.col(Job.parent_job_id).is_(None))
-                .limit(1)
+                sq.select(Job).where(sq.col(Job.id).in_(sa_pars)).where(sq.col(Job.parent_job_id).is_(None)).limit(1)
             ).first()
 
     # -------------------------------------------------------------------------
@@ -152,12 +148,10 @@ class JobService:
         **data: Any,
     ) -> Job:
         ctx.sources.get_crawler(url)  # validate
-        data.update({
-            'url': url
-        })
+        data.update({"url": url})
         novel = ctx.novels.find_by_url(url)
         if novel:
-            data['novel_id'] = novel.id
+            data["novel_id"] = novel.id
         return self._create(
             user=user,
             data=data,
@@ -175,9 +169,7 @@ class JobService:
         depends_on: Optional[str] = None,
         **data: Any,
     ) -> Job:
-        data.update({
-            'urls': urls
-        })
+        data.update({"urls": urls})
         return self._create(
             user=user,
             data=data,
@@ -196,16 +188,20 @@ class JobService:
         **data: Any,
     ) -> Job:
         volume = ctx.volumes.get(volume_id)
-        data.update({
-            'volume_id': volume_id,
-            'volume_serial': volume.serial,
-        })
-        if not data.get('novel_title'):
+        data.update(
+            {
+                "volume_id": volume_id,
+                "volume_serial": volume.serial,
+            }
+        )
+        if not data.get("novel_title"):
             novel = ctx.novels.get(volume.novel_id)
-            data.update({
-                'novel_id': novel.id,
-                'novel_title': novel.title,
-            })
+            data.update(
+                {
+                    "novel_id": novel.id,
+                    "novel_title": novel.title,
+                }
+            )
         return self._create(
             user=user,
             data=data,
@@ -222,9 +218,11 @@ class JobService:
         depends_on: Optional[str] = None,
         **data: Any,
     ) -> Job:
-        data.update({
-            'volume_ids': volume_ids,
-        })
+        data.update(
+            {
+                "volume_ids": volume_ids,
+            }
+        )
         return self._create(
             user=user,
             data=data,
@@ -243,16 +241,20 @@ class JobService:
         **data: Any,
     ) -> Job:
         chapter = ctx.chapters.get(chapter_id)
-        data.update({
-            'chapter_id': chapter_id,
-            'chapter_serial': chapter.serial,
-        })
-        if not data.get('novel_title'):
+        data.update(
+            {
+                "chapter_id": chapter_id,
+                "chapter_serial": chapter.serial,
+            }
+        )
+        if not data.get("novel_title"):
             novel = ctx.novels.get(chapter.novel_id)
-            data.update({
-                'novel_id': novel.id,
-                'novel_title': novel.title,
-            })
+            data.update(
+                {
+                    "novel_id": novel.id,
+                    "novel_title": novel.title,
+                }
+            )
         return self._create(
             user=user,
             data=data,
@@ -269,9 +271,11 @@ class JobService:
         depends_on: Optional[str] = None,
         **data: Any,
     ) -> Job:
-        data.update({
-            'chapter_ids': chapter_ids,
-        })
+        data.update(
+            {
+                "chapter_ids": chapter_ids,
+            }
+        )
         return self._create(
             user=user,
             data=data,
@@ -290,10 +294,12 @@ class JobService:
         **data: Any,
     ) -> Job:
         image = ctx.images.get(image_id)
-        data.update({
-            'image_id': image_id,
-            'url': image.url,
-        })
+        data.update(
+            {
+                "image_id": image_id,
+                "url": image.url,
+            }
+        )
         return self._create(
             user=user,
             data=data,
@@ -310,9 +316,11 @@ class JobService:
         depends_on: Optional[str] = None,
         **data: Any,
     ) -> Job:
-        data.update({
-            'image_ids': image_ids,
-        })
+        data.update(
+            {
+                "image_ids": image_ids,
+            }
+        )
         return self._create(
             user=user,
             data=data,
@@ -331,15 +339,19 @@ class JobService:
         depends_on: Optional[str] = None,
         **data: Any,
     ) -> Job:
-        data.update({
-            'novel_id': novel_id,
-            'format': format,
-        })
-        if not data.get('novel_title'):
+        data.update(
+            {
+                "novel_id": novel_id,
+                "format": format,
+            }
+        )
+        if not data.get("novel_title"):
             novel = ctx.novels.get(novel_id)
-            data.update({
-                'novel_title': novel.title,
-            })
+            data.update(
+                {
+                    "novel_title": novel.title,
+                }
+            )
         return self._create(
             user=user,
             data=data,
@@ -357,15 +369,19 @@ class JobService:
         depends_on: Optional[str] = None,
         **data: Any,
     ) -> Job:
-        data.update({
-            'novel_id': novel_id,
-            'formats': formats,
-        })
-        if not data.get('novel_title'):
+        data.update(
+            {
+                "novel_id": novel_id,
+                "formats": formats,
+            }
+        )
+        if not data.get("novel_title"):
             novel = ctx.novels.get(novel_id)
-            data.update({
-                'novel_title': novel.title,
-            })
+            data.update(
+                {
+                    "novel_title": novel.title,
+                }
+            )
         return self._create(
             user=user,
             data=data,
@@ -379,10 +395,7 @@ class JobService:
     # -------------------------------------------------------------------------
     def delete(self, job_id: str) -> None:
         with ctx.db.session() as sess:
-            result = sess.exec(
-                sq.select(Job.done, Job.total, Job.failed)
-                .where(Job.id == job_id)
-            ).first()
+            result = sess.exec(sq.select(Job.done, Job.total, Job.failed).where(Job.id == job_id)).first()
             if not result:
                 return
             done, total, failed = result
@@ -396,10 +409,7 @@ class JobService:
             )
 
             sa_deps = select_descendends(job_id, True)
-            sess.exec(
-                sq.delete(Job)
-                .where(sq.col(Job.id).in_(sa_deps))
-            )
+            sess.exec(sq.delete(Job).where(sq.col(Job.id).in_(sa_deps)))
 
             sess.commit()
 
@@ -407,18 +417,18 @@ class JobService:
     #                              CANCEL Jobs
     # -------------------------------------------------------------------------
 
-    def cancel(self, job_id: str, who: str = 'admin') -> None:
+    def cancel(self, job_id: str, who: str = "admin") -> None:
         with ctx.db.session() as sess:
             self._cancel_down(sess, job_id, True)
             self._fail(
                 sess,
                 job_id,
-                reason=f'Canceled as the parent job was canceled by {who}',
+                reason=f"Canceled as the parent job was canceled by {who}",
             )
             self._update(
                 sess,
                 job_id,
-                error=f'Canceled by {who}',
+                error=f"Canceled by {who}",
                 status=job_canceled_literal,
             )
             sess.commit()
@@ -456,26 +466,16 @@ class JobService:
             return job
 
     def _pending(
-        self,
-        artifact: Optional[bool] = None,
-        skip_job_ids: Iterable[str] = [],
-        skip_user_ids: Iterable[str] = []
+        self, artifact: Optional[bool] = None, skip_job_ids: Iterable[str] = [], skip_user_ids: Iterable[str] = []
     ) -> Optional[Job]:
         with ctx.db.session() as sess:
             stmt = sq.select(Job)
 
             job_alias = aliased(Job)
             dep_is_done = (
-                sq.exists(1)
-                .where(sq.col(job_alias.id) == Job.depends_on)
-                .where(sq.col(job_alias.is_done).is_(True))
+                sq.exists(1).where(sq.col(job_alias.id) == Job.depends_on).where(sq.col(job_alias.is_done).is_(True))
             )
-            stmt = stmt.where(
-                sq.or_(
-                    sq.col(Job.depends_on).is_(None),
-                    dep_is_done
-                )
-            )
+            stmt = stmt.where(sq.or_(sq.col(Job.depends_on).is_(None), dep_is_done))
 
             job_is_new = sq.and_(
                 Job.status == JobStatus.RUNNING,
@@ -492,12 +492,7 @@ class JobService:
                 stmt = stmt.where(sq.col(Job.id).not_in(skip_job_ids))
 
             if skip_user_ids:
-                stmt = stmt.where(
-                    sq.or_(
-                        Job.priority != JobPriority.LOW,
-                        sq.col(Job.user_id).not_in(skip_user_ids)
-                    )
-                )
+                stmt = stmt.where(sq.or_(Job.priority != JobPriority.LOW, sq.col(Job.user_id).not_in(skip_user_ids)))
 
             if artifact is not None:
                 if artifact:
@@ -512,11 +507,7 @@ class JobService:
             return sess.exec(stmt.limit(1)).first()
 
     def _update(self, sess: Session, job_id: str, **values) -> None:
-        sess.exec(
-            sq.update(Job)
-            .where(sq.col(Job.id) == job_id)
-            .values(**values)
-        )
+        sess.exec(sq.update(Job).where(sq.col(Job.id) == job_id).values(**values))
 
     def _update_up(
         self,
@@ -534,24 +525,9 @@ class JobService:
         sa_failed = failed
         sa_is_done = sa_done == sa_total
 
-        sa_status = sq.case(
-            (sa_is_done, job_success_literal),
-            else_=Job.status
-        )
-        sa_started_at = sq.case(
-            (
-                sq.and_(sa_is_done, sq.col(Job.started_at).is_(None)),
-                now
-            ),
-            else_=Job.started_at
-        )
-        sa_finished_at = sq.case(
-            (
-                sq.and_(sa_is_done, sq.col(Job.finished_at).is_(None)),
-                now
-            ),
-            else_=Job.finished_at
-        )
+        sa_status = sq.case((sa_is_done, job_success_literal), else_=Job.status)
+        sa_started_at = sq.case((sq.and_(sa_is_done, sq.col(Job.started_at).is_(None)), now), else_=Job.started_at)
+        sa_finished_at = sq.case((sq.and_(sa_is_done, sq.col(Job.finished_at).is_(None)), now), else_=Job.finished_at)
 
         sa_pars = select_ancestors(job_id, inclusive)
         sess.exec(
@@ -581,7 +557,7 @@ class JobService:
             .values(
                 is_done=True,
                 status=job_canceled_literal,
-                error='Canceled by one of the parent',
+                error="Canceled by one of the parent",
                 started_at=sq.func.coalesce(Job.started_at, now),
                 finished_at=sq.func.coalesce(Job.finished_at, now),
             )
@@ -596,10 +572,7 @@ class JobService:
         )
 
     def _count_pending(self, sess: Session, job_id: str) -> int:
-        return sess.exec(
-            sq.select(Job.total - Job.done)
-            .where(Job.id == job_id)
-        ).one()
+        return sess.exec(sq.select(Job.total - Job.done).where(Job.id == job_id)).one()
 
     def _success(self, sess: Session, job_id: str) -> None:
         pending = self._count_pending(sess, job_id)

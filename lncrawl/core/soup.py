@@ -113,11 +113,7 @@ class PageSoup:
         if not self._tag:
             return []
         try:
-            return [
-                PageSoup(t)
-                for t in self._tag.select(selector, limit=limit)
-                if isinstance(t, Tag)
-            ]
+            return [PageSoup(t) for t in self._tag.select(selector, limit=limit) if isinstance(t, Tag)]
         except Exception:
             return []
 
@@ -231,7 +227,7 @@ class PageSoup:
                     continue
                 html = etree.tostring(el, encoding="unicode", method="html")
                 soup = BeautifulSoup(html, "lxml")
-                soups.append(PageSoup(soup.find('body')))
+                soups.append(PageSoup(soup.find("body")))
         except Exception:
             pass
         return soups
@@ -377,21 +373,14 @@ class PageSoup:
         """Direct child elements (excludes text nodes)."""
         if not self._tag:
             return []
-        return [
-            PageSoup(c)
-            for c in self._tag.children
-            if isinstance(c, Tag)
-        ]
+        return [PageSoup(c) for c in self._tag.children if isinstance(c, Tag)]
 
     @property
     def contents(self) -> List[Union["PageSoup", str]]:
         """All direct children including text nodes, as a raw list."""
         if not self._tag:
             return []
-        return [
-            PageSoup(c) if isinstance(c, Tag) else str(c)
-            for c in self._tag.contents
-        ]
+        return [PageSoup(c) if isinstance(c, Tag) else str(c) for c in self._tag.contents]
 
     # ------------------------------------------------------------------ #
     # Mutation

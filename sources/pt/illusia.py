@@ -11,9 +11,8 @@ import logging
 import re
 from urllib.parse import urljoin
 
-from lncrawl.core.crawler import Crawler, Volume
-from lncrawl.core.soup import PageSoup
-from lncrawl.models import Chapter
+from lncrawl.core import Crawler, PageSoup
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 SEARCH_URL = "https://illusia.com.br/?s=%s&post_type=wp-manga"
@@ -62,9 +61,7 @@ class Illusia(Crawler):
             if ogt and ogt.get("content"):
                 self.novel_title = ogt["content"].strip()
         if not self.novel_title and soup.title:
-            self.novel_title = (
-                soup.title.get_text(strip=True).split(" – Illusia")[0].strip()
-            )
+            self.novel_title = soup.title.get_text(strip=True).split(" – Illusia")[0].strip()
         if not self.novel_title:
             raise Exception("Título não encontrado")
 
@@ -75,9 +72,7 @@ class Illusia(Crawler):
         else:
             img = soup.select_one(".summary_image img")
             if img:
-                self.novel_cover = self.absolute_url(
-                    img.get("data-src") or img.get("src")
-                )
+                self.novel_cover = self.absolute_url(img.get("data-src") or img.get("src"))
 
         # --- Autor(es) ---
         authors = [a.get_text(strip=True) for a in soup.select(".author-content a")]
@@ -139,11 +134,7 @@ class Illusia(Crawler):
     # --------------- CONTEÚDO DO CAPÍTULO ---------------
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
-        content = (
-            soup.select_one(".reading-content")
-            or soup.select_one(".entry-content")
-            or soup.select_one("article")
-        )
+        content = soup.select_one(".reading-content") or soup.select_one(".entry-content") or soup.select_one("article")
         return self.cleaner.extract_contents(content)
 
     # ==================== HELPERS ========================
@@ -179,9 +170,7 @@ class Illusia(Crawler):
                 "_fields": "link,title,menu_order,date",
             }
             try:
-                r = self.scraper.get(
-                    base, params=params, headers={"Accept": "application/json"}
-                )
+                r = self.scraper.get(base, params=params, headers={"Accept": "application/json"})
                 if r.status_code == 400 and "rest_post_invalid_page_number" in r.text:
                     break
                 r.raise_for_status()
@@ -280,7 +269,7 @@ class Illusia(Crawler):
         for el in soup.find_all(string=True):
             txt = (el.strip() if isinstance(el, str) else "").lower()
             if txt == "extras":
-                cont = (el.parent if hasattr(el, "parent") else None)
+                cont = el.parent if hasattr(el, "parent") else None
                 if cont:
                     parent = cont.find_parent(["li", "div", "section", "article"]) or cont
                     anchors = parent.select("a[href]")
@@ -322,9 +311,7 @@ class Illusia(Crawler):
                 seen.add(href)
                 title = an.get_text(" ", strip=True) or an.get("title") or an.get("aria-label") or href
                 chap_id += 1
-                self.chapters.append(
-                    Chapter(id=chap_id, volume=1, title=title, url=self.absolute_url(href))
-                )
+                self.chapters.append(Chapter(id=chap_id, volume=1, title=title, url=self.absolute_url(href)))
             if self.chapters and not self.volumes:
                 self.volumes = [Volume(id=1, title="Volume 1")]
                 self._set_display_numbers()

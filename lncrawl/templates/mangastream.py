@@ -1,10 +1,9 @@
 from typing import Generator
 from urllib.parse import urlencode
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult, Volume
-from lncrawl.templates.browser.optional_volume import \
-    OptionalVolumeBrowserTemplate
+from lncrawl.templates.browser.optional_volume import OptionalVolumeBrowserTemplate
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
 
 
@@ -42,9 +41,7 @@ class MangaStreamTemplate(SearchableBrowserTemplate, OptionalVolumeBrowserTempla
         return self.parse_title(self.browser.soup)
 
     def parse_cover(self, soup: PageSoup):
-        tag = soup.select_one(
-            ".thumbook img, meta[property='og:image'],.sertothumb img"
-        )
+        tag = soup.select_one(".thumbook img, meta[property='og:image'],.sertothumb img")
         if not tag:
             return None
         if tag.has_attr("data-src"):
@@ -76,7 +73,7 @@ class MangaStreamTemplate(SearchableBrowserTemplate, OptionalVolumeBrowserTempla
         li_class = first_li.get_attr("class", "") if first_li else ""
         data_num = first_li.get_attr("data-num", "0") if first_li else "0"
         chapters = parent.select(".eplister li a")
-        if data_num == '1' or "tseplsfrst" not in str(li_class):
+        if data_num == "1" or "tseplsfrst" not in str(li_class):
             yield from reversed(list(chapters))
         else:
             yield from chapters

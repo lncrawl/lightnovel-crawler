@@ -2,7 +2,7 @@
 import logging
 from typing import List
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, SearchResult
 
 logger = logging.getLogger(__name__)
@@ -15,9 +15,7 @@ class LiteroticaCrawler(Crawler):
         self.init_executor(ratelimit=2)
 
     def search_novel(self, query) -> List[SearchResult]:
-        soup = self.get_soup(
-            f"{self.home_url}novels?search={query}&type=&language=&status=&sort="
-        )
+        soup = self.get_soup(f"{self.home_url}novels?search={query}&type=&language=&status=&sort=")
         results = []
         for item in soup.select("a.novel-item"):
             results.append(
@@ -36,9 +34,7 @@ class LiteroticaCrawler(Crawler):
         self.novel_tags = [item.text for item in soup.select("a.novel_genre")] or None
         self.novel_cover = soup.select_one("#novel_cover")["src"] or None
         for item in soup.select("a.free_chap").__reversed__():
-            self.chapters.append(
-                dict(id=len(self.chapters) + 1, title=item.text, url=item["href"])
-            )
+            self.chapters.append(dict(id=len(self.chapters) + 1, title=item.text, url=item["href"]))
 
     def download_chapter_body(self, chapter: Chapter) -> str:
         soup = self.get_soup(chapter["url"])

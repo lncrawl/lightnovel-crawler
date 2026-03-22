@@ -2,8 +2,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
-from lncrawl.models import Volume, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class NYXTranslation(Crawler):
 
         cover = content.select_one("img")  # first image is the novel cover
         if cover:
-            src = str(cover['src'])
+            src = str(cover["src"])
             # may be replaced with JS after load, in such case try and get the real img hidden in data-values
             if src.startswith("data:"):
                 try:
@@ -111,12 +111,7 @@ class NYXTranslation(Crawler):
 
         # in rare cases the volume names don't have any indicators, so we end up without any, this "fixes" that.
         if not self.volumes:
-            self.volumes.append(
-                Volume(
-                    id=1,
-                    title="All content"
-                )
-            )
+            self.volumes.append(Volume(id=1, title="All content"))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter.url)

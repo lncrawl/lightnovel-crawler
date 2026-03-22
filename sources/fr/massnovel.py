@@ -7,11 +7,12 @@ It should be able to do searching and generating only chapter list excluding vol
 Put your source file inside the language folder. The `en` folder has too many
 files, therefore it is grouped using the first letter of the domain name.
 """
+
 import logging
 from typing import Generator, List
 from urllib.parse import urlencode
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.soup.chapter_only import ChapterOnlySoupTemplate
 from lncrawl.templates.soup.searchable import SearchableSoupTemplate
@@ -32,7 +33,10 @@ class MassNovel(SearchableSoupTemplate, ChapterOnlySoupTemplate):
     def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
         # The query here is the input from user.
         params = {"s": query}
-        soup = self.post_soup(f"{self.base_url[0]}?{urlencode(params)}&post_type=wp-manga&op=&author=&artist=&release=&adult=", params=params)
+        soup = self.post_soup(
+            f"{self.base_url[0]}?{urlencode(params)}&post_type=wp-manga&op=&author=&artist=&release=&adult=",
+            params=params,
+        )
         yield from soup.select("div.row.c-tabs-item__content")
         pass
 
@@ -41,10 +45,7 @@ class MassNovel(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         title = tag.select_one("div.tab-summary div.post-title h3 a").text.strip()
         url = tag.select_one("div.tab-summary div.post-title h3 a")["href"]
 
-        search_result = SearchResult(
-            title=title,
-            url=url
-        )
+        search_result = SearchResult(title=title, url=url)
         return search_result
 
     def get_novel_soup(self) -> PageSoup:
@@ -60,13 +61,17 @@ class MassNovel(SearchableSoupTemplate, ChapterOnlySoupTemplate):
 
     def parse_authors(self, soup: PageSoup) -> List[str]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
-        author = soup.select_one("div.tab-summary div.summary_content div.manga-data div.manga-author span a").text.strip()
+        author = soup.select_one(
+            "div.tab-summary div.summary_content div.manga-data div.manga-author span a"
+        ).text.strip()
         return [author]
 
     def parse_genres(self, soup: PageSoup) -> List[str]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         #
-        genre = soup.select_one("div.tab-summary div.summary_content div.manga-data div.manga-author span a").text.strip()
+        genre = soup.select_one(
+            "div.tab-summary div.summary_content div.manga-data div.manga-author span a"
+        ).text.strip()
         return [genre]
 
     def parse_summary(self, soup: PageSoup) -> str:

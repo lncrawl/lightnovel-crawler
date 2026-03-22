@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-import logging
 import json
+import logging
 import re
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +105,4 @@ class FenriRealm(Crawler):
             )
 
     def download_chapter_body(self, chapter):
-        return self.cleaner.extract_contents(
-            self.get_soup(chapter.url).select_one("div#reader-area")
-        )
+        return self.cleaner.extract_contents(self.get_soup(chapter.url).select_one("div#reader-area"))

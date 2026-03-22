@@ -18,10 +18,7 @@ logger = logging.getLogger(__name__)
 class MailService:
     def __init__(self) -> None:
         self.server: Optional[SMTP] = None
-        self.sender = (
-            ctx.config.mail.smtp_sender
-            or ctx.config.mail.smtp_username
-        )
+        self.sender = ctx.config.mail.smtp_sender or ctx.config.mail.smtp_username
 
     def close(self):
         if self.server:
@@ -40,11 +37,11 @@ class MailService:
             raise ServerErrors.smtp_server_unavailable
 
         try:
-            logger.info('Preparing mail server')
+            logger.info("Preparing mail server")
             self.server = SMTP(smtp_server, smtp_port)
             self.server.starttls()
             self.server.login(smtp_user, smtp_pass)
-            logger.info(f'Connected with SMTP server: {smtp_server}')
+            logger.info(f"Connected with SMTP server: {smtp_server}")
         except Exception as e:
             self.close()
             raise ServerErrors.smtp_server_login_fail from e
@@ -55,32 +52,32 @@ class MailService:
 
         # Minify HTML
         tree = lxml.html.fromstring(html_body)
-        minified = lxml.etree.tostring(tree, encoding='unicode', pretty_print=False)
+        minified = lxml.etree.tostring(tree, encoding="unicode", pretty_print=False)
 
         # Create mail body
-        msg = MIMEText(minified, 'html')
-        msg['Subject'] = subject
-        msg['From'] = self.sender
-        msg['To'] = email
+        msg = MIMEText(minified, "html")
+        msg["Subject"] = subject
+        msg["From"] = self.sender
+        msg["To"] = email
 
         try:
             assert self.server
-            self.server.sendmail(msg['From'], [msg['To']], msg.as_string())
+            self.server.sendmail(msg["From"], [msg["To"]], msg.as_string())
         except Exception as e:
             raise ServerErrors.email_send_failure from e
 
     def send_otp(self, email: str, otp: str):
-        subject = f'OTP ({otp})'
+        subject = f"OTP ({otp})"
         body = emails.otp_template().render(otp=otp)
         self.send(email, subject, body)
 
     def send_reset_password_link(self, email: str, link: str):
-        subject = 'Reset Password'
+        subject = "Reset Password"
         body = emails.repass_template().render(link=link)
         self.send(email, subject, body)
 
     def send_full_novel_job_success(self, user: User, job: Job):
-        novel_id = job.extra.get('novel_id')
+        novel_id = job.extra.get("novel_id")
         if not novel_id:
             return
 
@@ -88,7 +85,7 @@ class MailService:
         artifacts = ctx.artifacts.list_latest(novel.id)
 
         base_url = ctx.config.server.base_url
-        job_url = f'{base_url}/job/{job.id}'
+        job_url = f"{base_url}/job/{job.id}"
         novel_title = novel.title or "Unknown"
         novel_authors = novel.authors or "Unknown"
         chapter_count = novel.chapter_count or "?"
@@ -98,15 +95,16 @@ class MailService:
         token = ctx.users.generate_token(user, 30 * 24 * 60)
         artifacts = [
             {
-                'format': str(item.format),
-                'size': format_size(item.file_size or 0),
-                'name': ctx.files.resolve(item.output_file).name,
-                'url': f'{base_url}/static/{item.output_file}?token={token}',
-            } for item in artifacts
+                "format": str(item.format),
+                "size": format_size(item.file_size or 0),
+                "name": ctx.files.resolve(item.output_file).name,
+                "url": f"{base_url}/static/{item.output_file}?token={token}",
+            }
+            for item in artifacts
         ]
 
         if len(novel_synopsis) > 300:
-            novel_synopsis = f'{novel_synopsis[:300]}...'
+            novel_synopsis = f"{novel_synopsis[:300]}..."
 
         body = emails.job_full_novel_template().render(
             job_url=job_url,
@@ -122,11 +120,11 @@ class MailService:
 
     def send_job_report(self, user: User, job: Job):
         base_url = ctx.config.server.base_url
-        job_url = f'{base_url}/job/{job.id}'
-        error = (job.error or '').strip().split('\n')[-1]
-        job_type = job.type.name.lower().replace('_', ' ').title()
-        job_status = job.status.name.lower().replace('_', ' ').title()
-        subject = f'{job_status}: {job_type}'
+        job_url = f"{base_url}/job/{job.id}"
+        error = (job.error or "").strip().split("\n")[-1]
+        job_type = job.type.name.lower().replace("_", " ").title()
+        job_status = job.status.name.lower().replace("_", " ").title()
+        subject = f"{job_status}: {job_type}"
         body = emails.job_status_template().render(
             failure=error,
             job_url=job_url,

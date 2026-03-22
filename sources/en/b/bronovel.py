@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
-search_url = (
-    "https://bronovel.com/?s=%s&post_type=wp-manga&op=&author=&artist=&release=&adult="
-)
+search_url = "https://bronovel.com/?s=%s&post_type=wp-manga&op=&author=&artist=&release=&adult="
 
 
 class BroNovel(Crawler):
@@ -46,12 +45,7 @@ class BroNovel(Crawler):
             self.novel_cover = self.absolute_url(possible_image["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="manga-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="manga-author"]')])
         logger.info("%s", self.novel_author)
 
         self.novel_id = soup.select_one("#manga-chapters-holder")["data-id"]
@@ -64,12 +58,14 @@ class BroNovel(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
                 self.volumes.append(Volume(id=vol_id))
-            self.chapters.append(Chapter(
-                id=chap_id,
-                volume=vol_id,
-                title=a.text,
-                url=self.absolute_url(a['href']),
-            ))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text,
+                    url=self.absolute_url(a["href"]),
+                )
+            )
 
     def download_chapter_body(self, chapter):
         logger.info("Visiting %s", chapter["url"])

@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
-from lncrawl.models import Volume, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://ixdzs8.tw/bsearch?q=%s"
 
 
 class IxdzsCrawler(Crawler):
-    base_url = ["https://ixdzs8.tw/", "https://ixdzs8.com/",  # new
-                "https://tw.m.ixdzs.com/", "https://www.aixdzs.com"]  # legacy / redirect domains
+    base_url = [
+        "https://ixdzs8.tw/",
+        "https://ixdzs8.com/",  # new
+        "https://tw.m.ixdzs.com/",
+        "https://www.aixdzs.com",
+    ]  # legacy / redirect domains
 
     def initialize(self) -> None:
         self.cleaner.bad_css.add("p.abg")  # advertisement
@@ -31,9 +36,7 @@ class IxdzsCrawler(Crawler):
         soup = self.get_soup(search_url % query)
         results = []
 
-        for data in soup.select(
-            "main > div.panel > ul.u-list > li.burl"
-        ):
+        for data in soup.select("main > div.panel > ul.u-list > li.burl"):
             title = data.select_one("h3 a").get_text().strip()
             url = self.absolute_url(data.select_one("h3 a")["href"])
             results.append(
@@ -57,9 +60,7 @@ class IxdzsCrawler(Crawler):
         self.novel_title = possible_title.get_text()
         logger.info(f"Novel title: {self.novel_title}")
 
-        self.novel_author = metadata.select_one(
-            "a.bauthor"
-        ).get_text()
+        self.novel_author = metadata.select_one("a.bauthor").get_text()
         logger.info(f"Novel Author: {self.novel_author}")
 
         possible_novel_cover = content.select_one("div.n-img > img")
@@ -83,11 +84,13 @@ class IxdzsCrawler(Crawler):
                 vol_id = chap_id // 100 + 1
                 vol_title = f"Volume {vol_id}"
                 self.volumes.append(Volume(vol_id, vol_title))
-            self.chapters.append(Chapter(
-                id=chap_id,
-                title=f"Chapter {chap_id}",
-                url=f"{self.novel_url}/p{chap_id}.html",
-            ))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id,
+                    title=f"Chapter {chap_id}",
+                    url=f"{self.novel_url}/p{chap_id}.html",
+                )
+            )
 
     def download_chapter_body(self, chapter):
 

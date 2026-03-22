@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
 from lncrawl.exceptions import LNException
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +12,7 @@ class XiaowazCrawler(Crawler):
     base_url = ["https://xiaowaz.fr/"]
 
     def initialize(self) -> None:
-        self.cleaner.bad_css.update(
-            [".abh_box_business", ".footnote_container_prepare"]
-        )
+        self.cleaner.bad_css.update([".abh_box_business", ".footnote_container_prepare"])
 
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
@@ -33,7 +31,7 @@ class XiaowazCrawler(Crawler):
 
         for a in soup.select(".entry-content a[href*='/articles/']"):
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=len(self.chapters) + 1, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
     def download_chapter_body(self, chapter):

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import urlparse
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +31,7 @@ class TapreadCrawler(Crawler):
         try:
             possible_authors = []
             for div in soup.select(".author, .translator"):
-                possible_authors.append(
-                    ": ".join([x.strip() for x in div.text.split(":")])
-                )
+                possible_authors.append(": ".join([x.strip() for x in div.text.split(":")]))
             self.novel_author = ", ".join(possible_authors)
         except Exception:
             pass
@@ -47,7 +47,12 @@ class TapreadCrawler(Crawler):
             vol_id = (chap_id - 1) // 100 + 1
             volumes.add(vol_id)
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=chap['chapterName'], url=chapter_url % (chap['bookId'], chap['chapterId']))
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=chap["chapterName"],
+                    url=chapter_url % (chap["bookId"], chap["chapterId"]),
+                )
             )
 
         self.volumes = [Volume(id=x) for x in volumes]

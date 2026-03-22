@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +16,7 @@ class Eight88NovelCrawler(Crawler):
 
     def search_novel(self, query):
         query = query.replace(" ", "+")
-        soup = self.get_soup(
-            f"https://888novel.com/tim-kiem/?title={query}&he_liet=yes&status=all"
-        )
+        soup = self.get_soup(f"https://888novel.com/tim-kiem/?title={query}&he_liet=yes&status=all")
 
         # The search result is paginated.
         urls = ["First"]
@@ -33,14 +33,9 @@ class Eight88NovelCrawler(Crawler):
             if url != "First":
                 soup = self.get_soup(url)
 
-            for novel in soup.find("div", {"class": "col-lg-9"}).find_all(
-                "li", {"class": "col-md-6 col-xs-12"}
-            ):
+            for novel in soup.find("div", {"class": "col-lg-9"}).find_all("li", {"class": "col-md-6 col-xs-12"}):
                 a = novel.find("h2", {"class": "crop-text-2"}).find("a")
-                author = [
-                    e.text
-                    for e in novel.find("span", {"itemprop": "name"}).find_all("a")
-                ]
+                author = [e.text for e in novel.find("span", {"itemprop": "name"}).find_all("a")]
                 result.append(
                     {
                         "title": a.get("title"),
@@ -59,19 +54,12 @@ class Eight88NovelCrawler(Crawler):
 
         try:
             rows = soup.find("table").find_all("tr")
-            self.novel_author = ", ".join(
-                [
-                    e.text.strip()
-                    for e in rows[(1 if len(rows) == 3 else 0)].find_all("a")
-                ]
-            )
+            self.novel_author = ", ".join([e.text.strip() for e in rows[(1 if len(rows) == 3 else 0)].find_all("a")])
         except Exception:
             pass
 
         try:
-            self.novel_cover = self.absolute_url(
-                soup.find("div", {"class": "book3d"}).find("img").get("data-src")
-            )
+            self.novel_cover = self.absolute_url(soup.find("div", {"class": "book3d"}).find("img").get("data-src"))
         except Exception:
             pass
 
@@ -101,7 +89,7 @@ class Eight88NovelCrawler(Crawler):
                 self.chapters.append(
                     Chapter(
                         title=self.cleaner.clean_text(chap.text),
-                        url='https://888novel.com' + chap.get('href').strip(),
+                        url="https://888novel.com" + chap.get("href").strip(),
                         volume=1,
                         id=chapter_count,
                     )

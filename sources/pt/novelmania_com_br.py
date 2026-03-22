@@ -1,8 +1,7 @@
 import logging
 from typing import Generator
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, Volume
 from lncrawl.templates.soup.with_volume import ChapterWithVolumeSoupTemplate
 
@@ -30,7 +29,7 @@ class NovelmaniaComBrCrawler(ChapterWithVolumeSoupTemplate):
 
     def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         for b in soup.select(".novel-info span b"):
-            if 'Autor' in b.get_text():
+            if "Autor" in b.get_text():
                 tag = b.parent
                 if tag:
                     b.extract()
@@ -38,7 +37,7 @@ class NovelmaniaComBrCrawler(ChapterWithVolumeSoupTemplate):
 
     def parse_genres(self, soup: PageSoup) -> Generator[str, None, None]:
         for a in soup.select('#info .tags a[href^="/genero/"]'):
-            tag = a['title']
+            tag = a["title"]
             if isinstance(tag, str):
                 yield tag
 
@@ -55,11 +54,11 @@ class NovelmaniaComBrCrawler(ChapterWithVolumeSoupTemplate):
         yield from soup.select(f"{tag['data-target']} li a[href]")
 
     def parse_chapter_item(self, tag: PageSoup, id: int, vol: Volume) -> Chapter:
-        title_tag = tag.select_one('strong')
+        title_tag = tag.select_one("strong")
         if title_tag:
             title = title_tag.get_text(strip=True)
         else:
-            title = f'Chapter {id}'
+            title = f"Chapter {id}"
         return Chapter(
             id=id,
             title=title,

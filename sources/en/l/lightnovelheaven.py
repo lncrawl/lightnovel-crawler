@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import quote_plus
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = (

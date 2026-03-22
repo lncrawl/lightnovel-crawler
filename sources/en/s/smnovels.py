@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)

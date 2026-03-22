@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import re
 import logging
-from lncrawl.core.crawler import Crawler, Chapter
+import re
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +59,7 @@ class GravityTalesCrawler(Crawler):
             for a in soup.select_one(a["href"]).select("table td a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
                 )
 
     def download_chapter_body(self, chapter):

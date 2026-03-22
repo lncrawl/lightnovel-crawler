@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get(
     "/supported-sources",
-    summary='Returns a list of supported sources',
+    summary="Returns a list of supported sources",
     dependencies=[Depends(ensure_user)],
     response_model=List[SourceItem],
 )
@@ -26,23 +26,21 @@ def list_supported_sources():
         headers={
             "ETag": str(ctx.sources.version),
             "Cache-Control": "public, max-age=14400",
-        }
+        },
     )
 
 
 @router.get(
     "/favicon",
-    summary='Get favicon of a site',
+    summary="Get favicon of a site",
 )
 def get_favicon(
-    url: HttpUrl = Query(description='URL'),
+    url: HttpUrl = Query(description="URL"),
 ) -> FileResponse:
     file = ctx.http.favicon(str(url))
     return FileResponse(
         file,
-        filename='favicon.ico',
-        media_type='image/x-icon',
-        headers={
-            "Cache-Control": "public, max-age=31536000, immutable"
-        },
+        filename="favicon.ico",
+        media_type="image/x-icon",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
     )

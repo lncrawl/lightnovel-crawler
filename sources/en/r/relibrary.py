@@ -1,8 +1,7 @@
 import logging
 from typing import Generator
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 
@@ -65,9 +64,7 @@ class ReLibraryCrawler(ChapterOnlyBrowserTemplate):
             if "page_id" in post_url:
                 chapter.url = post_url
             else:
-                novel_url = (
-                    f"https://re-library.com/translations/{post_url.split('/')[4:5][0]}"
-                )
+                novel_url = f"https://re-library.com/translations/{post_url.split('/')[4:5][0]}"
                 response = self.get_soup(novel_url)
                 chapters = response.select(".page_item > a")
                 chapter.url = chapters[chapter.id - 1]["href"]

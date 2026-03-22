@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -29,9 +30,7 @@ class RanobeNovel(Crawler):
 
         for novel in data["data"]:
             # https://ranobe-novels.ru/voinskoe-edinstvo/ -> https://ranobe-novels.ru/ranobe/voinskoe-edinstvo/
-            novel_url = self.absolute_url(
-                f"/ranobe/{novel['cat_link'].split('/')[-2]}/"
-            )
+            novel_url = self.absolute_url(f"/ranobe/{novel['cat_link'].split('/')[-2]}/")
             results.append(
                 {
                     "title": novel["cat_title"],
@@ -56,9 +55,7 @@ class RanobeNovel(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ", ".join(
-            [span.text.strip() for span in soup.select('span[itemprop="creator"]')]
-        )
+        self.novel_author = ", ".join([span.text.strip() for span in soup.select('span[itemprop="creator"]')])
         logger.info("%s", self.novel_author)
 
         possible_synopsis = soup.select_one("div.category-exerpt.description")
@@ -66,9 +63,7 @@ class RanobeNovel(Crawler):
             self.novel_synopsis = self.cleaner.extract_contents(possible_synopsis)
         logger.info("Novel synopsis: %s", self.novel_synopsis)
 
-        self.novel_tags = [
-            a.text.strip() for a in soup.select('.post_tags a[href*="/novels/"]')
-        ]
+        self.novel_tags = [a.text.strip() for a in soup.select('.post_tags a[href*="/novels/"]')]
 
         alternate = soup.select_one(
             'link[rel="alternate"][type="application/json"][href*="/wp-json/wp/v2/categories/"]'

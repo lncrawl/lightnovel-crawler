@@ -7,4 +7,4 @@ def favicon_icon() -> Path:
     """
     Returns the path to the favicon.ico image file, if it exists.
     """
-    return IMAGES_DIR / 'favicon.ico'
+    return IMAGES_DIR / "favicon.ico"

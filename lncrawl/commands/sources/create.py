@@ -28,30 +28,32 @@ class Feature(str, Enum):
 def create_one(
     non_interactive: bool = typer.Option(
         False,
-        '--noin',
-        help='Disable interactive mode',
+        "--noin",
+        help="Disable interactive mode",
     ),
     locale: Optional[str] = typer.Option(
         None,
-        '-l', '--locale',
-        help='Content language (ISO 639-1 code)',
+        "-l",
+        "--locale",
+        help="Content language (ISO 639-1 code)",
     ),
     features: Optional[List[Feature]] = typer.Option(
         None,
-        "-f", "--features",
-        help='Crawler features. e.g.: -f search -f mtl',
+        "-f",
+        "--features",
+        help="Crawler features. e.g.: -f search -f mtl",
     ),
     use_openai: Optional[bool] = typer.Option(
         None,
         "--openai",
         is_flag=True,
-        help='Use OpenAI model for auto generation',
+        help="Use OpenAI model for auto generation",
     ),
     overwrite: bool = typer.Option(
         False,
         "--overwrite",
         is_flag=True,
-        help='Replace existing crawler with new one',
+        help="Replace existing crawler with new one",
     ),
     url: str = typer.Argument(
         default=None,
@@ -62,7 +64,7 @@ def create_one(
     host = extract_host(url)
     if not host:
         if non_interactive:
-            print(f'[red]Invalid URL: {url}[/red]')
+            print(f"[red]Invalid URL: {url}[/red]")
             return
         url = _prompt_url()
         host = extract_host(url)
@@ -71,29 +73,19 @@ def create_one(
 
     # ensure locale
     if locale is None:
-        locale = '' if non_interactive else _prompt_locale()
+        locale = "" if non_interactive else _prompt_locale()
 
     # build crawler name and file_name
-    name = ' '.join(host.split('.')).title()
-    name = re.sub(r'[^A-Za-z0-9]', '_', name)
+    name = " ".join(host.split(".")).title()
+    name = re.sub(r"[^A-Za-z0-9]", "_", name)
     file_name = name.casefold()
-    name = name.replace('_', '')
-    name += 'Crawler'
+    name = name.replace("_", "")
+    name += "Crawler"
 
     # check file path
     file_path = _build_path(locale, file_name)
-    if (
-        file_path.is_file()
-        and not overwrite
-        and (
-            non_interactive
-            or not _prompt_replace(str(file_path))
-        )
-    ):
-        print(
-            '[red]A file already exists for '
-            f'[b]{host}[/b]:[/red] [cyan]{file_path}[/cyan]'
-        )
+    if file_path.is_file() and not overwrite and (non_interactive or not _prompt_replace(str(file_path))):
+        print("[red]A file already exists for " f"[b]{host}[/b]:[/red] [cyan]{file_path}[/cyan]")
         return
 
     # ensure capabilities
@@ -129,24 +121,21 @@ def create_one(
 
     # save content
     file_path.parent.mkdir(parents=True, exist_ok=True)
-    file_path.write_text(content, encoding='utf-8')
-    print(
-        '[green]Created crawler for '
-        f'[b]{host}[/b]:[/green] [cyan]{file_path}[/cyan]'
-    )
+    file_path.write_text(content, encoding="utf-8")
+    print("[green]Created crawler for " f"[b]{host}[/b]:[/green] [cyan]{file_path}[/cyan]")
 
 
 def _build_path(locale: str, file_name: str):
     file_path = ctx.config.crawler.local_sources
-    file_path /= locale or 'multi'
-    if locale == 'en':
+    file_path /= locale or "multi"
+    if locale == "en":
         file_path /= file_name[0]
-    file_path /= file_name + '.py'
+    file_path /= file_name + ".py"
     return file_path
 
 
 def _prompt_url() -> str:
-    print('[i]The URL must start with [cyan]http[/cyan] or [cyan]https[/cyan].[/i]')
+    print("[i]The URL must start with [cyan]http[/cyan] or [cyan]https[/cyan].[/i]")
     return questionary.text(
         "Website URL:",
         qmark="🌐",
@@ -155,16 +144,11 @@ def _prompt_url() -> str:
 
 
 def _prompt_locale() -> str:
-    choices = [
-        f"[{c:02}] {n}"
-        for c, n in sorted(language_codes.items())
-    ]
+    choices = [f"[{c:02}] {n}" for c, n in sorted(language_codes.items())]
 
-    print('[i]Leave empty if locale is unknown or content is in multiple language:[/i]')
+    print("[i]Leave empty if locale is unknown or content is in multiple language:[/i]")
     language = questionary.autocomplete(
-        'Enter language (ISO 639-1 code)',
-        choices=choices,
-        validate=lambda s: (s in choices) or (s in language_codes)
+        "Enter language (ISO 639-1 code)", choices=choices, validate=lambda s: (s in choices) or (s in language_codes)
     ).ask()
 
     if len(language) > 2:
@@ -181,18 +165,12 @@ def _prompt_features() -> List[Feature]:
 
 
 def _prompt_replace(file: str) -> bool:
-    print(f'[i][cyan]{file}[/cyan][/i]')
-    return questionary.confirm(
-        "Crawler file already exists. Do you want to replace it?",
-        default=False
-    ).ask()
+    print(f"[i][cyan]{file}[/cyan][/i]")
+    return questionary.confirm("Crawler file already exists. Do you want to replace it?", default=False).ask()
 
 
 def _prompt_use_openai() -> bool:
-    return questionary.confirm(
-        "Use OpenAI to auto-generate crawler?",
-        default=bool(ctx.config.app.openai_key)
-    ).ask()
+    return questionary.confirm("Use OpenAI to auto-generate crawler?", default=bool(ctx.config.app.openai_key)).ask()
 
 
 def _prompt_openai_key() -> str:
@@ -200,49 +178,49 @@ def _prompt_openai_key() -> str:
 
 
 def _generate_stub(name: str, base_url: str, features: List[Feature]):
-    content = '''# -*- coding: utf-8 -*-
+    content = """# -*- coding: utf-8 -*-
 import logging
 from typing import Generator, Optional
 
 from bs4 import BeautifulSoup, Tag
-'''
+"""
 
-    models = 'Chapter'
+    models = "Chapter"
     if Feature.can_search in features:
-        models += ', SearchResult'
+        models += ", SearchResult"
     if Feature.has_volumes in features:
-        models += ', Volume'
+        models += ", Volume"
 
-    content += f'''
-from lncrawl.models import {models}'''
+    content += f"""
+from lncrawl.models import {models}"""
 
-    main_class_name = 'ChapterOnlySoupTemplate'
+    main_class_name = "ChapterOnlySoupTemplate"
     if Feature.has_volumes not in features:
-        content += '''
-from lncrawl.templates.soup.chapter_only import ChapterOnlySoupTemplate'''
+        content += """
+from lncrawl.templates.soup.chapter_only import ChapterOnlySoupTemplate"""
 
     if Feature.can_search in features:
-        content += '''
-from lncrawl.templates.soup.searchable import SearchableSoupTemplate'''
+        content += """
+from lncrawl.templates.soup.searchable import SearchableSoupTemplate"""
 
     if Feature.has_volumes in features:
-        main_class_name = 'ChapterWithVolumeSoupTemplate'
-        content += '''
-from lncrawl.templates.soup.with_volume import ChapterWithVolumeSoupTemplate'''
+        main_class_name = "ChapterWithVolumeSoupTemplate"
+        content += """
+from lncrawl.templates.soup.with_volume import ChapterWithVolumeSoupTemplate"""
 
-    content += '''
+    content += """
 
 logger = logging.getLogger(__name__)
 
 
-'''
+"""
 
     if Feature.can_search in features:
-        content += f'''class {name}(SearchableSoupTemplate, {main_class_name}):'''
+        content += f"""class {name}(SearchableSoupTemplate, {main_class_name}):"""
     else:
-        content += f'''class {name}({main_class_name}):'''
+        content += f"""class {name}({main_class_name}):"""
 
-    content += f'''
+    content += f"""
     base_url = ["{base_url}"]
     has_manga = {Feature.has_manga in features}
     has_mtl = {Feature.has_manga in features}
@@ -251,17 +229,17 @@ logger = logging.getLogger(__name__)
         # You can customize `TextCleaner` and other necessary things.
         super().initialize()
         self.init_executor(1)
-'''
+"""
 
     if Feature.can_login in features:
-        content += '''
+        content += """
     def login(self, username_or_email: str, password_or_token: str) -> None:
         # Add logic to login. For example: sources/en/l/lnmtl.py
         pass
-'''
+"""
 
     if Feature.can_search in features:
-        content += '''
+        content += """
     def select_search_items(self, query: str) -> Generator[Tag, None, None]:
         # Select novel items found in search page from the query
         #
@@ -278,9 +256,9 @@ logger = logging.getLogger(__name__)
             title=tag.get_text(strip=True),
             url=self.absolute_url(tag["href"]),
         )
-'''
+"""
 
-    content += '''
+    content += """
     def parse_title(self, soup: BeautifulSoup) -> str:
         # Parse and return the novel title
         #
@@ -320,10 +298,10 @@ logger = logging.getLogger(__name__)
     def parse_summary(self, soup: BeautifulSoup) -> str:
         # Parse and return the novel summary or synopsis
         return ''
-'''
+"""
 
     if Feature.has_volumes in features:
-        content += '''
+        content += """
     def select_volume_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
         # Select volume list item tags from the page soup
         #
@@ -357,9 +335,9 @@ logger = logging.getLogger(__name__)
             title=tag.get_text(strip=True),
             url=self.absolute_url(tag["href"]),
         )
-'''
+"""
     else:
-        content += '''
+        content += """
     def select_chapter_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
         # Select chapter list item tags from page soup
         #
@@ -376,16 +354,16 @@ logger = logging.getLogger(__name__)
             title=tag.get_text(strip=True),
             url=self.absolute_url(tag["href"]),
         )
-'''
+"""
 
-    content += '''
+    content += """
     def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
         # Select the tag containing the chapter content text
         #
         # Example:
         # return soup.select_one(".chapter-content")
         raise NotImplementedError()
-'''
+"""
 
     return content
 
@@ -393,8 +371,8 @@ logger = logging.getLogger(__name__)
 def _fill_with_openai(url: str, stub: str) -> str:
     client = OpenAI(api_key=ctx.config.app.openai_key)
 
-    print(f'[i]Complete the stub functions from [cyan]{url}[/cyan][/i]')
-    content_prompt = f'''
+    print(f"[i]Complete the stub functions from [cyan]{url}[/cyan][/i]")
+    content_prompt = f"""
 You are given the URL of a novel-hosting website: `{url}`.
 
 Fetch the site content. Identify any novel available on the site, and generate Python code that completes the functions in the class below:
@@ -415,11 +393,11 @@ Requirements:
 - Do not include explanations, comments, or markdown fences.
 - Implement a function only if sufficient data is available; otherwise leave it unimplemented.
 - Do not leave any unused imports
-'''
+"""
 
     try:
         response = client.chat.completions.create(
-            model='gpt-5.1',
+            model="gpt-5.1",
             messages=[
                 {"role": "system", "content": "Output Python code only."},
                 {"role": "user", "content": content_prompt},
@@ -427,8 +405,8 @@ Requirements:
         )
         code = response.choices[0].message.content
         if not code:
-            raise Exception('No code content in response')
+            raise Exception("No code content in response")
         return code
     except Exception:
-        logger.error('Failed to generate code', exc_info=True)
+        logger.error("Failed to generate code", exc_info=True)
         return stub

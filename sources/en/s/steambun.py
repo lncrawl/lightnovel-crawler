@@ -2,7 +2,8 @@
 
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -25,16 +26,12 @@ class SteambunCrawler(Crawler):
         # Site does not list covers.
 
         volumes = set([])
-        for a in reversed(
-            soup.select('div.w4pl-inner li a[href*="steambunlightnovel.com"]')
-        ):
+        for a in reversed(soup.select('div.w4pl-inner li a[href*="steambunlightnovel.com"]')):
             title = a.text.strip()
             chapter_id = len(self.chapters) + 1
             volume_id = 1 + (chapter_id - 1) // 100
             volumes.add(volume_id)
-            self.chapters.append(
-                Chapter(id=chapter_id, volume=volume_id, title=title, url=a['href'])
-            )
+            self.chapters.append(Chapter(id=chapter_id, volume=volume_id, title=title, url=a["href"]))
 
         self.chapters.sort(key=lambda x: x["id"])
         self.volumes = [Volume(id=x, title="") for x in volumes]

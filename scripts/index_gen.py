@@ -2,6 +2,7 @@
 """
 Build lightnovel-crawler source index to use for update checking.
 """
+
 import gzip
 import hashlib
 import json
@@ -24,7 +25,7 @@ try:
     sys.path.insert(0, os.path.dirname(os.path.dirname(path)))
     from lncrawl.assets.languages import language_codes
     from lncrawl.context import ctx
-    from lncrawl.core.taskman import TaskManager
+    from lncrawl.core import TaskManager
     from lncrawl.server.models import CrawlerInfo
 except ImportError:
     raise
@@ -53,9 +54,7 @@ REPO_OWNER = "lncrawl"
 REPO_NAME = "lightnovel-crawler"
 REPO_URL = f"https://github.com/{REPO_OWNER}/{REPO_NAME}"
 FILE_DOWNLOAD_URL = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}"
-WHEEL_RELEASE_URL = (
-    f"{REPO_URL}/releases/download/v%s/lightnovel_crawler-%s-py3-none-any.whl"
-)
+WHEEL_RELEASE_URL = f"{REPO_URL}/releases/download/v%s/lightnovel_crawler-%s-py3-none-any.whl"
 
 # =========================================================================================== #
 # The index data
@@ -90,7 +89,7 @@ try:
     INDEX_DATA["app"]["home"] = info["home_page"]
     INDEX_DATA["app"]["pypi"] = info["release_url"]
 except Exception:
-    logger.error('Failed to get latest app data', exc_info=True)
+    logger.error("Failed to get latest app data", exc_info=True)
     exit(1)
 
 # =========================================================================================== #
@@ -104,8 +103,8 @@ try:
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"])
     REPO_BRANCH = commit_hash.decode("utf-8").strip()
 except Exception:
-    logger.warning('Failed to get current git branch', exc_info=True)
-    REPO_BRANCH = 'dev'
+    logger.warning("Failed to get current git branch", exc_info=True)
+    REPO_BRANCH = "dev"
 
 github_cache_result: Dict[str, str] = {}
 github_cache_event: Dict[str, Event] = {}
@@ -146,7 +145,7 @@ repo_contribs = {x["login"]: x for x in repo_data}
 logger.info("Loading username cache")
 username_cache = {}
 try:
-    username_cache = json.loads(CONTRIB_CACHE_FILE.read_text(encoding='utf-8'))
+    username_cache = json.loads(CONTRIB_CACHE_FILE.read_text(encoding="utf-8"))
 except Exception:
     logger.error("Could not load username cache", exc_info=True)
 
@@ -164,7 +163,7 @@ def search_user_by(query):
         return ""
 
 
-def git_history(file_path, sep='|~|') -> List[Dict[Any, Any]]:
+def git_history(file_path, sep="|~|") -> List[Dict[Any, Any]]:
     result = []
     try:
         # cmd = f'git log -1 --diff-filter=ACMT --pretty="%at{sep}%aN{sep}%aE{sep}%s" "{file_path}"'
@@ -173,12 +172,14 @@ def git_history(file_path, sep='|~|') -> List[Dict[Any, Any]]:
         for line in logs.splitlines(False):
             rows = line.strip().split(sep, maxsplit=4)
             if len(rows) == 4:
-                result.append({
-                    "time": int(rows[0]),
-                    "author": rows[1],
-                    "email": rows[2],
-                    "subject": rows[3],
-                })
+                result.append(
+                    {
+                        "time": int(rows[0]),
+                        "author": rows[1],
+                        "email": rows[2],
+                        "subject": rows[3],
+                    }
+                )
     except Exception:
         logger.warning(f"Failed to get git history: {file_path}", exc_info=True)
     return result
@@ -225,7 +226,7 @@ def process_contributors(history):
 def process_info(info: CrawlerInfo):
     py_file = info.local_file
     relative_path = py_file.relative_to(WORKDIR).as_posix()
-    logger.info(f'[cyan]{info.id}[/cyan] {relative_path}')
+    logger.info(f"[cyan]{info.id}[/cyan] {relative_path}")
 
     info.md5 = hashlib.md5(py_file.read_bytes()).hexdigest()
     info.url = f"{FILE_DOWNLOAD_URL}/{REPO_BRANCH}/{relative_path}"
@@ -330,18 +331,10 @@ for ln_code, links in sorted(grouped_supported.items(), key=lambda x: x[0]):
         supported += "<tr>"
 
         supported += "<td>"
-        supported += '<span title="Contains machine translations">%s</span>' % (
-            "🤖" if info["has_mtl"] else ""
-        )
-        supported += '<span title="Supports searching">%s</span>' % (
-            "🔍" if info["can_search"] else ""
-        )
-        supported += '<span title="Supports login">%s</span>' % (
-            "🔑" if info["can_login"] else ""
-        )
-        supported += '<span title="Contains manga/manhua/manhwa">%s</span>' % (
-            "🖼️" if info["has_manga"] else ""
-        )
+        supported += '<span title="Contains machine translations">%s</span>' % ("🤖" if info["has_mtl"] else "")
+        supported += '<span title="Supports searching">%s</span>' % ("🔍" if info["can_search"] else "")
+        supported += '<span title="Supports login">%s</span>' % ("🔑" if info["can_login"] else "")
+        supported += '<span title="Contains manga/manhua/manhwa">%s</span>' % ("🖼️" if info["has_manga"] else "")
         supported += "</td>\n"
 
         supported += '<td><a href="%s" target="_blank">%s</a></td>\n' % (url, url)
@@ -355,11 +348,7 @@ for ln_code, links in sorted(grouped_supported.items(), key=lambda x: x[0]):
                 '<a href="%s"><img src="%s&s=24" alt="%s" height="24"/></a>'
                 % (c["html_url"], c["avatar_url"], c["login"])
                 for c in sorted(
-                    [
-                        repo_contribs[x]
-                        for x in info["contributors"]
-                        if x in repo_contribs
-                    ],
+                    [repo_contribs[x] for x in info["contributors"] if x in repo_contribs],
                     key=lambda x: -x["contributions"],
                 )
             ]
@@ -394,7 +383,7 @@ before, help_text, after = readme_text.split(HELP_RESULT_QUE)
 
 os.chdir(WORKDIR)
 output = subprocess.check_output([sys.executable, "lncrawl", "-h"]).decode("utf-8")
-output = re.sub(r'\x1b\[[0-9;\r]*m', '', output.strip())
+output = re.sub(r"\x1b\[[0-9;\r]*m", "", output.strip())
 
 help_text = "\n"
 help_text += "```text\n"

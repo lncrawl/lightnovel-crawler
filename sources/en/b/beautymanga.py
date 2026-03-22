@@ -2,7 +2,8 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +20,7 @@ class BeautymangaCrawler(Crawler):
         data = self.get_json(search_url)
         results = []
         for item in data["data"]:
-            results.append(
-                {"title": item["title"], "url": self.absolute_url(item["url"])}
-            )
+            results.append({"title": item["title"], "url": self.absolute_url(item["url"])})
         return results
 
     def read_novel_info(self):
@@ -42,25 +41,23 @@ class BeautymangaCrawler(Crawler):
             self.novel_cover = self.absolute_url(possible_image["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ", ".join(
-            [a.text for a in soup.select('.author-content a[href="/author/"]')]
-        )
+        self.novel_author = ", ".join([a.text for a in soup.select('.author-content a[href="/author/"]')])
         logger.info("Novel author: %s", self.novel_author)
 
-        soup = self.get_soup(
-            f"{self.home_url}ajax-list-chapter?mangaID={self.novel_id}"
-        )
+        soup = self.get_soup(f"{self.home_url}ajax-list-chapter?mangaID={self.novel_id}")
         for a in reversed(soup.select(".wp-manga-chapter a")):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.volumes) < vol_id:
                 self.volumes.append(Volume(id=vol_id))
-            self.chapters.append(Chapter(
-                id=chap_id,
-                volume=vol_id,
-                title=a.text,
-                url=self.absolute_url(a["href"]),
-            ))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text,
+                    url=self.absolute_url(a["href"]),
+                )
+            )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

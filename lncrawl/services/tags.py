@@ -18,7 +18,7 @@ class TagService:
         self,
         offset: int = 0,
         limit: int = 20,
-        search: str = '',
+        search: str = "",
     ) -> Paginated[Tag]:
         with ctx.db.session() as sess:
             stmt = select(Tag)
@@ -79,17 +79,8 @@ class TagService:
 
     def insert(self, names: List[str]) -> None:
         with ctx.db.session() as sess:
-            existing = sess.exec(
-                select(Tag.name)
-                .where(col(Tag.name).in_(names))
-            ).all()
+            existing = sess.exec(select(Tag.name).where(col(Tag.name).in_(names))).all()
             missing = set(names) - set(existing)
             if missing:
-                sess.exec(
-                    sa_insert(Tag),
-                    params=[
-                        Tag(name=name).model_dump()
-                        for name in missing
-                    ]
-                )
+                sess.exec(sa_insert(Tag), params=[Tag(name=name).model_dump() for name in missing])
                 sess.commit()

@@ -2,8 +2,9 @@
 import logging
 import re
 from concurrent import futures
-from lncrawl.core.crawler import Chapter, Crawler, Volume
-from lncrawl.core.soup import PageSoup
+
+from lncrawl.core import Crawler, PageSoup
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.newsnovel.net/search/%s"
@@ -58,8 +59,7 @@ class NewsNovelCrawler(Crawler):
 
         logger.info("Getting chapters...")
         futures_to_check = {
-            self.executor.submit(self.download_chapter_list, i + 1, novel_id): str(i)
-            for i in range(page_count + 1)
+            self.executor.submit(self.download_chapter_list, i + 1, novel_id): str(i) for i in range(page_count + 1)
         }
         [x.result() for x in futures.as_completed(futures_to_check)]
 

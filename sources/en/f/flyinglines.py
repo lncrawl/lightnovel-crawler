@@ -4,7 +4,8 @@ from datetime import datetime
 from hashlib import md5
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +22,7 @@ class FlyingLinesCrawler(Crawler):
         self.novel_title = possible_title.text
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one(".novel .novel-thumb img")["data-src"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one(".novel .novel-thumb img")["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         authors = [x.text.strip() for x in soup.select(".novel-info ul.profile li")]
@@ -71,9 +70,7 @@ class FlyingLinesCrawler(Crawler):
         # How to generate the URL?
         # - check `app.js`
         # - search for `e.data.meta`
-        url = (
-            "%s/h5/novel/%s/%s?accessToken=&isFirstEnter=1&webdriver=0&time=%s&sign=%s"
-        )
+        url = "%s/h5/novel/%s/%s?accessToken=&isFirstEnter=1&webdriver=0&time=%s&sign=%s"
         url = url % (self.home_url.strip("/"), self.novel_id, chapter["id"], time, sign)
 
         logger.info("Downloading %s", url)

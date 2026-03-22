@@ -66,34 +66,30 @@ class Scraper(TaskManager):
         """Check for option: https://github.com/VeNoMouS/cloudscraper"""
         # OPTIMAL CONFIGURATION for preventing your specific 403 issues
         scraper = create_scraper(
-            debug=ctx.logger.is_debug,     # Enable for monitoring (disable in production)
-
+            debug=ctx.logger.is_debug,  # Enable for monitoring (disable in production)
             # KEY SETTINGS to prevent 403 errors
-            min_request_interval=2.0,      # CRITICAL: Prevents TLS blocking
-            max_concurrent_requests=1,     # CRITICAL: Prevents concurrent conflicts
-            rotate_tls_ciphers=True,       # CRITICAL: Avoids cipher detection
-
+            min_request_interval=2.0,  # CRITICAL: Prevents TLS blocking
+            max_concurrent_requests=1,  # CRITICAL: Prevents concurrent conflicts
+            rotate_tls_ciphers=True,  # CRITICAL: Avoids cipher detection
             # Enhanced protection
-            auto_refresh_on_403=False,     # Auto-recover from 403 errors
-            max_403_retries=2,             # Max retry attempts
+            auto_refresh_on_403=False,  # Auto-recover from 403 errors
+            max_403_retries=2,  # Max retry attempts
             session_refresh_interval=900,  # Session refresh time in seconds
-
             # Optimized stealth mode
             enable_stealth=True,
             stealth_options={
-                'min_delay': 1.0,          # Reasonable delays
-                'max_delay': 3.0,
-                'human_like_delays': True,
-                'randomize_headers': True,
-                'browser_quirks': True
+                "min_delay": 1.0,  # Reasonable delays
+                "max_delay": 3.0,
+                "human_like_delays": True,
+                "randomize_headers": True,
+                "browser_quirks": True,
             },
-
             # User agent filtering
             browser={
-                'browser': 'firefox',
-                'platform': 'windows',
-                'desktop': True,
-                'mobile': False,
+                "browser": "firefox",
+                "platform": "windows",
+                "desktop": True,
+                "mobile": False,
             },
         )
 
@@ -103,6 +99,7 @@ class Scraper(TaskManager):
         def _close():
             original_close()
             self.__dict__.pop("scraper", None)
+
         scraper.close = _close
 
         return scraper
@@ -122,7 +119,7 @@ class Scraper(TaskManager):
 
         kwargs.setdefault("allow_redirects", True)
 
-        headers = CaseInsensitiveDict(kwargs.pop('headers', {}) or {})
+        headers = CaseInsensitiveDict(kwargs.pop("headers", {}) or {})
         headers.setdefault("Origin", self.home_url.strip("/"))
         headers.setdefault("Referer", self.last_soup_url or self.home_url)
         kwargs["headers"] = headers
@@ -140,10 +137,7 @@ class Scraper(TaskManager):
             )
             response.raise_for_status()
 
-            self.cookies.update({
-                x.name: x.value
-                for x in response.cookies
-            })
+            self.cookies.update({x.name: x.value for x in response.cookies})
 
             response.encoding = "utf8"
             return response
@@ -173,10 +167,7 @@ class Scraper(TaskManager):
     @property
     def cookies(self) -> Dict[str, Optional[str]]:
         """Current session cookies"""
-        return {
-            x.name: x.value
-            for x in self.scraper.cookies
-        }
+        return {x.name: x.value for x in self.scraper.cookies}
 
     def set_cookie(self, name: str, value: str) -> None:
         """Set a session cookie"""
@@ -194,7 +185,7 @@ class Scraper(TaskManager):
             return self.home_url.split(":")[0] + ":" + url
         if url.startswith("/"):
             return self.home_url.strip("/") + url
-        if re.match(r'^https?://.*$', url):
+        if re.match(r"^https?://.*$", url):
             return url
         if page_url:
             return page_url.strip("/") + "/" + url
@@ -235,12 +226,7 @@ class Scraper(TaskManager):
             **kwargs,
         )
 
-    def post_response(
-        self,
-        url: str,
-        data: Optional[Union[MutableMapping, str, bytes]] = {},
-        **kwargs
-    ) -> Response:
+    def post_response(self, url: str, data: Optional[Union[MutableMapping, str, bytes]] = {}, **kwargs) -> Response:
         """Make a POST request and return the response"""
         return self.__process_request(
             "post",
@@ -255,37 +241,23 @@ class Scraper(TaskManager):
         data: Optional[Union[MutableMapping, str, bytes]] = None,
         multipart: bool = False,
         headers: Optional[MutableMapping] = {},
-        **kwargs
+        **kwargs,
     ) -> Response:
         """Simulate submit form request and return the response"""
         headers = CaseInsensitiveDict(headers)
         headers.setdefault(
             "Content-Type",
-            (
-                "multipart/form-data"
-                if multipart
-                else "application/x-www-form-urlencoded; charset=UTF-8"
-            ),
+            ("multipart/form-data" if multipart else "application/x-www-form-urlencoded; charset=UTF-8"),
         )
         return self.post_response(url, data=data, headers=headers, **kwargs)
 
-    def download_file(
-        self,
-        url: str,
-        output_file: str,
-        **kwargs
-    ) -> None:
+    def download_file(self, url: str, output_file: str, **kwargs) -> None:
         """Download content of the url to a file"""
         response = self.__process_request("get", url, **kwargs)
         with open(output_file, "wb") as f:
             f.write(response.content)
 
-    def download_image(
-        self,
-        url: str,
-        headers: Optional[MutableMapping] = {},
-        **kwargs
-    ):
+    def download_image(self, url: str, headers: Optional[MutableMapping] = {}, **kwargs):
         """Download image from url"""
         if url.startswith("data:"):
             content = base64.b64decode(url.split("base64,")[-1])
@@ -294,7 +266,7 @@ class Scraper(TaskManager):
         headers = CaseInsensitiveDict(headers)
         headers.setdefault("Origin", None)
         headers.setdefault("Referer", None)
-        timeout = kwargs.pop('timeout', None) or (3, 30)
+        timeout = kwargs.pop("timeout", None) or (3, 30)
 
         try:
             response = self.__process_request(
@@ -315,12 +287,7 @@ class Scraper(TaskManager):
             content = response.content
             return Image.open(BytesIO(content))
 
-    def get_json(
-        self,
-        url: str,
-        headers: Optional[MutableMapping] = {},
-        **kwargs
-    ) -> Any:
+    def get_json(self, url: str, headers: Optional[MutableMapping] = {}, **kwargs) -> Any:
         """Fetch the content and return the content as JSON object"""
         headers = CaseInsensitiveDict(headers)
         headers.setdefault(
@@ -360,7 +327,7 @@ class Scraper(TaskManager):
         data: Optional[Union[MutableMapping, str, bytes]] = None,
         headers: Optional[MutableMapping] = {},
         multipart: Optional[bool] = False,
-        **kwargs
+        **kwargs,
     ) -> Any:
         """Simulate submit form request and return the content as JSON object"""
         headers = CaseInsensitiveDict(headers)
@@ -370,13 +337,7 @@ class Scraper(TaskManager):
         )
         if isinstance(data, dict):
             data = json.dumps(data)
-        response = self.submit_form(
-            url,
-            data=data,
-            headers=headers,
-            multipart=bool(multipart),
-            **kwargs
-        )
+        response = self.submit_form(url, data=data, headers=headers, multipart=bool(multipart), **kwargs)
         return response.json()
 
     def make_soup(
@@ -413,7 +374,7 @@ class Scraper(TaskManager):
         data: Optional[Union[MutableMapping, str, bytes]] = None,
         headers: Optional[MutableMapping] = {},
         encoding: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> PageSoup:
         """Make a POST request and return PageSoup instance of the response"""
         headers = CaseInsensitiveDict(headers)
@@ -436,7 +397,7 @@ class Scraper(TaskManager):
         headers: Optional[MutableMapping] = {},
         multipart: Optional[bool] = False,
         encoding: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> PageSoup:
         """Simulate submit form request and return a PageSoup instance of the response"""
         headers = CaseInsensitiveDict(headers)

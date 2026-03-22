@@ -13,16 +13,8 @@ class BaseTable(sa.SQLModel):
         primary_key=True,
         description="ID",
     )
-    created_at: int = sa.Field(
-        index=True,
-        default_factory=current_timestamp,
-        sa_type=sa.BigInteger
-    )
-    updated_at: int = sa.Field(
-        index=True,
-        default_factory=current_timestamp,
-        sa_type=sa.BigInteger
-    )
+    created_at: int = sa.Field(index=True, default_factory=current_timestamp, sa_type=sa.BigInteger)
+    updated_at: int = sa.Field(index=True, default_factory=current_timestamp, sa_type=sa.BigInteger)
     extra: Dict[str, Any] = sa.Field(
         default_factory=dict,
         sa_type=sa.JSON,

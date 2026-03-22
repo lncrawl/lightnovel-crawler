@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+
 def main():
     # For executable bundles
     try:
         import multiprocessing
+
         multiprocessing.freeze_support()
     except Exception:
         pass
@@ -11,7 +13,8 @@ def main():
     # For encoding
     try:
         import sys
-        reconfigure = getattr(sys.stdout, 'reconfigure', None)
+
+        reconfigure = getattr(sys.stdout, "reconfigure", None)
         if callable(reconfigure):
             reconfigure(encoding="utf-8")
     except Exception:
@@ -19,12 +22,14 @@ def main():
 
     # Remove colors from terminal in CI
     import os
-    if os.getenv('CI'):
+
+    if os.getenv("CI"):
         os.environ["TERM"] = "dumb"
         os.environ["NO_COLOR"] = "1"
 
     # Start the app
     from .app import app
+
     app()
 
 

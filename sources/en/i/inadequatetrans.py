@@ -2,7 +2,8 @@
 
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +32,7 @@ class InadequateTranslations(Crawler):
             notoc.extract()
 
         # Extract volume-wise chapter entries
-        chapters = soup.select(
-            '.entry-content a[href*="inadequatetranslations.wordpress.com"]'
-        )
+        chapters = soup.select('.entry-content a[href*="inadequatetranslations.wordpress.com"]')
 
         for a in chapters:
             chap_id = len(self.chapters) + 1

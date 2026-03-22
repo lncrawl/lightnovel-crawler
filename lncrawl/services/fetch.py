@@ -39,26 +39,26 @@ class FetchService:
         content = self.get(url)
         file.parent.mkdir(parents=True, exist_ok=True)
         tid = time.thread_time_ns() % 1000
-        tmp = file.with_suffix(f'{file.suffix}.tmp{tid}')
+        tmp = file.with_suffix(f"{file.suffix}.tmp{tid}")
         try:
             tmp.write_bytes(content)
             os.replace(tmp, file)
         finally:
             tmp.unlink(missing_ok=True)
-        logger.debug(f'Downloaded: {file}')
+        logger.debug(f"Downloaded: {file}")
 
     def favicon(self, url: str) -> Path:
-        favicon_url = f'{extract_base(url)}favicon.ico'
+        favicon_url = f"{extract_base(url)}favicon.ico"
 
         filename = hashlib.md5(favicon_url.encode()).hexdigest()
-        out_file = ctx.files.resolve(f'/images/{filename}.ico')
+        out_file = ctx.files.resolve(f"/images/{filename}.ico")
         if out_file.is_file():
             return out_file
 
         try:
             self.download(favicon_url, out_file)
         except Exception:
-            logger.warning(f'Failed to download favicon {url}. Using the default one.')
+            logger.warning(f"Failed to download favicon {url}. Using the default one.")
             shutil.copy(favicon_icon(), out_file)
 
         return out_file

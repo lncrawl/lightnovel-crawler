@@ -22,9 +22,7 @@ class FeedbackService:
         message: str,
         extra: Dict[str, Any],
     ) -> Feedback:
-        extra.update({
-            "user_name": user.name
-        })
+        extra.update({"user_name": user.name})
         with ctx.db.session() as sess:
             feedback = Feedback(
                 user_id=user.id,
@@ -43,7 +41,7 @@ class FeedbackService:
         offset: int = 0,
         limit: int = 20,
         *,
-        search: str = '',
+        search: str = "",
         user_id: Optional[str] = None,
         status: Optional[FeedbackStatus] = None,
         type: Optional[FeedbackType] = None,
@@ -56,7 +54,7 @@ class FeedbackService:
             conditions: List[Any] = []
 
             if search:
-                q = f'%{search}%'
+                q = f"%{search}%"
                 conditions.append(
                     sa.or_(
                         sa.col(Feedback.subject).ilike(q),

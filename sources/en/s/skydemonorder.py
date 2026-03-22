@@ -1,6 +1,7 @@
-import logging
 import json
-from lncrawl.core.crawler import Crawler
+import logging
+
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)

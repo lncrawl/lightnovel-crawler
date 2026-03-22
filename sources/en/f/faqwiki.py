@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
-from lncrawl.models import Volume, Chapter, SearchResult
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ class FaqWiki(Crawler):
     base_url = [
         "https://faqwiki.us/",
         "https://www.faqwiki.us/",
-        'https://faqwiki.xyz',
+        "https://faqwiki.xyz",
     ]
     has_manga = False
     has_mtl = True
@@ -31,9 +31,7 @@ class FaqWiki(Crawler):
         self.novel_title = entry_title.text.strip()
         # remove suffix from completed novels' title
         if self.novel_title.endswith(" – All Chapters"):
-            self.novel_title = self.novel_title[
-                0 : self.novel_title.find(" – All Chapters")
-            ]
+            self.novel_title = self.novel_title[0 : self.novel_title.find(" – All Chapters")]
         self.novel_author = "FaqWiki"
         cover = content.select_one(".wp-block-image img")
         # is missing in some rarer cases
@@ -61,25 +59,15 @@ class FaqWiki(Crawler):
         }
 
         if metadata_container:
-            metadata = (
-                metadata_container.text
-            )  # doesn't have line breaks anyway so not splitting here
+            metadata = metadata_container.text  # doesn't have line breaks anyway so not splitting here
             pos_dict = {}
             for key, sep in keywords.items():
                 pos_dict[key + "_start"] = metadata.find(sep)
                 pos_dict[key] = metadata.find(sep) + len(sep)
 
-            self.novel_synopsis = metadata[
-                pos_dict["desc"] : pos_dict["alt_name_start"]
-            ].strip()
-            self.novel_tags = (
-                metadata[pos_dict["genre"] : pos_dict["author_start"]]
-                .strip()
-                .split(" ")
-            )
-            self.novel_author = metadata[
-                pos_dict["author"] : pos_dict["status_start"]
-            ].strip()
+            self.novel_synopsis = metadata[pos_dict["desc"] : pos_dict["alt_name_start"]].strip()
+            self.novel_tags = metadata[pos_dict["genre"] : pos_dict["author_start"]].strip().split(" ")
+            self.novel_author = metadata[pos_dict["author"] : pos_dict["status_start"]].strip()
 
         logger.info("Novel title: %s", self.novel_title)
         logger.info("Novel synopsis: %s", self.novel_synopsis)
@@ -124,9 +112,7 @@ class FaqWiki(Crawler):
         novel_selector = "article > div > header > h3.entry-title > a"
         next_selector = "div.nav-links > a.next"
 
-        soup = self.get_soup(
-            f"https://faqwiki.us/?s={query.replace(' ', '+')}&post_type=page"
-        )
+        soup = self.get_soup(f"https://faqwiki.us/?s={query.replace(' ', '+')}&post_type=page")
         empty = "nothing found" in soup.select_one("h1.page-title").text.strip().lower()
         if empty:
             return []

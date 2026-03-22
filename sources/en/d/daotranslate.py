@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://daotranslate.us/?s=%s"
@@ -49,17 +48,15 @@ class DaoTranslateCrawler(Crawler):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = soup.select_one('.infox h1').text.strip()
-        logger.info('Novel title: %s', self.novel_title)
+        self.novel_title = soup.select_one(".infox h1").text.strip()
+        logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".thumbook .thumb img")
         if possible_image:
             self.novel_cover = possible_image["data-src"]
         logger.info("Novel cover: %s", self.novel_cover)
 
-        possible_author = soup.select_one(
-            ".info-content .spe span:nth-child(3) a"
-        )
+        possible_author = soup.select_one(".info-content .spe span:nth-child(3) a")
         if possible_author:
             self.novel_author = possible_author.text.strip()
         logger.info("Novel author: %s", self.novel_author)
@@ -75,7 +72,12 @@ class DaoTranslateCrawler(Crawler):
             if chap_id % 100 == 1:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.select_one('.epl-title').text.strip(), url=self.absolute_url(a['href']))
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.select_one(".epl-title").text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     def download_chapter_body(self, chapter):

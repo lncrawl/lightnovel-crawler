@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class WhatsAWhizzerCrawler(Crawler):
 
         for a in soup.select(".entry > p > a"):
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a['href']), title=a.text.strip())
+                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a["href"]), title=a.text.strip())
             )
 
     def download_chapter_body(self, chapter):

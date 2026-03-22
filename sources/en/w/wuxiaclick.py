@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
 import json
+import logging
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 api_novel_chapter_url = "https://wuxia.click/api/chapters/"
@@ -20,9 +22,7 @@ class WuxiaClick(Crawler):
         script = soup.find("script", {"id": "__NEXT_DATA__"})
         data = json.loads(script.contents[0])
 
-        data = data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"][
-            "data"
-        ]["results"]
+        data = data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"]["data"]["results"]
 
         results = []
         for novel in data:
@@ -39,9 +39,7 @@ class WuxiaClick(Crawler):
         soup = self.get_soup(self.novel_url)
         script = soup.find("script", {"id": "__NEXT_DATA__"})
         novel_data = json.loads(script.contents[0])
-        novel_data = novel_data["props"]["pageProps"]["dehydratedState"]["queries"][0][
-            "state"
-        ]["data"]
+        novel_data = novel_data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"]["data"]
 
         possible_title = novel_data["name"]
         assert possible_title, "No novel title"
@@ -49,7 +47,7 @@ class WuxiaClick(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         self.novel_author = novel_data["author"]["name"]
-        logger.info('%s', self.novel_author)
+        logger.info("%s", self.novel_author)
 
         self.novel_cover = novel_data["image"]
         logger.info("Novel cover: %s", self.novel_cover)
@@ -57,9 +55,7 @@ class WuxiaClick(Crawler):
         self.novel_synopsis = novel_data["description"]
         logger.info("Novel synopsis: %s", self.novel_synopsis)
 
-        self.novel_tags = [x["name"] for x in novel_data["categories"]] + [
-            x["name"] for x in novel_data["tags"]
-        ]
+        self.novel_tags = [x["name"] for x in novel_data["categories"]] + [x["name"] for x in novel_data["tags"]]
         logger.info("Novel tags: %s", self.novel_tags)
 
         slug = novel_data["slug"]

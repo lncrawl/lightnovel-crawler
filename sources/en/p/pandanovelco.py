@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Generator
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.templates.novelpub import NovelPubTemplate
 
 

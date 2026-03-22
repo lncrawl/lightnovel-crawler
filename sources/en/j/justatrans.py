@@ -2,8 +2,8 @@
 
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +22,7 @@ class JustATranslatorTranslations(Crawler):
         self.novel_title = soup.find("h1", {"class": "entry-title"}).text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one("div.entry-content p img")["data-orig-file"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one("div.entry-content p img")["data-orig-file"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = soup.select("div.entry-content p")[3].text.strip()
@@ -32,9 +30,7 @@ class JustATranslatorTranslations(Crawler):
 
         # Extract volume-wise chapter entries
         # Stops external links being selected as chapters
-        chapters = soup.select(
-            'div.entry-content p [href*="justatranslatortranslations.com/"]'
-        )
+        chapters = soup.select('div.entry-content p [href*="justatranslatortranslations.com/"]')
 
         for a in chapters:
             chap_id = len(self.chapters) + 1
@@ -42,7 +38,12 @@ class JustATranslatorTranslations(Crawler):
             if len(self.volumes) < vol_id:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or "Chapter %d" % chap_id,
+                )
             )
 
     def download_chapter_body(self, chapter):

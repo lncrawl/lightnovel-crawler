@@ -31,11 +31,8 @@ def upgrade() -> None:
     )
 
     conn = op.get_bind()
-    value = 1 if dialect == 'sqlite' else True
-    conn.execute(sa.text(
-        f"UPDATE users SET is_verified = {value} "
-        "WHERE email IN (SELECT email FROM verifiedemail)"
-    ))
+    value = 1 if dialect == "sqlite" else True
+    conn.execute(sa.text(f"UPDATE users SET is_verified = {value} " "WHERE email IN (SELECT email FROM verifiedemail)"))
 
     op.drop_table("verifiedemail")
 
@@ -50,10 +47,12 @@ def downgrade() -> None:
     )
 
     conn = op.get_bind()
-    value = 1 if dialect == 'sqlite' else True
-    conn.execute(sa.text(
-        "INSERT INTO verifiedemail (email, created_at) "
-        f"SELECT email, created_at FROM users WHERE is_verified = {value}"
-    ))
+    value = 1 if dialect == "sqlite" else True
+    conn.execute(
+        sa.text(
+            "INSERT INTO verifiedemail (email, created_at) "
+            f"SELECT email, created_at FROM users WHERE is_verified = {value}"
+        )
+    )
 
     op.drop_column("users", "is_verified")

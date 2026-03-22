@@ -2,7 +2,8 @@
 import logging
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 novel_page = "https://4scanlation.com/%s"

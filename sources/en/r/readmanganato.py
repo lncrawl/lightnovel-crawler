@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -26,20 +27,13 @@ class ReadMangaNato(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select(
-                    'div.story-info-right td.table-value a[href*="author"]'
-                )
-            ]
+            [a.text.strip() for a in soup.select('div.story-info-right td.table-value a[href*="author"]')]
         )
         logger.info("%s", self.novel_author)
 
         for a in reversed(soup.select(".row-content-chapter li.a-h a.chapter-name")):
             chap_id = len(self.chapters) + 1
-            self.chapters.append(
-                Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a['href']))
-            )
+            self.chapters.append(Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a["href"])))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
@@ -57,5 +51,5 @@ class ReadMangaNato(Crawler):
                 "referer": self.home_url,
                 "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
             },
-            **kwargs
+            **kwargs,
         )

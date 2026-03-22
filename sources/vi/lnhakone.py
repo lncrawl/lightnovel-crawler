@@ -3,8 +3,8 @@ import logging
 import re
 from urllib.parse import quote_plus
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "%s/tim-kiem-nang-cao?title=%s"
@@ -48,9 +48,7 @@ class ListNovelCrawler(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_author = " ".join(
-            [a.text.strip() for a in soup.select('.info-value a[href*="/tac-gia/"]')]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.info-value a[href*="/tac-gia/"]')])
         logger.info("%s", self.novel_author)
 
         possible_image = soup.select_one(".series-cover .img-in-ratio")
@@ -74,8 +72,8 @@ class ListNovelCrawler(Crawler):
                     Chapter(
                         id=chap_id,
                         volume=vol_id,
-                        title=a['title'],
-                        url=self.absolute_url(a['href']),
+                        title=a["title"],
+                        url=self.absolute_url(a["href"]),
                     )
                 )
 

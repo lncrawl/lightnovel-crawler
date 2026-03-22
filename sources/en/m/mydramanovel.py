@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Crawler, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +16,9 @@ class MyDramaNovel(Crawler):
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
 
-        self.novel_synopsis = self.cleaner.extract_contents(
-            soup.find("div", {"class": "tagdiv-type"})
-        )
+        self.novel_synopsis = self.cleaner.extract_contents(soup.find("div", {"class": "tagdiv-type"}))
 
-        self.novel_cover = self.absolute_url(
-            soup.find("span", {"class": "entry-thumb"}).get("data-img-url")
-        )
+        self.novel_cover = self.absolute_url(soup.find("span", {"class": "entry-thumb"}).get("data-img-url"))
 
         self.novel_title = soup.find("h1", {"class": "tdb-title-text"}).text
 
@@ -48,17 +46,25 @@ class MyDramaNovel(Crawler):
         preview_chapters = soup.select("a.td-image-wrap")[0:5]
         for preview_chapter in preview_chapters:
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, volume=0, url=self.absolute_url(preview_chapter.get('href')), title=preview_chapter.get('title'))
+                Chapter(
+                    id=len(self.chapters) + 1,
+                    volume=0,
+                    url=self.absolute_url(preview_chapter.get("href")),
+                    title=preview_chapter.get("title"),
+                )
             )
 
-        for chapter in soup.select(
-            "div.tdb_module_loop.td_module_wrap.td-animation-stack.td-cpt-post"
-        ):
+        for chapter in soup.select("div.tdb_module_loop.td_module_wrap.td-animation-stack.td-cpt-post"):
             chapter_title = chapter.select_one("h3.entry-title a")
             if not chapter_title:
                 continue
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, volume=0, url=self.absolute_url(chapter_title.get('href')), title=chapter_title.text)
+                Chapter(
+                    id=len(self.chapters) + 1,
+                    volume=0,
+                    url=self.absolute_url(chapter_title.get("href")),
+                    title=chapter_title.text,
+                )
             )
 
     def download_chapter_body(self, chapter):

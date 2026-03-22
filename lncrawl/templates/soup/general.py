@@ -72,9 +72,7 @@ class GeneralSoupTemplate(CrawlerTemplate):
         return None
 
     @abstractmethod
-    def parse_chapter_list(
-        self, soup: PageSoup
-    ) -> Generator[Union[Chapter, Volume], None, None]:
+    def parse_chapter_list(self, soup: PageSoup) -> Generator[Union[Chapter, Volume], None, None]:
         """Parse and set the volumes and chapters"""
         raise NotImplementedError()
 
@@ -82,7 +80,7 @@ class GeneralSoupTemplate(CrawlerTemplate):
         soup = self.get_soup(chapter.url)
         body = self.select_chapter_body(soup)
         if not body:
-            raise LNException('No chapter contents')
+            raise LNException("No chapter contents")
         return self.parse_chapter_body(body)
 
     @abstractmethod

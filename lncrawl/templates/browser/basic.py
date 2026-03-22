@@ -63,7 +63,7 @@ class BasicBrowserTemplate(CrawlerTemplate):
             cookie_store=self.scraper.cookies,
         )
         self._visit = self._browser.visit
-        self._browser.visit = self.visit  # type:ignore
+        self._browser.visit = self.visit  # type: ignore
 
     def visit(self, url: str) -> None:
         self._visit(url)
@@ -108,6 +108,7 @@ class BasicBrowserTemplate(CrawlerTemplate):
     ) -> Generator[Chapter, None, None]:
         # Try to use scraper first (since it is faster)
         try:
+
             def _downloader(chapter: Chapter):
                 chapter.body = ""
                 chapter.images = {}

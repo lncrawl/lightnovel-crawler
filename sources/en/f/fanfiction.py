@@ -4,7 +4,8 @@ import logging
 import re
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 chapter_url = "https://www.fanfiction.net/s/%s/%s"

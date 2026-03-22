@@ -5,7 +5,8 @@ from urllib.parse import parse_qs, urlparse
 
 from bs4 import Tag
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 

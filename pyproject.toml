@@ -77,6 +77,7 @@ dev = [
   "black>=24.8.0",
   "build>=1.2.0",
   "flake8>=7.1.0",
+  "isort>=5.13.0",
   "lxml-stubs>=0.5.0",
   "pyinstaller>=6.0.0",
   "setuptools>=75.3.0",
@@ -122,6 +123,7 @@ sources = ["**/*", "!**/*.py", "!**/__pycache__/*"]
 "*" = ["__pycache__/*", "**/__pycache__/*"]
 
 [tool.black]
+target-version = ["py39"]
 extend-exclude = '''/
    \.github
   | \.venv*
@@ -136,3 +138,10 @@ extend-exclude = '''/
   | lncrawl-web
 '''
 line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip_gitignore = true
+known_first_party = ["lncrawl"]
+extend_skip = ["lncrawl-web"]

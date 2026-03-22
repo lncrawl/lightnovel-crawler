@@ -66,9 +66,7 @@ class NovelasLigeraCrawler(GeneralSoupTemplate):
 
         return ""
 
-    def parse_chapter_list(
-        self, soup: BeautifulSoup
-    ) -> Generator[Union[Chapter, Volume], None, None]:
+    def parse_chapter_list(self, soup: BeautifulSoup) -> Generator[Union[Chapter, Volume], None, None]:
         seen_urls = set()
         chapter_id = 1
 
@@ -115,9 +113,7 @@ class NovelasLigeraCrawler(GeneralSoupTemplate):
         ):
             unwanted.decompose()
 
-        for unwanted in body.select(
-            ".post-ratings, .post-tags, .entry-meta, .author-box, .yarpp-related"
-        ):
+        for unwanted in body.select(".post-ratings, .post-tags, .entry-meta, .author-box, .yarpp-related"):
             unwanted.decompose()
 
         return body

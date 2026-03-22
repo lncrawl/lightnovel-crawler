@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import urlencode
+
 import execjs
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +33,7 @@ class NovelMaoCrawler(Crawler):
             logger.info("Novel cover = %s", self.novel_cover)
             logger.info("Novel author = %s", self.novel_author)
         except Exception:
-            possible_title = soup.select_one(
-                'meta[itemprop="itemReviewed"], meta[property="og:title"]'
-            )
+            possible_title = soup.select_one('meta[itemprop="itemReviewed"], meta[property="og:title"]')
             self.novel_title = possible_title["content"]
             logger.info("Novel title = %s", self.novel_title)
 
@@ -71,8 +71,8 @@ class NovelMaoCrawler(Crawler):
                 Chapter(
                     id=chap_id,
                     volume=vol_id,
-                    title=item['title'],
-                    url=item['permalink'],
+                    title=item["title"],
+                    url=item["permalink"],
                 )
             )
 
@@ -82,9 +82,7 @@ class NovelMaoCrawler(Crawler):
         return "".join([str(p) for p in paras if self.filter_para(p.text.strip())])
 
     def filter_para(self, para):
-        bad_texts = [
-            "novelmao.com, the fastest update to the latest chapter of Respect Students!"
-        ]
+        bad_texts = ["novelmao.com, the fastest update to the latest chapter of Respect Students!"]
         for txt in bad_texts:
             if txt in para:
                 return False

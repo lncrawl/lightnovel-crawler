@@ -1,3 +1,3 @@
 from .service import JobScheduler
 
-__all__ = ['JobScheduler']
+__all__ = ["JobScheduler"]

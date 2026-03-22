@@ -3,7 +3,7 @@ import logging
 from typing import Generator, Optional
 from urllib.parse import parse_qs, urlparse
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 
@@ -16,9 +16,11 @@ class FanMTLCrawler(ChapterOnlyBrowserTemplate):
 
     def initialize(self):
         self.init_executor(1)
-        self.cleaner.bad_css.update({
-            'div[align="center"]',
-        })
+        self.cleaner.bad_css.update(
+            {
+                'div[align="center"]',
+            }
+        )
 
     def parse_title(self, soup: PageSoup) -> str:
         possible_title = soup.select_one(".novel-info .novel-title")
@@ -49,10 +51,7 @@ class FanMTLCrawler(ChapterOnlyBrowserTemplate):
         page_count = int(params["page"][0]) + 1
 
         futures = [
-            self.executor.submit(
-                self.get_soup,
-                f"{common_page_url}?page={page}&wjm={params['wjm'][0]}"
-            )
+            self.executor.submit(self.get_soup, f"{common_page_url}?page={page}&wjm={params['wjm'][0]}")
             for page in range(page_count)
         ]
         for page in self.resolve_futures(futures, desc="TOC", unit="page"):

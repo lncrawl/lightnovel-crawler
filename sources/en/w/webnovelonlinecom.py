@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-import re
 import json
 import logging
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+import re
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +32,7 @@ class WebnovelOnlineDotComCrawler(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
         self.volumes = [Volume(id=x, title="") for x in volumes]

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +20,7 @@ class NovelCool(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_author = soup.select_one(
-            "span", {"itemprop": "creator"}
-        ).text.strip()
+        self.novel_author = soup.select_one("span", {"itemprop": "creator"}).text.strip()
         logger.info("Novel author: %s", self.novel_author)
 
         possible_image = soup.select_one("div.bookinfo-pic img")

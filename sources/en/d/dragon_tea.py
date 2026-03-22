@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://dragontea.ink/?s=%s&post_type=wp-manga"

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
 import urllib.parse
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -11,9 +12,7 @@ class EngNovel(Crawler):
     base_url = "https://engnovel.com/"
 
     def search_novel(self, query):
-        soup = self.get_soup(
-            f"https://engnovel.com/?s={urllib.parse.quote_plus(query)}"
-        )
+        soup = self.get_soup(f"https://engnovel.com/?s={urllib.parse.quote_plus(query)}")
 
         results = []
         for novel in soup.select("div.caption"):
@@ -46,17 +45,10 @@ class EngNovel(Crawler):
         # >
         possible_image = soup.select_one("div.wallpaper")
         if possible_image:
-            self.novel_cover = self.absolute_url(
-                possible_image["style"].split("url(")[-1].split(")")[0]
-            )
+            self.novel_cover = self.absolute_url(possible_image["style"].split("url(")[-1].split(")")[0])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ", ".join(
-            [
-                a.text.strip()
-                for a in soup.select('div.info-chitiet a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = ", ".join([a.text.strip() for a in soup.select('div.info-chitiet a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
         # <div class="desc-text" itemprop="description">
@@ -81,17 +73,13 @@ class EngNovel(Crawler):
         logger.info("%s", self.novel_synopsis)
 
         # <a href="https://engnovel.com/action-novels" title="Action Novels" itemprop="genre">Action</a>
-        self.novel_tags = [
-            a.text.strip() for a in soup.select('div.info-chitiet a[itemprop="genre"]')
-        ]
+        self.novel_tags = [a.text.strip() for a in soup.select('div.info-chitiet a[itemprop="genre"]')]
         logger.info("Tags: %s", self.novel_tags)
 
         novel_id = soup.select_one("#id_post")["value"]
 
         # <input name="total-page" type="hidden" value="36">
-        for page in range(
-            1, int(soup.select_one("input[name='total-page']")["value"]) + 1
-        ):
+        for page in range(1, int(soup.select_one("input[name='total-page']")["value"]) + 1):
             data = {
                 "action": "tw_ajax",
                 "type": "pagination",
@@ -99,9 +87,7 @@ class EngNovel(Crawler):
                 "page": page,
             }
             chapter_list = self.make_soup(
-                self.post_response(
-                    "https://engnovel.com/wp-admin/admin-ajax.php", data
-                ).json()["list_chap"]
+                self.post_response("https://engnovel.com/wp-admin/admin-ajax.php", data).json()["list_chap"]
             )
 
             for a in chapter_list.select("ul.list-chapter li a"):
@@ -110,7 +96,7 @@ class EngNovel(Crawler):
                 if len(self.chapters) % 100 == 0:
                     self.volumes.append(Volume(id=vol_id))
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, title=a['title'], url=self.absolute_url(a['href']))
+                    Chapter(id=chap_id, volume=vol_id, title=a["title"], url=self.absolute_url(a["href"]))
                 )
 
     def download_chapter_body(self, chapter):

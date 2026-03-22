@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import quote
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.exceptions import LNException
 from lncrawl.models import Chapter, SearchResult
 
@@ -13,9 +13,7 @@ class Novel35Crawler(Crawler):
     base_url = ["https://novel35.com/"]
 
     def initialize(self) -> None:
-        self.cleaner.bad_css.update(
-            ['div[align="left"]', 'img[src*="proxy?container=focus"]']
-        )
+        self.cleaner.bad_css.update(['div[align="left"]', 'img[src*="proxy?container=focus"]'])
 
     def search_novel(self, query):
         soup = self.get_soup(f"{self.home_url}search?keyword={quote(query)}")
@@ -49,21 +47,13 @@ class Novel35Crawler(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = ", ".join(
-            [
-                a.text.strip()
-                for a in soup.select(".info-holder .info a[href^='/author/']")
-                if a
-            ]
+            [a.text.strip() for a in soup.select(".info-holder .info a[href^='/author/']") if a]
         )
 
         logger.info("Novel author: %s", self.novel_author)
 
         pagination_links = list(soup.select("#list-chapter ul.pagination a:not([rel])"))
-        page_count = (
-            int(pagination_links[-1].get_text())
-            if pagination_links
-            else 1
-        )
+        page_count = int(pagination_links[-1].get_text()) if pagination_links else 1
         logger.info("Chapter list pages: %d" % page_count)
 
         for page in range(1, page_count + 1):

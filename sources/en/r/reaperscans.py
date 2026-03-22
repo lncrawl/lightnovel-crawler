@@ -1,24 +1,21 @@
 # -*- coding: utf-8 -*-
-import logging
-from lxml import etree
-import json
 import base64
-from lncrawl.core.soup import PageSoup
+import json
+import logging
 import re
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lxml import etree
+
+from lncrawl.core import Crawler, PageSoup
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
-CHAPTER_LIST_URL = (
-    "https://api.reaperscans.com/chapters/{}?page={}&perPage=100&order=asc"
-)
+CHAPTER_LIST_URL = "https://api.reaperscans.com/chapters/{}?page={}&perPage=100&order=asc"
 NOVEL_URL = "https://api.reaperscans.com/series/{}"
 
-INIT_PATTERN = re.compile(
-    r"\(self\.__next_f\s?=\s?self\.__next_f\s?\|\|\s?\[\]\)\.push\((\[.+?\])\)"
-)
+INIT_PATTERN = re.compile(r"\(self\.__next_f\s?=\s?self\.__next_f\s?\|\|\s?\[\]\)\.push\((\[.+?\])\)")
 PAYLOAD_PATTERN = re.compile(r"self\.__next_f\.push\((\[.+)\)$")
 TEXT_PATTERN = re.compile(r"^[a-fA-F0-9]+:T(.*)", re.DOTALL)
 HEX_PREFIX_PATTERN = re.compile(r"^([0-9a-fA-F]+),\n")
@@ -78,7 +75,11 @@ class Reaperscans(Crawler):
             chap_id = 1 + (len(self.chapters))
             chap_name = item["chapter_name"]
             self.chapters.append(
-                Chapter(id=chap_id, url=f"{self.novel_url}/{item['chapter_slug']}", title=chap_name if chap_name else item['chapter_title'])
+                Chapter(
+                    id=chap_id,
+                    url=f"{self.novel_url}/{item['chapter_slug']}",
+                    title=chap_name if chap_name else item["chapter_title"],
+                )
             )
 
     def extract_nextjs_flight_text(self, html: str) -> str:
@@ -117,9 +118,7 @@ class Reaperscans(Crawler):
                 decoded_data.append(val)
             elif typ == 3:
                 try:
-                    decoded_data.append(
-                        base64.b64decode(val).decode("utf-8", errors="replace")
-                    )
+                    decoded_data.append(base64.b64decode(val).decode("utf-8", errors="replace"))
                 except (base64.binascii.Error, UnicodeDecodeError):
                     pass
 

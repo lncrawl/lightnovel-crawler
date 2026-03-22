@@ -22,7 +22,7 @@ class Sources:
         self._store: FTSStore
         self._index: CrawlerIndex
         self._taskman: TaskManager
-        self.rejected: Dict[str, str] = {}            # Map of host -> rejection reason
+        self.rejected: Dict[str, str] = {}  # Map of host -> rejection reason
         self.crawlers: Dict[str, Type[Crawler]] = {}  # Map of host/id -> crawler
 
     @property
@@ -36,13 +36,13 @@ class Sources:
         return self.rejected.get(host)
 
     def close(self):
-        if hasattr(self, '_signal'):
+        if hasattr(self, "_signal"):
             self._signal.set()
-        if hasattr(self, '_store'):
+        if hasattr(self, "_store"):
             self._store.close()
-        if hasattr(self, '_taskman'):
+        if hasattr(self, "_taskman"):
             self._taskman.close()
-        if hasattr(self, '_index'):
+        if hasattr(self, "_index"):
             del self._index
         self.rejected.clear()
         self.crawlers.clear()
@@ -58,8 +58,8 @@ class Sources:
         # dynamically import all crawlers
         self._taskman.submit_task(
             self.load_crawlers,
-            *ctx.config.crawler.local_sources.glob('**/*.py'),
-            *ctx.config.crawler.user_sources.glob('**/*.py'),
+            *ctx.config.crawler.local_sources.glob("**/*.py"),
+            *ctx.config.crawler.user_sources.glob("**/*.py"),
         )
 
         # run background task get online update
@@ -82,13 +82,7 @@ class Sources:
             self.rejected[host] = reason
 
     def load_crawlers(self, *files: Path) -> List[CrawlerInfo]:
-        futures = [
-            self._taskman.submit_task(
-                utils.import_crawlers,
-                file
-            )
-            for file in files
-        ]
+        futures = [self._taskman.submit_task(utils.import_crawlers, file) for file in files]
         return [
             self.add_crawler(crawler)
             for crawlers in self._taskman.resolve_as_generator(
@@ -102,23 +96,23 @@ class Sources:
         ]
 
     def add_crawler(self, crawler: Type[Crawler]) -> CrawlerInfo:
-        sid = getattr(crawler, '__id__')        # crawler id
-        file = getattr(crawler, '__file__')     # file path
-        urls = getattr(crawler, 'base_url')     # always a list
-        version = getattr(crawler, 'version')   # last edit time
+        sid = getattr(crawler, "__id__")  # crawler id
+        file = getattr(crawler, "__file__")  # file path
+        urls = getattr(crawler, "base_url")  # always a list
+        version = getattr(crawler, "version")  # last edit time
 
         # add to index if not available
         if sid in self._index.crawlers:
             info = self._index.crawlers[sid]
         else:
-            logger.info(f'Found non-indexed crawler: {crawler.__name__}')
+            logger.info(f"Found non-indexed crawler: {crawler.__name__}")
             info = utils.create_crawler_info(crawler)
             self._index.crawlers[sid] = info
 
         # update crawlers list with the latest crawler
         def _set(key: str):
             if key in self.crawlers:
-                if version < getattr(self.crawlers[key], 'version'):
+                if version < getattr(self.crawlers[key], "version"):
                     return  # skip if current crawler is the latest
             self.crawlers[key] = crawler
 
@@ -136,10 +130,10 @@ class Sources:
 
     def update(self) -> None:
         assert self._index
-        logger.info('Sync online sources')
+        logger.info("Sync online sources")
         online_index = utils.fetch_online_source()
         if online_index.v <= self._index.v:
-            logger.info('No latest updates found')
+            logger.info("No latest updates found")
             return
 
         # save the latest index
@@ -163,13 +157,13 @@ class Sources:
         # wait for completion
         for dst_file in self._taskman.resolve_as_generator(
             futures,
-            desc='Downloading',
-            unit='source',
+            desc="Downloading",
+            unit="source",
             signal=self._signal,
         ):
             if dst_file:
                 self.load_crawlers(dst_file)
-        logger.info('Source synced.')
+        logger.info("Source synced.")
 
     def list(
         self,
@@ -209,10 +203,7 @@ class Sources:
 
             urls = info.base_urls
             if query:
-                urls = [
-                    url for url in info.base_urls
-                    if query in normalize(url)
-                ] or info.base_urls
+                urls = [url for url in info.base_urls if query in normalize(url)] or info.base_urls
 
             language = info.file_path.split("/")[1]
             for url in urls:
@@ -229,7 +220,7 @@ class Sources:
                     has_manga=info.has_manga,
                     has_mtl=info.has_mtl,
                     is_disabled=is_disabled,
-                    disable_reason=self.rejected.get(domain, 'No reason provided'),
+                    disable_reason=self.rejected.get(domain, "No reason provided"),
                     can_search=info.can_search,
                     can_login=info.can_login,
                     total_commits=info.total_commits,
@@ -245,7 +236,7 @@ class Sources:
         if query in self._index.crawlers:
             return self._index.crawlers[query]
         elif query in self.crawlers:
-            id = getattr(self.crawlers[query], '__id__')
+            id = getattr(self.crawlers[query], "__id__")
             return self._index.crawlers[id]
         else:
             ids = self._store.search(normalize(query))
@@ -267,7 +258,7 @@ class Sources:
             raise ServerErrors.no_crawler.with_extra(host)
 
         constructor = self.crawlers[host]
-        setattr(constructor, 'url', url)
+        setattr(constructor, "url", url)
         return constructor
 
     def init_crawler(
@@ -277,16 +268,14 @@ class Sources:
         workers: Optional[int] = None,
         parser: Optional[str] = None,
     ) -> Crawler:
-        url = getattr(constructor, 'url')
+        url = getattr(constructor, "url")
         logger.debug(f"Creating crawler instance for {url}")
 
         # disable logging
         if disable_logger:
-            module = getattr(constructor, '__module_obj__')
-            setattr(module, 'print', lambda *a, **k: None)
-            setattr(module, 'logger', type("", (), {
-                "__getattr__": lambda *n: (lambda *a, **k: None)
-            })())
+            module = getattr(constructor, "__module_obj__")
+            setattr(module, "print", lambda *a, **k: None)
+            setattr(module, "logger", type("", (), {"__getattr__": lambda *n: (lambda *a, **k: None)})())
 
         # create instance
         crawler = constructor(workers, parser)

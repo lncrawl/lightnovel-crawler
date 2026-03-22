@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import urlparse
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +16,7 @@ CHAPTER_LIST_URL = (
     "https://api.mystorywave.com/story-wave-backend/api/v1/content/chapters/page"
     + "?sortDirection=ASC&bookId=%s&pageNumber=%d&pageSize=100"
 )
-CHAPTER_CONTENT_URL = (
-    "https://api.mystorywave.com/story-wave-backend/api/v1/content/chapters/%d"
-)
+CHAPTER_CONTENT_URL = "https://api.mystorywave.com/story-wave-backend/api/v1/content/chapters/%d"
 
 
 class WNMTLCrawler(Crawler):

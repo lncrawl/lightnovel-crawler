@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +24,7 @@ class ShinsoriCrawler(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = (
-            "Author : %s, Translator: Shinsori"
-            % soup.select("div.entry.clearfix p strong")[1].next_sibling.strip()
+            "Author : %s, Translator: Shinsori" % soup.select("div.entry.clearfix p strong")[1].next_sibling.strip()
         )
         logger.info("Novel author: %s", self.novel_author)
 
@@ -41,7 +42,12 @@ class ShinsoriCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(x['href']), title=x['title'] or 'Chapter %d' % chap_id)
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(x["href"]),
+                    title=x["title"] or "Chapter %d" % chap_id,
+                )
             )
 
         self.volumes = [Volume(id=x + 1) for x in range(len(self.chapters) // 100 + 1)]

@@ -7,16 +7,21 @@ from lncrawl.server.tier import ENABLED_FORMATS
 from ...context import ctx
 from ...dao import Job, JobPriority, JobStatus, JobType, User
 from ...exceptions import ServerErrors
-from ..models import (FetchChaptersRequest, FetchImagesRequest,
-                      FetchNovelRequest, FetchVolumesRequest,
-                      MakeArtifactsRequest, Paginated)
+from ..models import (
+    FetchChaptersRequest,
+    FetchImagesRequest,
+    FetchNovelRequest,
+    FetchVolumesRequest,
+    MakeArtifactsRequest,
+    Paginated,
+)
 from ..security import ensure_user
 
 # The root router
 router = APIRouter()
 
 
-@router.get("s", summary='Returns a list of jobs')
+@router.get("s", summary="Returns a list of jobs")
 def list_jobs(
     user: User = Security(ensure_user),
     offset: int = Query(default=0),
@@ -40,7 +45,7 @@ def list_jobs(
     )
 
 
-@router.delete("/{job_id}", summary='Deletes a job')
+@router.delete("/{job_id}", summary="Deletes a job")
 def delete_job(
     user: User = Security(ensure_user),
     job_id: str = Path(),
@@ -51,26 +56,26 @@ def delete_job(
     return True
 
 
-@router.get("/{job_id}", summary='Gets job details')
+@router.get("/{job_id}", summary="Gets job details")
 def get_job(
     job_id: str = Path(),
 ) -> Job:
     return ctx.jobs.get(job_id)
 
 
-@router.post("/{job_id}/cancel", summary='Cancel a job')
+@router.post("/{job_id}/cancel", summary="Cancel a job")
 def cancel_job(
     user: User = Security(ensure_user),
     job_id: str = Path(),
 ) -> bool:
     user_id = ctx.jobs.verify_access(user, job_id)
-    who = 'user' if user.id == user_id else 'admin'
+    who = "user" if user.id == user_id else "admin"
     ctx.scheduler.stop_job(job_id)
     ctx.jobs.cancel(job_id, who)
     return True
 
 
-@router.post("/{job_id}/replay", summary='Replay a job')
+@router.post("/{job_id}/replay", summary="Replay a job")
 def replay_job(
     user: User = Security(ensure_user),
     job_id: str = Path(),
@@ -84,7 +89,7 @@ def replay_job(
     )
 
 
-@router.post("/create/fetch-novel", summary='Create a job to fetch novel details')
+@router.post("/create/fetch-novel", summary="Create a job to fetch novel details")
 def fetch_novel(
     user: User = Security(ensure_user),
     body: FetchNovelRequest = Body(),
@@ -93,7 +98,7 @@ def fetch_novel(
     return ctx.jobs.fetch_novel(user, url, full=body.full)
 
 
-@router.post("/create/fetch-volumes", summary='Create a job to fetch all chapter contents for the volumes')
+@router.post("/create/fetch-volumes", summary="Create a job to fetch all chapter contents for the volumes")
 def fetch_volumes(
     user: User = Security(ensure_user),
     body: FetchVolumesRequest = Body(),
@@ -106,7 +111,7 @@ def fetch_volumes(
     return ctx.jobs.fetch_many_volumes(user, *volumes)
 
 
-@router.post("/create/fetch-chapters", summary='Create a job to fetch chapter contents')
+@router.post("/create/fetch-chapters", summary="Create a job to fetch chapter contents")
 def fetch_chapters(
     user: User = Security(ensure_user),
     body: FetchChaptersRequest = Body(),
@@ -119,7 +124,7 @@ def fetch_chapters(
     return ctx.jobs.fetch_many_chapters(user, *chapters)
 
 
-@router.post("/create/fetch-images", summary='Create a job to fetch chapter images')
+@router.post("/create/fetch-images", summary="Create a job to fetch chapter images")
 def fetch_images(
     user: User = Security(ensure_user),
     body: FetchImagesRequest = Body(),
@@ -132,11 +137,8 @@ def fetch_images(
     return ctx.jobs.fetch_many_images(user, *images)
 
 
-@router.post("/create/make-artifacts", summary='Create a job to make novel artifacts')
-def make_artifacts(
-    user: User = Security(ensure_user),
-    body: MakeArtifactsRequest = Body()
-) -> Job:
+@router.post("/create/make-artifacts", summary="Create a job to make novel artifacts")
+def make_artifacts(user: User = Security(ensure_user), body: MakeArtifactsRequest = Body()) -> Job:
     formats = set(body.formats) & ENABLED_FORMATS[user.tier]
     if len(formats) == 0:
         raise ServerErrors.no_artifacts_to_create

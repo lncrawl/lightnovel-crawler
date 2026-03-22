@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -45,20 +46,13 @@ class OverABook(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
         self.novel_id = soup.select_one("#manga-chapters-holder")["data-id"]
         logger.info("Novel id: %s", self.novel_id)
 
-        response = self.submit_form(
-            chapter_list_url, data="action=manga_get_chapters&manga=" + self.novel_id
-        )
+        response = self.submit_form(chapter_list_url, data="action=manga_get_chapters&manga=" + self.novel_id)
         soup = self.make_soup(response)
         for a in reversed(soup.select(".wp-manga-chapter a")):
             chap_id = len(self.chapters) + 1

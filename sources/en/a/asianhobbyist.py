@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class AsianHobbyistCrawler(Crawler):
                 Chapter(
                     id=chap_id,
                     title=title,
-                    url=self.absolute_url(a['href']),
+                    url=self.absolute_url(a["href"]),
                 )
             )
 

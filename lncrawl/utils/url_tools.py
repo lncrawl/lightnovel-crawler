@@ -8,20 +8,16 @@ def normalize_url(url: str) -> str:
     return normalize(url).encode("idna").decode("ascii")
 
 
-def validate_url(url: str, allowed_schemes=['http', 'https']) -> bool:
+def validate_url(url: str, allowed_schemes=["http", "https"]) -> bool:
     """Return True if `url` is a syntactically valid URL for the given schemes."""
     parsed = urlparse(url)
-    return all([
-        parsed.scheme,
-        parsed.netloc,
-        parsed.scheme in allowed_schemes
-    ])
+    return all([parsed.scheme, parsed.netloc, parsed.scheme in allowed_schemes])
 
 
 def extract_base(url: str) -> str:
     """Extracts the base url."""
     parsed = urlparse(url)
-    return f'{parsed.scheme}://{parsed.netloc}/'
+    return f"{parsed.scheme}://{parsed.netloc}/"
 
 
 def extract_host(url: str) -> str:
@@ -31,11 +27,11 @@ def extract_host(url: str) -> str:
     host = parsed.hostname
     port = parsed.port
     if not host:
-        return ''
+        return ""
 
     host = normalize_url(host)
-    if host.startswith('www.'):
+    if host.startswith("www."):
         host = host[4:]
     if port:
-        host += f':{port}'
+        host += f":{port}"
     return host

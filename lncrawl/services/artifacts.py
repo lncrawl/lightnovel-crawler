@@ -68,10 +68,7 @@ class ArtifactService:
 
     def get_epub(self, depends_on_job_id: str) -> Artifact:
         with ctx.db.session() as sess:
-            artifact = sess.exec(
-                select(Artifact)
-                .where(Artifact.job_id == depends_on_job_id)
-            ).first()
+            artifact = sess.exec(select(Artifact).where(Artifact.job_id == depends_on_job_id)).first()
             if not artifact or not artifact.is_available:
                 raise ServerErrors.no_epub_file
             return artifact
@@ -79,26 +76,15 @@ class ArtifactService:
     def list_latest(self, novel_id: str) -> List[Artifact]:
         with ctx.db.session() as sess:
             subq = (
-                select(
-                    Artifact.format,
-                    func.max(Artifact.updated_at).label("max_updated_at")
-                )
+                select(Artifact.format, func.max(Artifact.updated_at).label("max_updated_at"))
                 .where(Artifact.novel_id == novel_id)
                 .group_by(Artifact.format)
                 .subquery()
             )
             rows = sess.exec(
                 select(Artifact)
-                .join(
-                    subq,
-                    and_(
-                        Artifact.format == subq.c.format,
-                        Artifact.updated_at == subq.c.max_updated_at
-                    )
-                )
-                .order_by(
-                    asc(Artifact.format)
-                )
+                .join(subq, and_(Artifact.format == subq.c.format, Artifact.updated_at == subq.c.max_updated_at))
+                .order_by(asc(Artifact.format))
             ).all()
             return list(rows)
 

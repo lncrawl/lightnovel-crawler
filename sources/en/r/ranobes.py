@@ -5,8 +5,7 @@ import re
 from typing import Generator
 from urllib.parse import quote_plus, urljoin
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
 
@@ -32,9 +31,7 @@ class RanobeLibCrawler(SearchableBrowserTemplate):
             yield elem
 
     def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
-        soup = self.get_soup(
-            urljoin(self.home_url, "/search/{}/".format(quote_plus(query)))
-        )
+        soup = self.get_soup(urljoin(self.home_url, "/search/{}/".format(quote_plus(query))))
 
         for elem in soup.select(".short-cont .title a"):
             yield elem
@@ -124,11 +121,7 @@ class RanobeLibCrawler(SearchableBrowserTemplate):
         return soup.select_one("div#arrticle")
 
     def extract_page_data(self, soup: PageSoup) -> dict:
-        script = soup.find(
-            lambda tag: bool(tag)
-            and tag.name == "script"
-            and tag.text.startswith("window.__DATA__")
-        )
+        script = soup.find(lambda tag: bool(tag) and tag.name == "script" and tag.text.startswith("window.__DATA__"))
 
         content = script.text.strip()
         content = content.replace("window.__DATA__ = ", "")

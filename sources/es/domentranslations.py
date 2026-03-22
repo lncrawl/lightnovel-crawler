@@ -2,7 +2,9 @@
 import logging
 import re
 from urllib.parse import urlparse
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +40,7 @@ class CclawTranslations(Crawler):
 
         # Removes none TOC links from bottom of page.
         toc_parts = soup.select_one("div.entry-content")
-        for notoc in toc_parts.select(
-            ".sharedaddy, .inline-ad-slot, .code-block, script, hr, .adsbygoogle"
-        ):
+        for notoc in toc_parts.select(".sharedaddy, .inline-ad-slot, .code-block, script, hr, .adsbygoogle"):
             notoc.extract()
 
         # Extract volume-wise chapter entries

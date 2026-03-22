@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -70,8 +70,7 @@ class ReadlightnovelCcCrawler(Crawler):
                     id=chap_id,
                     volume=vol_id,
                     url=self.absolute_url(a["href"]),
-                    title=a.select_one("p.chapter-name").text.strip()
-                    or ("Chapter %d" % chap_id),
+                    title=a.select_one("p.chapter-name").text.strip() or ("Chapter %d" % chap_id),
                 )
             )
 

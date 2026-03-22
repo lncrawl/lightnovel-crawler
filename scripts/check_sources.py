@@ -12,6 +12,7 @@ Run from repo root:
 
 Formatted summary (Rich) is written to stderr; stdout is one down URL per line for scripting.
 """
+
 from __future__ import annotations
 
 import json
@@ -103,11 +104,7 @@ def _poll_check_result(client: httpx.Client, request_id: str, timeout: float) ->
         if not last:
             time.sleep(0.4)
             continue
-        pending = [
-            k
-            for k, v in last.items()
-            if k.endswith(".node.check-host.net") and v is None
-        ]
+        pending = [k for k, v in last.items() if k.endswith(".node.check-host.net") and v is None]
         if not pending:
             return last
         time.sleep(0.4)
@@ -267,16 +264,14 @@ def _check_one_url(
 def _update_rejected(url: str):
     with _lock:
         local_file = ctx.config.crawler.local_index_file
-        rejected_file = local_file.parent / '_rejected.json'
+        rejected_file = local_file.parent / "_rejected.json"
         if not rejected_file.is_file():
             return
-        json_str = rejected_file.read_text(encoding='utf-8')
+        json_str = rejected_file.read_text(encoding="utf-8")
         rejected = json.loads(json_str)
-        rejected.update({
-            url: 'Site is down'
-        })
+        rejected.update({url: "Site is down"})
         json_str = json.dumps(rejected, indent=2, sort_keys=True)
-        rejected_file.write_text(json_str, encoding='utf-8')
+        rejected_file.write_text(json_str, encoding="utf-8")
 
 
 @app.command()

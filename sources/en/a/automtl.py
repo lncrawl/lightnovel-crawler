@@ -2,8 +2,8 @@
 
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +30,7 @@ class AutoMTL(Crawler):
 
         # Extract volume-wise chapter entries
         # Stops external links being selected as chapters
-        chapters = soup.select(
-            'div.wp-block-group__inner-container [href*="automtl.wordpress.com/"]'
-        )
+        chapters = soup.select('div.wp-block-group__inner-container [href*="automtl.wordpress.com/"]')
 
         for a in chapters:
             chap_id = 1 + len(self.chapters)
@@ -44,8 +42,8 @@ class AutoMTL(Crawler):
                 Chapter(
                     id=chap_id,
                     volume=vol_id,
-                    url=self.absolute_url(a['href']),
-                    title=a.text.strip() or 'Chapter %d' % chap_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or "Chapter %d" % chap_id,
                 )
             )
 

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +35,7 @@ class JpmtlCrawler(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = soup.select_one(
-            ".book-sidebar__author .book-sidebar__info"
-        ).text.strip()
+        self.novel_author = soup.select_one(".book-sidebar__author .book-sidebar__info").text.strip()
         logger.info("Novel author: %s", self.novel_author)
 
         toc_url = chapters_url % self.novel_id
@@ -51,7 +51,12 @@ class JpmtlCrawler(Crawler):
             for chapter in volume["chapters"]:
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=volume['volume'], url=self.absolute_url(self.novel_url + '/' + str(chapter['id'])), title=chapter['title'] or 'Chapter %d' % chap_id)
+                    Chapter(
+                        id=chap_id,
+                        volume=volume["volume"],
+                        url=self.absolute_url(self.novel_url + "/" + str(chapter["id"])),
+                        title=chapter["title"] or "Chapter %d" % chap_id,
+                    )
                 )
 
     def download_chapter_body(self, chapter):

@@ -2,13 +2,11 @@
 import logging
 from urllib.parse import quote
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
-search_url = (
-    "https://meownovel.com/?s=%s&post_type=wp-manga&op=&author=&artist=&release=&adult="
-)
+search_url = "https://meownovel.com/?s=%s&post_type=wp-manga&op=&author=&artist=&release=&adult="
 
 
 class MeowNovel(Crawler):
@@ -65,12 +63,7 @@ class MeowNovel(Crawler):
             self.novel_cover = possible_image["content"]
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
         self.novel_id = soup.select_one("#manga-chapters-holder")["data-id"]
@@ -85,7 +78,7 @@ class MeowNovel(Crawler):
                 self.volumes.append(Volume(id=vol_id))
 
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
     def download_chapter_body(self, chapter):

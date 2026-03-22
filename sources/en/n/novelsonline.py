@@ -3,8 +3,7 @@
 import logging
 from typing import Generator, Union
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, Volume
 from lncrawl.templates.browser.general import GeneralBrowserTemplate
 
@@ -60,15 +59,11 @@ class NovelsOnline(GeneralBrowserTemplate):
         for a in soup.select("a[href*=author]"):
             yield a.text.strip()
 
-    def parse_chapter_list(
-        self, soup: PageSoup
-    ) -> Generator[Union[Chapter, Volume], None, None]:
+    def parse_chapter_list(self, soup: PageSoup) -> Generator[Union[Chapter, Volume], None, None]:
         _id = 0
         for a in soup.select(".chapters .chapter-chs li a"):
             _id += 1
-            yield Chapter(
-                id=_id, url=self.absolute_url(a["href"]), title=a.text.strip()
-            )
+            yield Chapter(id=_id, url=self.absolute_url(a["href"]), title=a.text.strip())
 
     def visit_chapter_page_in_browser(self, chapter: Chapter) -> None:
         self.visit(chapter.url)

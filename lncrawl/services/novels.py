@@ -15,10 +15,10 @@ class NovelService:
 
     def list(
         self,
-        search: str = '',
+        search: str = "",
         offset: int = 0,
         limit: int = 20,
-        domain: str = '',
+        domain: str = "",
     ) -> Paginated[Novel]:
         with ctx.db.session() as sess:
             stmt = sa.select(Novel)
@@ -28,7 +28,7 @@ class NovelService:
             conditions: List[Any] = []
 
             if domain:
-                conditions.append(sa.col(Novel.url).ilike(f'%{domain}%'))
+                conditions.append(sa.col(Novel.url).ilike(f"%{domain}%"))
 
             if search:
                 conditions.append(sa.col(Novel.title).ilike(f"%{search}%"))
@@ -57,11 +57,7 @@ class NovelService:
     def list_sources(self) -> List[SourceItem]:
         with ctx.db.session() as sess:
             domains = sess.exec(
-                sa.select(
-                    Novel.domain,
-                    sa.func.count(sa.col(Novel.id)).label('total_novels')
-                )
-                .group_by(Novel.domain)
+                sa.select(Novel.domain, sa.func.count(sa.col(Novel.id)).label("total_novels")).group_by(Novel.domain)
             ).all()
 
         results = []
@@ -82,7 +78,7 @@ class NovelService:
             return novel
 
     def delete(self, novel_id: str) -> bool:
-        novel_dir = ctx.files.resolve(f'novels/{novel_id}')
+        novel_dir = ctx.files.resolve(f"novels/{novel_id}")
         shutil.rmtree(novel_dir, True)
         with ctx.db.session() as sess:
             novel = sess.get(Novel, novel_id)
@@ -94,7 +90,4 @@ class NovelService:
 
     def find_by_url(self, novel_url: str) -> Optional[Novel]:
         with ctx.db.session() as sess:
-            return sess.exec(
-                sa.select(Novel)
-                .where(Novel.url == novel_url)
-            ).first()
+            return sess.exec(sa.select(Novel).where(Novel.url == novel_url)).first()

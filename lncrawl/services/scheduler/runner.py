@@ -5,10 +5,9 @@ from threading import Event
 from typing import Any, Dict, Iterable, Optional, Set
 
 from ...context import ctx
-from ...dao import (Artifact, Job, JobStatus, JobType, NotificationItem,
-                    OutputFormat)
-from ...server.tier import ENABLED_FORMATS
+from ...dao import Artifact, Job, JobStatus, JobType, NotificationItem, OutputFormat
 from ...exceptions import AbortedException
+from ...server.tier import ENABLED_FORMATS
 from ...utils.event_lock import EventLock
 from ...utils.time_utils import current_timestamp
 
@@ -39,7 +38,7 @@ class JobRunner:
                     return
                 if job.parent_job_id:
                     if ctx.jobs.cancel_if_dangling(job):
-                        logger.debug(f'Dangling job [b]{job.id}[/b] | {job.job_title}')
+                        logger.debug(f"Dangling job [b]{job.id}[/b] | {job.job_title}")
                         return
                 _queue[job.id] = Event()
                 _users[job.id] = job.user_id
@@ -52,7 +51,7 @@ class JobRunner:
                         _queue.pop(job.id).set()
                         _users.pop(job.id)
         except Exception:
-            logger.error('Unexpected error in runner', exc_info=True)
+            logger.error("Unexpected error in runner", exc_info=True)
 
     @staticmethod
     def cancel(job_id: str):
@@ -79,15 +78,11 @@ class JobRunner:
         return ctx.users.get(self.job.user_id)
 
     def process(self) -> bool:
-        message = (
-            f'[cyan]{self.job.status.name}[/cyan]'
-            f' [b]{self.job.id}[/b]'
-            f' | {self.job.job_title}'
-        )
+        message = f"[cyan]{self.job.status.name}[/cyan]" f" [b]{self.job.id}[/b]" f" | {self.job.job_title}"
         if not self.job.parent_job_id:
             logger.info(message)
         else:
-            logger.debug(f'{message}')
+            logger.debug(f"{message}")
 
         if self.job.is_running:
             self.children = ctx.jobs.get_children(self.job.id)
@@ -119,7 +114,7 @@ class JobRunner:
         if self.job.type == JobType.ARTIFACT:
             return self._artifact()
 
-        return self.__set_done(f'Job type is not supported: [b]{self.job.type}[/b]')
+        return self.__set_done(f"Job type is not supported: [b]{self.job.type}[/b]")
 
     # ------------------------------------------------------------------ #
     #                               Helpers                              #
@@ -151,11 +146,7 @@ class JobRunner:
         self.__send_mail()
         return True
 
-    def __set_done(
-        self,
-        error: str = '',
-        err_source: Optional[Exception] = None
-    ) -> bool:
+    def __set_done(self, error: str = "", err_source: Optional[Exception] = None) -> bool:
         if error and err_source:
             lines = traceback.format_exception(
                 type(err_source),
@@ -163,8 +154,8 @@ class JobRunner:
                 tb=err_source.__traceback__,
                 chain=True,
             )
-            lines += ['', error]
-            error = ''.join(lines)
+            lines += ["", error]
+            error = "".join(lines)
         with ctx.db.session() as sess:
             if error:
                 ctx.jobs._fail(sess, self.job.id, error.strip())
@@ -202,8 +193,8 @@ class JobRunner:
 
         alert_items: Set[NotificationItem] = set()
         all_notifications = set(NotificationItem)
-        email_alerts = self.user.extra.get('email_alerts') or {}
-        email_sent = set(self.job.extra.get('email_sent') or [])
+        email_alerts = self.user.extra.get("email_alerts") or {}
+        email_sent = set(self.job.extra.get("email_sent") or [])
         for k, v in email_alerts.items():
             if not v or v in email_sent:
                 continue
@@ -236,15 +227,13 @@ class JobRunner:
 
         if NotificationItem.NOVEL_SUCCESS in alert_items:
             if self.job.status == JobStatus.SUCCESS and (
-                self.job.type == JobType.FULL_NOVEL
-                or self.job.type == JobType.NOVEL
+                self.job.type == JobType.FULL_NOVEL or self.job.type == JobType.NOVEL
             ):
                 ctx.mail.send_full_novel_job_success(self.user, self.job)
                 email_sent.add(NotificationItem.NOVEL_SUCCESS.value)
         if NotificationItem.ARTIFACT_SUCCESS in alert_items:
             if self.job.status == JobStatus.SUCCESS and (
-                self.job.type == JobType.ARTIFACT
-                or self.job.type == JobType.ARTIFACT_BATCH
+                self.job.type == JobType.ARTIFACT or self.job.type == JobType.ARTIFACT_BATCH
             ):
                 ctx.mail.send_full_novel_job_success(self.user, self.job)
                 email_sent.add(NotificationItem.ARTIFACT_SUCCESS.value)
@@ -257,16 +246,13 @@ class JobRunner:
 
     def _novel_batch(self) -> bool:
         try:
-            urls = self.job.extra.get('urls')
+            urls = self.job.extra.get("urls")
             if not urls:
                 return self.__set_done()
 
             urls = set(urls)
             if self.job.is_running:
-                urls -= set([
-                    job.extra.get('url')
-                    for job in self.children
-                ])
+                urls -= set([job.extra.get("url") for job in self.children])
             else:
                 self.__set_running()
 
@@ -274,31 +260,23 @@ class JobRunner:
             for url in sorted(urls):
                 if self.signal.is_set():
                     raise AbortedException()
-                ctx.jobs.fetch_novel(
-                    self.user,
-                    url,
-                    full=full,
-                    parent_id=self.job.id
-                )
+                ctx.jobs.fetch_novel(self.user, url, full=full, parent_id=self.job.id)
 
             return self.__increment()
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to create requests', e)
+            return self.__set_done("Failed to create requests", e)
 
     def _novel(self) -> bool:
         try:
-            url = self.job.extra.get('url')
+            url = self.job.extra.get("url")
             if not url:
-                return self.__set_done('No novel url')
+                return self.__set_done("No novel url")
 
             added_types = {}
             if self.job.is_running:
-                added_types = {
-                    job.type: job.id
-                    for job in self.children
-                }
+                added_types = {job.type: job.id for job in self.children}
             else:
                 self.__set_running()
 
@@ -342,20 +320,17 @@ class JobRunner:
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to fetch novel', e)
+            return self.__set_done("Failed to fetch novel", e)
 
     def _volume_batch(self) -> bool:
         try:
-            volume_ids = self.job.extra.get('volume_ids')
+            volume_ids = self.job.extra.get("volume_ids")
             if not volume_ids:
                 return self.__set_done()
 
             volume_ids = set(volume_ids)
             if self.job.is_running:
-                volume_ids -= set([
-                    job.extra.get('volume_id')
-                    for job in self.children
-                ])
+                volume_ids -= set([job.extra.get("volume_id") for job in self.children])
             else:
                 self.__set_running()
 
@@ -366,31 +341,25 @@ class JobRunner:
                     self.user,
                     volume_id,
                     parent_id=self.job.id,
-                    novel_title=self.job.extra.get('novel_title'),
+                    novel_title=self.job.extra.get("novel_title"),
                 )
 
             return self.__increment()
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to create requests', e)
+            return self.__set_done("Failed to create requests", e)
 
     def _volume(self) -> bool:
         try:
-            volume_id = self.job.extra.get('volume_id')
+            volume_id = self.job.extra.get("volume_id")
             if not volume_id:
-                return self.__set_done('No volume id')
+                return self.__set_done("No volume id")
 
-            chapter_ids = set([
-                chapter.id
-                for chapter in ctx.chapters.list(volume_id=volume_id)
-            ])
+            chapter_ids = set([chapter.id for chapter in ctx.chapters.list(volume_id=volume_id)])
 
             if self.job.is_running:
-                chapter_ids -= set([
-                    job.extra.get('chapter_id')
-                    for job in self.children
-                ])
+                chapter_ids -= set([job.extra.get("chapter_id") for job in self.children])
             else:
                 self.__set_running()
 
@@ -401,27 +370,24 @@ class JobRunner:
                     self.user,
                     chapter_id,
                     parent_id=self.job.id,
-                    novel_title=self.job.extra.get('novel_title'),
+                    novel_title=self.job.extra.get("novel_title"),
                 )
 
             return self.__increment()
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to create requests', e)
+            return self.__set_done("Failed to create requests", e)
 
     def _chapter_batch(self) -> bool:
         try:
-            chapter_ids = self.job.extra.get('chapter_ids')
+            chapter_ids = self.job.extra.get("chapter_ids")
             if not chapter_ids:
                 return self.__set_done()
 
             chapter_ids = set(chapter_ids)
             if self.job.is_running:
-                chapter_ids -= set([
-                    job.extra.get('chapter_id')
-                    for job in self.children
-                ])
+                chapter_ids -= set([job.extra.get("chapter_id") for job in self.children])
             else:
                 self.__set_running()
 
@@ -432,27 +398,24 @@ class JobRunner:
                     self.user,
                     chapter_id,
                     parent_id=self.job.id,
-                    novel_title=self.job.extra.get('novel_title'),
+                    novel_title=self.job.extra.get("novel_title"),
                 )
 
             return self.__increment()
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to create requests', e)
+            return self.__set_done("Failed to create requests", e)
 
     def _chapter(self) -> bool:
         try:
-            chapter_id = self.job.extra.get('chapter_id')
+            chapter_id = self.job.extra.get("chapter_id")
             if not chapter_id:
-                return self.__set_done('No chapter id')
+                return self.__set_done("No chapter id")
 
             added_types = {}
             if self.job.is_running:
-                added_types = {
-                    job.type: job.id
-                    for job in self.children
-                }
+                added_types = {job.type: job.id for job in self.children}
             else:
                 self.__set_running()
 
@@ -463,7 +426,7 @@ class JobRunner:
                 refresh=(not self.job.parent_job_id),
             )
             if not chapter.is_available:
-                return self.__set_done('Failed to fetch contents')
+                return self.__set_done("Failed to fetch contents")
 
             if JobType.IMAGE_BATCH not in added_types:
                 images = ctx.images.list(chapter_id=chapter.id, is_crawled=False)
@@ -477,27 +440,24 @@ class JobRunner:
                     chapter_id=chapter.id,
                     chapter_title=chapter.title,
                     novel_id=chapter.novel_id,
-                    novel_title=self.job.extra.get('novel_title'),
+                    novel_title=self.job.extra.get("novel_title"),
                 )
 
             return self.__increment()
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to fetch chapter', e)
+            return self.__set_done("Failed to fetch chapter", e)
 
     def _image_batch(self) -> bool:
         try:
-            image_ids = self.job.extra.get('image_ids')
+            image_ids = self.job.extra.get("image_ids")
             if not image_ids:
                 return self.__set_done()
 
             image_ids = set(image_ids)
             if self.job.is_running:
-                image_ids -= set([
-                    job.extra.get('image_id')
-                    for job in self.children
-                ])
+                image_ids -= set([job.extra.get("image_id") for job in self.children])
             else:
                 self.__set_running()
 
@@ -508,23 +468,23 @@ class JobRunner:
                     self.user,
                     image_id,
                     parent_id=self.job.id,
-                    novel_id=self.job.extra.get('novel_id'),
-                    novel_title=self.job.extra.get('novel_title'),
-                    chapter_id=self.job.extra.get('chapter_id'),
-                    chapter_title=self.job.extra.get('chapter_title'),
+                    novel_id=self.job.extra.get("novel_id"),
+                    novel_title=self.job.extra.get("novel_title"),
+                    chapter_id=self.job.extra.get("chapter_id"),
+                    chapter_title=self.job.extra.get("chapter_title"),
                 )
 
             return self.__increment()
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to create requests', e)
+            return self.__set_done("Failed to create requests", e)
 
     def _image(self) -> bool:
         try:
-            image_id = self.job.extra.get('image_id')
+            image_id = self.job.extra.get("image_id")
             if not image_id:
-                return self.__set_done('No image id')
+                return self.__set_done("No image id")
 
             if not self.job.is_running:
                 self.__set_running()
@@ -536,30 +496,27 @@ class JobRunner:
                 refresh=(not self.job.parent_job_id),
             )
             if not image.is_available:
-                return self.__set_done('Failed to download image')
+                return self.__set_done("Failed to download image")
 
             return self.__set_done()
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to fetch image', e)
+            return self.__set_done("Failed to fetch image", e)
 
     def _artifact_batch(self) -> bool:
         try:
-            novel_id = self.job.extra.get('novel_id')
+            novel_id = self.job.extra.get("novel_id")
             if not novel_id:
-                return self.__set_done('No novel id')
+                return self.__set_done("No novel id")
 
-            formats = self.job.extra.get('formats')
+            formats = self.job.extra.get("formats")
             if not formats:
                 return self.__set_done()
 
             format_job_map = {}
             if self.job.is_running:
-                format_job_map = {
-                    OutputFormat(job.extra['format']): job.id
-                    for job in self.children
-                }
+                format_job_map = {OutputFormat(job.extra["format"]): job.id for job in self.children}
             else:
                 self.__set_running()
 
@@ -580,14 +537,14 @@ class JobRunner:
                     novel_id,
                     format,
                     parent_id=self.job.id,
-                    novel_title=self.job.extra.get('novel_title'),
+                    novel_title=self.job.extra.get("novel_title"),
                 )
                 format_job_map[format] = job.id
 
             if need_epub:
                 epub_job_id = format_job_map.get(OutputFormat.epub)
                 if not epub_job_id:
-                    return self.__set_done('Failed to create epub request')
+                    return self.__set_done("Failed to create epub request")
 
                 for format in sorted(need_epub - added_format):
                     if self.signal.is_set():
@@ -604,32 +561,32 @@ class JobRunner:
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to create requests', e)
+            return self.__set_done("Failed to create requests", e)
 
     def _artifact(self) -> bool:
         try:
-            novel_id = self.job.extra.get('novel_id')
+            novel_id = self.job.extra.get("novel_id")
             if not novel_id:
-                return self.__set_done('No novel id')
+                return self.__set_done("No novel id")
 
-            format = self.job.extra.get('format')
+            format = self.job.extra.get("format")
             if not format:
-                return self.__set_done('No output format')
+                return self.__set_done("No output format")
 
             if format not in set(OutputFormat):
-                return self.__set_done(f'Invalid format: {format}')
+                return self.__set_done(f"Invalid format: {format}")
 
             if not self.job.is_running:
                 self.__set_running()
 
-            novel_title = self.job.extra.get('novel_title')
+            novel_title = self.job.extra.get("novel_title")
             if not novel_title:
                 novel_title = ctx.novels.get(novel_id).title
 
             epub: Optional[Artifact] = None
             if format in ctx.binder.depends_on_epub:
                 if not self.job.depends_on:
-                    return self.__set_done(f'Dependency job not found for {format}')
+                    return self.__set_done(f"Dependency job not found for {format}")
                 epub = ctx.artifacts.get_epub(self.job.depends_on)
 
             if self.signal.is_set():
@@ -644,14 +601,11 @@ class JobRunner:
                 signal=self.signal,
             )
             if not artifact.is_available:
-                return self.__set_done('Failed to make artifact')
+                return self.__set_done("Failed to make artifact")
 
-            self.__set_extra(
-                artifact_id=artifact.id,
-                novel_title=novel_title
-            )
+            self.__set_extra(artifact_id=artifact.id, novel_title=novel_title)
             return self.__set_done()
         except AbortedException:
             return False  # ignore error
         except Exception as e:
-            return self.__set_done('Failed to make artifact', e)
+            return self.__set_done("Failed to make artifact", e)

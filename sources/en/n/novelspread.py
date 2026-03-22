@@ -2,15 +2,14 @@
 import hashlib
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
 book_info_url = "https://api.novelspread.com/api/novel/path/%s"
 chapter_list_url = "https://api.novelspread.com/api/novel/%s/chapter/menu"
-chapter_body_url = (
-    "https://api.novelspread.com/api/novel/%s/chapter/%d/content?fingerprint="
-)
+chapter_body_url = "https://api.novelspread.com/api/novel/%s/chapter/%d/content?fingerprint="
 
 
 class NovelSpreadCrawler(Crawler):
@@ -60,14 +59,17 @@ class NovelSpreadCrawler(Crawler):
         for chap in data["data"]:
             volumes.add(chap["volume"])
             self.chapters.append(
-                Chapter(id=chap['chapter_number'], volume=chap['volume'], title=chap['title'], url=self.absolute_url(chap['link']))
+                Chapter(
+                    id=chap["chapter_number"],
+                    volume=chap["volume"],
+                    title=chap["title"],
+                    url=self.absolute_url(chap["link"]),
+                )
             )
 
         self.volumes = [Volume(id=x, title="") for x in volumes]
 
-        logger.debug(
-            "%d chapters and %d volumes found", len(self.chapters), len(self.volumes)
-        )
+        logger.debug("%d chapters and %d volumes found", len(self.chapters), len(self.volumes))
 
     def download_chapter_body(self, chapter):
         url = chapter_body_url % (self.novel_id, chapter["id"])

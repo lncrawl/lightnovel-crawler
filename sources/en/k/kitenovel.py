@@ -2,8 +2,9 @@
 import logging
 
 from bs4 import NavigableString
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class KiteNovel(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
     def download_chapter_body(self, chapter):

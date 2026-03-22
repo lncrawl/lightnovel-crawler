@@ -2,8 +2,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
-
+from lncrawl.core import Crawler
+from lncrawl.exceptions import LNException
 from lncrawl.models import Chapter, SearchResult
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,10 @@ class DdxSss(Crawler):
 
     def read_novel_info(self):
         logger.debug("Visiting %s", self.novel_url)
-        book_id = int(re.match(re.compile("http.+/book/(\\d+).*"), self.novel_url)[1])
+        match = re.match(re.compile("http.+/book/(\\d+).*"), self.novel_url)
+        if not match:
+            raise LNException("No book id found")
+        book_id = int(match[1])
         soup = self.get_soup(self.novel_url, encoding="utf-8")
 
         meta = soup.select_one(".book > .info")

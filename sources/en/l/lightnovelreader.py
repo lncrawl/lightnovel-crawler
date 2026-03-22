@@ -2,9 +2,8 @@
 import logging
 from urllib.parse import quote
 
-
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -87,10 +86,9 @@ class LightnovelReader(Crawler):
         self.novel_tags = [tag.text.strip() for tag in tags if tag]
         logger.info("Novel genre: %s", self.novel_tags)
 
-        self.novel_author = ', '.join([
-            a.text.strip()
-            for a in soup.select('.container .novels-detail-right-in-right a[href*="/author/"]')
-        ])
+        self.novel_author = ", ".join(
+            [a.text.strip() for a in soup.select('.container .novels-detail-right-in-right a[href*="/author/"]')]
+        )
         logger.info("Novel author: %s", self.novel_author)
 
         # possible_novel_id = soup.select_one('.js-load-chapters')
@@ -125,17 +123,13 @@ class LightnovelReader(Crawler):
 
         # self.volumes = [{'id': x} for x in volumes]
 
-        for tab in reversed(
-            soup.select(".novels-detail-chapters-btn-list a[data-tab]")
-        ):
+        for tab in reversed(soup.select(".novels-detail-chapters-btn-list a[data-tab]")):
             vol_id = len(self.volumes) + 1
             self.volumes.append(Volume(id=vol_id))
-            for a in reversed(
-                soup.select(".novels-detail-chapters#%s a" % tab["data-tab"])
-            ):
+            for a in reversed(soup.select(".novels-detail-chapters#%s a" % tab["data-tab"])):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
                 )
 
     def download_chapter_body(self, chapter):

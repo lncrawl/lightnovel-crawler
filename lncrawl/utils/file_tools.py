@@ -4,6 +4,7 @@ import shlex
 import subprocess
 from pathlib import Path
 from typing import Union
+
 from slugify import slugify
 
 from .platforms import Platform
@@ -54,11 +55,7 @@ def folder_size(folder: Union[str, Path]) -> int:
 
     # Python fallback
     try:
-        return sum(
-            f.stat().st_size
-            for f in Path(folder).rglob("*")
-            if f.is_file()
-        )
+        return sum(f.stat().st_size for f in Path(folder).rglob("*") if f.is_file())
     except Exception:
         logger.error("Failed to calculate folder size in Python fallback", exc_info=True)
         return 0
@@ -66,19 +63,25 @@ def folder_size(folder: Union[str, Path]) -> int:
 
 # Windows reserved device names
 _WINDOWS_RESERVED = {
-    "CON", "PRN", "AUX", "NUL",
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
     *(f"COM{i}" for i in range(1, 10)),
     *(f"LPT{i}" for i in range(1, 10)),
 }
 
 
 def safe_filename(name: str) -> str:
-    name = slugify(
-        name,
-        max_length=255,
-        separator=' ',
-        regex_pattern=r'[#<>:"/\\|?*\x00-\x1F]',
-    ).strip(" .") or "untitled"
+    name = (
+        slugify(
+            name,
+            max_length=255,
+            separator=" ",
+            regex_pattern=r'[#<>:"/\\|?*\x00-\x1F]',
+        ).strip(" .")
+        or "untitled"
+    )
     if name.upper() in _WINDOWS_RESERVED:
         name = f"_{name}"
     return name or "untitled"

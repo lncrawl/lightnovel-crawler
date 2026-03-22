@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -10,9 +11,7 @@ class WanderingInnCrawler(Crawler):
     base_url = ["https://wanderinginn.com/"]
 
     def initialize(self) -> None:
-        self.cleaner.bad_text_regex.update(
-            ["Previous Chapter", "Table of Contents", "Next Chapter"]
-        )
+        self.cleaner.bad_text_regex.update(["Previous Chapter", "Table of Contents", "Next Chapter"])
 
     def read_novel_info(self):
         logger.debug("Visiting %s", self.novel_url)

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -13,9 +15,7 @@ class KissNovelCrawler(Crawler):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = " ".join(
-            [str(x) for x in soup.select_one(".post-title h1").contents if not x.name]
-        ).strip()
+        self.novel_title = " ".join([str(x) for x in soup.select_one(".post-title h1").contents if not x.name]).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".summary_image img")
@@ -56,7 +56,12 @@ class KissNovelCrawler(Crawler):
                     }
                 )
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or "Chapter %d" % chap_id,
+                )
             )
 
     def download_chapter_body(self, chapter):

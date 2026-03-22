@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
-
+from urllib.parse import urlparse
 
 import requests
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
-from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.foxaholic.com/?s=%s&post_type=wp-manga"
@@ -57,32 +56,20 @@ class FoxaholicCrawler(Crawler):
         self.novel_title = possible_title["content"]
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one(".summary_image a img")["data-src"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one(".summary_image a img")["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
-        if (
-            "18.foxaholic.com" in self.novel_url
-            or "global.foxaholic.com" in self.novel_url
-        ):
+        if "18.foxaholic.com" in self.novel_url or "global.foxaholic.com" in self.novel_url:
             parsed_url = urlparse(self.novel_url)
             current_base_url = "%s://%s" % (parsed_url.scheme, parsed_url.hostname)
 
             novel_id = soup.select_one("#manga-chapters-holder")["data-id"]
             get_chapter_data = {"action": "manga_get_chapters", "manga": novel_id}
 
-            response = self.submit_form(
-                current_base_url + "/wp-admin/admin-ajax.php", data=get_chapter_data
-            )
+            response = self.submit_form(current_base_url + "/wp-admin/admin-ajax.php", data=get_chapter_data)
 
             soup = self.make_soup(response)
 
@@ -106,9 +93,7 @@ class FoxaholicCrawler(Crawler):
         # REMINDER : Some chapters have additional protection in the form of having the actual
         # chapter url in the post. This selector might change frequently.
 
-        blocked_chapter = soup.select_one(".text-left").find(
-            lambda tag: tag.name == "a" and "Chapter" in tag.text
-        )
+        blocked_chapter = soup.select_one(".text-left").find(lambda tag: tag.name == "a" and "Chapter" in tag.text)
         if blocked_chapter:
             logger.info("Blocked chapter detected. Trying to bypass...")
             soup = self.get_soup(blocked_chapter["href"])
@@ -131,8 +116,6 @@ class FoxaholicCrawler(Crawler):
             url,
             verify=False,
             allow_redirects=True,
-            headers={
-                "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.9"
-            },
+            headers={"Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.9"},
         )
         return response.content

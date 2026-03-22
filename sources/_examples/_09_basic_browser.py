@@ -9,6 +9,7 @@ fails with `ScraperNotSupported`, it retries with the webdriver based scraping.
 Put your source file inside the language folder. The `en` folder has too many
 files, therefore it is grouped using the first letter of the domain name.
 """
+
 import logging
 from typing import Generator
 

@@ -7,9 +7,7 @@ from .general import GeneralSoupTemplate
 
 
 class OptionalVolumeSoupTemplate(GeneralSoupTemplate):
-    def parse_chapter_list(
-        self, soup: PageSoup
-    ) -> Generator[Union[Chapter, Volume], None, None]:
+    def parse_chapter_list(self, soup: PageSoup) -> Generator[Union[Chapter, Volume], None, None]:
         vol_id = 0
         chap_id = 0
         for vol in self.select_volume_tags(soup):

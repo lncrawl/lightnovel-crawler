@@ -4,9 +4,7 @@ from concurrent.futures import Future
 from typing import List, Optional
 from urllib.parse import quote, urlencode
 
-from lncrawl.core.soup import PageSoup
-
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler, PageSoup
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -60,9 +58,7 @@ class TruenFull(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.__select_value(
-            soup, ".book-thumb img, .books .book img", "src"
-        )
+        self.novel_cover = self.__select_value(soup, ".book-thumb img, .books .book img", "src")
         logger.info("Novel cover: %s", self.novel_cover)
 
         authors = soup.select('.info a[itemprop="author"]')

@@ -8,9 +8,9 @@ from .volume import Volume
 __all__ = [
     "Chapter",
     "CombinedSearchResult",
-    "SearchResult",
-    "Novel",
     "MetaInfo",
+    "Novel",
+    "SearchResult",
     "Session",
     "Volume",
 ]

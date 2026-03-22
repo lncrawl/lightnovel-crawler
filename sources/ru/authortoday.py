@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class AuthorTodayCrawler(Crawler):
             self.chapters.append(
                 Chapter(
                     id=chap_id,
-                    title=chapter['title'],
+                    title=chapter["title"],
                     url=f"https://author.today/reader/{chapter['workId']}/chapter?id={chapter['id']}",
                 )
             )
@@ -56,9 +57,7 @@ class AuthorTodayCrawler(Crawler):
         # encode and remove header
         dirt_chapter = list(chapter_data.encode("utf-16"))[2:]
         # concatenate two adjacent bytes
-        chapter_e_bytes = [
-            (b << 8) | a for a, b in zip(dirt_chapter[0::2], dirt_chapter[1::2])
-        ]
+        chapter_e_bytes = [(b << 8) | a for a, b in zip(dirt_chapter[0::2], dirt_chapter[1::2])]
 
         # utf-16 header
         chapter_d_bytes = [65279]
@@ -67,8 +66,6 @@ class AuthorTodayCrawler(Crawler):
             chapter_d_bytes.append(chapter_e_bytes[i] ^ ord(cipher[i % len(cipher)]))
 
         # split by bytes, concatenate sequences and decode
-        chapter_content = bytes(
-            [b for a in chapter_d_bytes for b in [a >> 8, a & 0xFF]]
-        ).decode("utf-16")
+        chapter_content = bytes([b for a in chapter_d_bytes for b in [a >> 8, a & 0xFF]]).decode("utf-16")
 
         return chapter_content

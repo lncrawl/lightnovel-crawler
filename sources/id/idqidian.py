@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +58,7 @@ class IdqidianCrawler(Crawler):
             [
                 str(p.extract())
                 for p in body_parts
-                if p.text.strip()
-                and "Advertisement" not in p.text
-                and "JavaScript!" not in p.text
+                if p.text.strip() and "Advertisement" not in p.text and "JavaScript!" not in p.text
             ]
         )
         if body_parts == "":
@@ -66,11 +66,7 @@ class IdqidianCrawler(Crawler):
             unwanted_text = [str.strip(x.text) for x in soup.find_all()]
             my_texts = set(texts).difference(unwanted_text)
             body_parts = "".join(
-                [
-                    str(p)
-                    for p in my_texts
-                    if p.strip() and "Advertisement" not in p and "JavaScript!" not in p
-                ]
+                [str(p) for p in my_texts if p.strip() and "Advertisement" not in p and "JavaScript!" not in p]
             )
 
         return body_parts

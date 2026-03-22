@@ -2,7 +2,8 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://novelsrock.com/?s=%s&post_type=wp-manga&op=&author=&artist=&release=&adult="
@@ -35,15 +36,11 @@ class NovelsRockCrawler(Crawler):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = " ".join(
-            [str(x) for x in soup.select_one(".post-title h1").contents if not x.name]
-        ).strip()
+        self.novel_title = " ".join([str(x) for x in soup.select_one(".post-title h1").contents if not x.name]).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         try:
-            self.novel_cover = self.absolute_url(
-                soup.select_one(".summary_image img")["data-src"]
-            )
+            self.novel_cover = self.absolute_url(soup.select_one(".summary_image img")["data-src"])
         except Exception:
             pass
         logger.info("Novel cover: %s", self.novel_cover)
@@ -62,7 +59,12 @@ class NovelsRockCrawler(Crawler):
             vol_id = (chap_id - 1) // 100 + 1
             volumes.add(vol_id)
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or "Chapter %d" % chap_id,
+                )
             )
 
         self.volumes = [Volume(id=x) for x in volumes]

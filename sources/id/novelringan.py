@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +24,7 @@ class NovelRinganCrawler(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [a.text.strip() for a in soup.select('.entry-author a[href*="/author/"]')]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.entry-author a[href*="/author/"]')])
         logger.info("%s", self.novel_author)
 
         for a in reversed(soup.select(".bxcl ul li a")):

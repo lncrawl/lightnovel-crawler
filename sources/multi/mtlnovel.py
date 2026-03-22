@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
@@ -63,23 +64,23 @@ class MtlnovelCrawler(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         try:
-            self.novel_author = soup.select_one(
-                'table.info a[href*="/novel-author/"]'
-            ).text.strip()
+            self.novel_author = soup.select_one('table.info a[href*="/novel-author/"]').text.strip()
         except Exception as e:
             logger.debug("Could not find novel author. %s", e)
         logger.info("Novel author: %s", self.novel_author)
 
         soup = self.get_soup(f"{self.novel_url}chapter-list/")
-        for a in reversed(soup.select('.post-content .ch-list a.ch-link')):
+        for a in reversed(soup.select(".post-content .ch-list a.ch-link")):
             if self.novel_url not in a["href"]:
                 continue
             chap_id = 1 + len(self.chapters)
-            self.chapters.append(Chapter(
-                id=chap_id,
-                title=a.text.strip(),
-                url=self.absolute_url(a['href']).strip('/') + '/',
-            ))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]).strip("/") + "/",
+                )
+            )
 
         # NOTE: JSON files are not available now
         # for item in soup.select("div.ch-list amp-list"):

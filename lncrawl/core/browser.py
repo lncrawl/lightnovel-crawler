@@ -89,9 +89,7 @@ class Browser:
                 if not isinstance(raw_store, dict):
                     continue
                 self._driver.execute_script(
-                    "arguments.forEach(function(item) {"
-                    f"  window.{name}.setItem(item[0], item[1]);"
-                    "});",
+                    "arguments.forEach(function(item) {" f"  window.{name}.setItem(item[0], item[1]);" "});",
                     *raw_store.items(),
                 )
             logger.debug("Storage applied: %s", self.browser_storage)
@@ -181,10 +179,7 @@ class Browser:
     def find_all(self, selector: str, by: By = By.CSS_SELECTOR) -> List[WebElement]:
         if not self._driver:
             return []
-        return [
-            WebElement(self._driver, el)
-            for el in self._driver.find_elements(str(by), selector)
-        ]
+        return [WebElement(self._driver, el) for el in self._driver.find_elements(str(by), selector)]
 
     def find(self, selector: str, by: By = By.CSS_SELECTOR) -> Optional[WebElement]:
         if not self._driver:
@@ -268,9 +263,7 @@ class Browser:
             return
         if not selector or not callable(expected_conditon):
             return
-        logger.info(
-            f"Wait {timeout} seconds for {expected_conditon.__name__} by {by}:{selector}"
-        )
+        logger.info(f"Wait {timeout} seconds for {expected_conditon.__name__} by {by}:{selector}")
         try:
             waiter = WebDriverWait(
                 self._driver,

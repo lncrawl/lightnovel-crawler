@@ -3,7 +3,7 @@ import typer
 from ...context import ctx
 
 app = typer.Typer(
-    help='Manage sources.',
+    help="Manage sources.",
     no_args_is_help=True,
 )
 

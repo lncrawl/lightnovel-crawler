@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
 import requests
-from lncrawl.core.crawler import Crawler, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +38,7 @@ class Chireads(Crawler):
 
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
-        content = soup.find("div", {"class": "conteiner"}).find_all(
-            "div", {"class": "wid"}
-        )
+        content = soup.find("div", {"class": "conteiner"}).find_all("div", {"class": "wid"})
 
         metadata = content[0]
 
@@ -50,9 +51,7 @@ class Chireads(Crawler):
 
         self.novel_cover = self.absolute_url(metadata.find("img").get("src"))
 
-        self.novel_title = (
-            metadata.find("h3", {"class": "inform-title"}).text.split("|")[0].strip()
-        )
+        self.novel_title = metadata.find("h3", {"class": "inform-title"}).text.split("|")[0].strip()
 
         self.novel_author = (
             metadata.find("h6", {"class": "font-color-black3"})
@@ -72,7 +71,12 @@ class Chireads(Crawler):
             for chapter in tome.find_all("a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(chapter.get('href')), title=chapter.text.replace('\xa0', ' '))
+                    Chapter(
+                        id=chap_id,
+                        volume=vol_id,
+                        url=self.absolute_url(chapter.get("href")),
+                        title=chapter.text.replace("\xa0", " "),
+                    )
                 )
 
     def download_chapter_body(self, chapter):

@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 import requests
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
@@ -44,17 +44,19 @@ class WtrLab(Crawler):
                 "Status": "Ongoing" if novel["status"] else "Completed",
             }
             url = f"https://www.wtr-lab.com/en/serie-{novel['raw_id']}/f{novel['slug']}"
-            results.append(SearchResult(
-                url=url,
-                title=data["title"],
-                info=" | ".join(f"{k}: {v}" for k, v in meta.items()),
-            ))
+            results.append(
+                SearchResult(
+                    url=url,
+                    title=data["title"],
+                    info=" | ".join(f"{k}: {v}" for k, v in meta.items()),
+                )
+            )
         return results
 
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
         metadata_json = soup.select_one("script#__NEXT_DATA__")
-        assert metadata_json, 'No next data found'
+        assert metadata_json, "No next data found"
         metadata = json.loads(metadata_json.get_text(strip=True))
 
         series = metadata["props"]["pageProps"]["serie"]
@@ -67,11 +69,7 @@ class WtrLab(Crawler):
 
         # Check if "tags" exists; if not, use the "genres" field as a fallback.
         if "tags" in metadata["props"]["pageProps"]:
-            self.novel_tags = [
-                tag["title"]
-                for tag in metadata["props"]["pageProps"]["tags"]
-                if tag.get("title")
-            ]
+            self.novel_tags = [tag["title"] for tag in metadata["props"]["pageProps"]["tags"] if tag.get("title")]
         else:
             # Convert numeric genre IDs to strings (or use a mapping if available)
             self.novel_tags = list(map(str, series_data.get("genres", [])))
@@ -101,11 +99,13 @@ class WtrLab(Crawler):
 
     def download_chapter_body(self, chapter):
         url = f"{self.home_url}/api/reader/get"
-        payload = json.dumps({
-            "language": "en",
-            "raw_id": int(chapter.url),
-            "chapter_no": chapter.id,
-        })
+        payload = json.dumps(
+            {
+                "language": "en",
+                "raw_id": int(chapter.url),
+                "chapter_no": chapter.id,
+            }
+        )
         headers = {"Content-Type": "application/json"}
         jsonData = self.get_json(url, data=payload, headers=headers)
         title = jsonData["chapter"]["title"]

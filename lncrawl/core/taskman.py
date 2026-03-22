@@ -13,7 +13,7 @@ from ..context import ctx
 from ..exceptions import LNException
 from ..utils.ratelimit import RateLimiter
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 _resolver = Semaphore(1)
 logger = logging.getLogger(__name__)
@@ -135,8 +135,8 @@ class TaskManager(ABC):
 
         bar = tqdm(
             iterable=iterable,
-            desc=desc or '',
-            unit=unit or 'item',
+            desc=desc or "",
+            unit=unit or "item",
             total=total,
             disable=disable,
         )

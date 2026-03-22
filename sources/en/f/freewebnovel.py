@@ -3,8 +3,7 @@ import re
 import unicodedata
 from typing import Any, List
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.soup.chapter_only import ChapterOnlySoupTemplate
 from lncrawl.templates.soup.searchable import SearchableSoupTemplate
@@ -76,7 +75,7 @@ class FreeWebNovelCrawler(SearchableSoupTemplate, ChapterOnlySoupTemplate):
             return self.absolute_url(tag["data-src"])
         if tag.has_attr("src"):
             return self.absolute_url(tag["src"])
-        return ''
+        return ""
 
     def parse_authors(self, soup: PageSoup):
         for a in soup.select(".m-imgtxt a[href*='/authors/']"):
@@ -112,9 +111,7 @@ class FreeWebNovelCrawler(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         rules = re.findall(r"([^{]+)\{[^}]*\}", style_content)
         for rule in rules:
             selectors.extend(
-                selector
-                for selector in rule.split(",")
-                if not re.search(r"p:nth-last-child\(\d+\)", selector.strip())
+                selector for selector in rule.split(",") if not re.search(r"p:nth-last-child\(\d+\)", selector.strip())
             )
         selectors = list(filter(None, set(selectors)))
 

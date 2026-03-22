@@ -4,7 +4,7 @@ from typing import Any, TypeVar
 
 _log = logging.getLogger(__name__)
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def json_encode(data: Any, encoding: str = "utf-8") -> bytes:
@@ -14,12 +14,12 @@ def json_encode(data: Any, encoding: str = "utf-8") -> bytes:
             allow_nan=True,
             ensure_ascii=False,
             check_circular=True,
-            separators=(',', ':'),
+            separators=(",", ":"),
         )
         return output.encode(encoding)
     except Exception as err:
-        _log.debug('Failed encoding', err)
-        return b''
+        _log.debug("Failed encoding", err)
+        return b""
 
 
 def json_decode(data: str | bytes | bytearray | None, _default: T) -> T:
@@ -32,5 +32,5 @@ def json_decode(data: str | bytes | bytearray | None, _default: T) -> T:
             return _default
         return json.loads(data)
     except Exception as err:
-        _log.debug('Failed decoding', err)
+        _log.debug("Failed decoding", err)
         return _default

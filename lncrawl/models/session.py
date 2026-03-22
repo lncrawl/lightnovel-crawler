@@ -28,7 +28,7 @@ class Session(Box):
         fetch_content_progress: float = 0,
         fetch_images_progress: float = 0,
         binding_progress: float = 0,
-        ** kwargs,
+        **kwargs,
     ) -> None:
         self.user_input = user_input
         self.output_path = output_path

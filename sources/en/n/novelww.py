@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -19,19 +21,12 @@ class Eight88NovelCrawler(Crawler):
 
         try:
             rows = soup.find("table").find_all("tr")
-            self.novel_author = ", ".join(
-                [
-                    e.text.strip()
-                    for e in rows[(1 if len(rows) == 3 else 0)].find_all("a")
-                ]
-            )
+            self.novel_author = ", ".join([e.text.strip() for e in rows[(1 if len(rows) == 3 else 0)].find_all("a")])
         except Exception:
             pass
 
         try:
-            self.novel_cover = self.absolute_url(
-                soup.find("div", {"class": "book3d"}).find("img").get("data-src")
-            )
+            self.novel_cover = self.absolute_url(soup.find("div", {"class": "book3d"}).find("img").get("data-src"))
         except Exception:
             pass
 
@@ -59,7 +54,12 @@ class Eight88NovelCrawler(Crawler):
                     continue
 
                 self.chapters.append(
-                    Chapter(title=self.cleaner.clean_text(chap.text), url=chap.get('href').strip(), volume=1, id=chapter_count)
+                    Chapter(
+                        title=self.cleaner.clean_text(chap.text),
+                        url=chap.get("href").strip(),
+                        volume=1,
+                        id=chapter_count,
+                    )
                 )
                 chapter_count += 1
 

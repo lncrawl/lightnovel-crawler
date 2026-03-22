@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.templates.novelfull import NovelFullTemplate
 
 logger = logging.getLogger(__name__)

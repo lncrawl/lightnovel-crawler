@@ -69,10 +69,7 @@ class ChapterImageService:
         with ctx.db.session() as sess:
             existing = {
                 img.id: img
-                for img in sess.exec(
-                    sq.select(ChapterImage)
-                    .where(ChapterImage.chapter_id == chapter.id)
-                ).all()
+                for img in sess.exec(sq.select(ChapterImage).where(ChapterImage.chapter_id == chapter.id)).all()
             }
 
             wk = set(images.keys())
@@ -81,7 +78,7 @@ class ChapterImageService:
             to_delete = ek - wk
 
             if to_insert:
-                crawler_version = chapter.extra.get('crawler_version')
+                crawler_version = chapter.extra.get("crawler_version")
                 sess.exec(
                     sq.insert(ChapterImage),
                     params=[
@@ -93,14 +90,11 @@ class ChapterImageService:
                             extra=dict(crawler_version=crawler_version),
                         ).model_dump()
                         for id in to_insert
-                    ]
+                    ],
                 )
 
             if to_delete:
-                sess.exec(
-                    sq.delete(ChapterImage)
-                    .where(sq.col(ChapterImage.id).in_(to_delete))
-                )
+                sess.exec(sq.delete(ChapterImage).where(sq.col(ChapterImage.id).in_(to_delete)))
                 for id in to_delete:
                     file = existing[id].image_file
                     ctx.files.resolve(file).unlink(True)

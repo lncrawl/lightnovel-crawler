@@ -31,9 +31,9 @@ app = typer.Typer(
 
 # Register subcommands
 app.add_typer(version)
-app.add_typer(dev, name='dev', hidden=True)
-app.add_typer(config, name='config')
-app.add_typer(sources, name='sources')
+app.add_typer(dev, name="dev", hidden=True)
+app.add_typer(config, name="config")
+app.add_typer(sources, name="sources")
 app.add_typer(crawl)
 app.add_typer(search)
 app.add_typer(server)
@@ -46,21 +46,23 @@ def main(
     log_level: Annotated[
         int,
         typer.Option(
-            "--verbose", "-l",
+            "--verbose",
+            "-l",
             help="Log levels: -l = warn, -ll = info, -lll = debug",
             show_default=False,
             count=True,
             metavar="",
-        )
+        ),
     ] = 0,
     config: Annotated[
         Optional[Path],
         typer.Option(
-            "--config", "-c",
+            "--config",
+            "-c",
             help="Config file",
             show_default=False,
             file_okay=True,
-        )
+        ),
     ] = None,
 ):
     # set context object
@@ -68,15 +70,16 @@ def main(
     context.call_on_close(ctx.destroy)
 
     # setup logger
-    os.environ['LNCRAWL_LOG_LEVEL'] = str(log_level)
+    os.environ["LNCRAWL_LOG_LEVEL"] = str(log_level)
     ctx.logger.setup()
 
     # load config
     if config:
-        os.environ['LNCRAWL_CONFIG'] = str(config)
+        os.environ["LNCRAWL_CONFIG"] = str(config)
     ctx.config.load()
 
     # start server if no subcommand is invoked
     if not context.invoked_subcommand:
         from .commands.server import server as start_server
-        start_server(host='127.0.0.1', port=8080)
+
+        start_server(host="127.0.0.1", port=8080)

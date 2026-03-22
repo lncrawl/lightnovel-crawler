@@ -1,7 +1,6 @@
 import logging
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.templates.madara import MadaraTemplate
 
 logger = logging.getLogger(__name__)

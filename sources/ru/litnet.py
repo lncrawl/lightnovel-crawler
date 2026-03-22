@@ -2,7 +2,8 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://booknet.com/en/search?q=%s"
@@ -32,8 +33,7 @@ class LitnetCrawler(Crawler):
                 {
                     "title": a.text.strip(),
                     "url": self.absolute_url(a["href"]),
-                    "info": "Author: %s | %s views | %s favorites"
-                    % (author, views, favourites),
+                    "info": "Author: %s | %s views | %s favorites" % (author, views, favourites),
                 }
             )
 
@@ -81,9 +81,7 @@ class LitnetCrawler(Crawler):
 
             abs_url = self.last_soup_url.replace("/en/book/", "/en/reader/")
             chap_url = abs_url + ("?c=%s" % a.attrs["value"])
-            self.chapters.append(
-                Chapter(id=chap_id, volume=1, url=chap_url, chapter_id=a.attrs['value'])
-            )
+            self.chapters.append(Chapter(id=chap_id, volume=1, url=chap_url, chapter_id=a.attrs["value"]))
 
         self.volumes = [Volume(id=x) for x in volumes]
 

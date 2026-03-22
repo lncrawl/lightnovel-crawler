@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://novelplanet.com/NovelList?order=mostpopular&name=%s"
@@ -64,9 +65,7 @@ class NovelPlanetCrawler(Crawler):
         contents = soup.select_one("#divReadContent")
         assert contents, "No chapter contents"
 
-        for ads in contents.findAll(
-            "div", {"style": "text-align: center; margin-bottom: 10px"}
-        ):
+        for ads in contents.findAll("div", {"style": "text-align: center; margin-bottom: 10px"}):
             ads.extract()
 
         return str(contents)

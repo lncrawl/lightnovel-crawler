@@ -3,7 +3,7 @@ from concurrent.futures import Future
 from typing import List
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.exceptions import LNException
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
@@ -92,7 +92,7 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
 
     def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         title = tag.select_one(".chapter-title")
-        assert title, 'No chapter title'
+        assert title, "No chapter title"
         return Chapter(
             id=id,
             url=self.absolute_url(tag["href"]),

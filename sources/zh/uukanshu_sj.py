@@ -2,8 +2,7 @@
 import logging
 import re
 
-
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -45,9 +44,7 @@ class UukanshuOnlineSJ(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = (
-            soup.select_one(".book-info dd").text.replace("作者：", "").strip()
-        )
+        self.novel_author = soup.select_one(".book-info dd").text.replace("作者：", "").strip()
         logger.info("Novel author: %s", self.novel_author)
 
         logger.info("Getting chapters...")

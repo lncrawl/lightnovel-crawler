@@ -4,8 +4,8 @@ import re
 from concurrent import futures
 
 import execjs
-from lncrawl.core.soup import PageSoup
 
+from lncrawl.core import PageSoup
 from lncrawl.core.crawler import Chapter, Crawler
 
 logger = logging.getLogger(__name__)
@@ -41,9 +41,7 @@ class LNMTLCrawler(Crawler):
         else:
             body = soup.select_one("body").text
             logger.debug("-" * 80)
-            logger.debug(
-                "\n\n".join([x for x in body.split("\n\n") if len(x.strip()) > 0])
-            )
+            logger.debug("\n\n".join([x for x in body.split("\n\n") if len(x.strip()) > 0]))
             logger.debug("-" * 80)
             logger.error("Failed to login")
 
@@ -57,9 +55,7 @@ class LNMTLCrawler(Crawler):
         logger.debug("Novel title = %s", self.novel_title)
 
         try:
-            self.novel_cover = self.absolute_url(
-                soup.find("img", {"title": self.novel_title})["src"]
-            )
+            self.novel_cover = self.absolute_url(soup.find("img", {"title": self.novel_title})["src"])
         except Exception:
             pass  # novel cover is not so important to raise errors
         logger.info("Novel cover = %s", self.novel_cover)
@@ -76,7 +72,9 @@ class LNMTLCrawler(Crawler):
 
         try:
             data = execjs.eval(
-                "(function() {var window = { lnmtl: {} }; var lnmtl = window.lnmtl;" + script + "return window.lnmtl;})()"
+                "(function() {var window = { lnmtl: {} }; var lnmtl = window.lnmtl;"
+                + script
+                + "return window.lnmtl;})()"
             )
             assert isinstance(data, dict)
             for i, vol in enumerate(data["volumes"]):
@@ -97,10 +95,7 @@ class LNMTLCrawler(Crawler):
             raise Exception("Failed parsing volume list")
 
     def download_chapter_list(self):
-        futures_to_wait = [
-            self.executor.submit(self.download_chapters_per_volume, volume)
-            for volume in self.volumes
-        ]
+        futures_to_wait = [self.executor.submit(self.download_chapters_per_volume, volume) for volume in self.volumes]
 
         possible_chapters = {}
         for future in futures.as_completed(futures_to_wait):
@@ -115,9 +110,7 @@ class LNMTLCrawler(Crawler):
                 self.chapters.append(Chapter(**chap))
 
     def download_chapters_per_volume(self, volume, page=1):
-        url = self.absolute_url(
-            f"/chapter?page={page}&volumeId={volume['download_id']}"
-        )
+        url = self.absolute_url(f"/chapter?page={page}&volumeId={volume['download_id']}")
         logger.info("Getting json: %s", url)
         result = self.get_json(url)
 

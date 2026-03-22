@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://wuxiaworld.live/search.ajax?type=&query=%s"
@@ -47,9 +49,7 @@ class WuxiaWorldLive(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         try:
-            novel_data = self.submit_form(
-                search_url, {"searchword": self.novel_title}
-            ).json()
+            novel_data = self.submit_form(search_url, {"searchword": self.novel_title}).json()
             self.novel_cover = novel_data[0]["image"]
             self.novel_author = novel_data[0]["author"]
         except Exception:

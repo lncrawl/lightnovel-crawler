@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+import ast
 import logging
 import re
-import ast
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +48,12 @@ class MangatoonMobiCrawler(Crawler):
             vol_id = len(self.chapters) // 100 + 1
             volumes.add(vol_id)
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.select_one('.episode-title, .episode-title-new').text)
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.select_one(".episode-title, .episode-title-new").text,
+                )
             )
 
         self.volumes = [Volume(id=x) for x in volumes]

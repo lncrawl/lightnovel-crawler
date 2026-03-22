@@ -10,7 +10,7 @@ def normalize(text: str) -> str:
 
 
 def is_compressed(data: bytes) -> bool:
-    return data.startswith(b'\x28\xB5\x2F\xFD')
+    return data.startswith(b"\x28\xb5\x2f\xfd")
 
 
 def text_compress(plain: bytes) -> bytes:
@@ -24,7 +24,7 @@ def text_decompress(compressed: bytes) -> bytes:
 def generate_md5(*texts) -> str:
     md5 = hashlib.md5()
     for text in texts:
-        md5.update(str(text or '').encode())
+        md5.update(str(text or "").encode())
     return md5.hexdigest()
 
 

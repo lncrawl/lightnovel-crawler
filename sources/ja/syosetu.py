@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
-from urllib.parse import quote_plus
-from lncrawl.core.crawler import Crawler
-from lncrawl.models import Chapter, Volume
 from concurrent.futures import ThreadPoolExecutor
+from urllib.parse import quote_plus
+
 from bs4 import element
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://yomou.syosetu.com/search.php?word=%s"
@@ -22,12 +24,8 @@ class SyosetuCrawler(Crawler):
         results = []
         for tab in soup.select(".searchkekka_box"):
             a = tab.select_one(".novel_h a")
-            latest = (
-                tab.select_one(".left").get_text(separator=" ").strip()
-            )  # e.g.: 連載中 (全604部分)
-            votes = tab.select_one(
-                ".attention"
-            ).text.strip()  # e.g.: "総合ポイント： 625,717 pt"
+            latest = tab.select_one(".left").get_text(separator=" ").strip()  # e.g.: 連載中 (全604部分)
+            votes = tab.select_one(".attention").text.strip()  # e.g.: "総合ポイント： 625,717 pt"
             results.append(
                 {
                     "title": a.text.strip(),
@@ -41,7 +39,7 @@ class SyosetuCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         self.novel_title = soup.select_one(".p-novel__title").text.strip()
-        logger.debug('Novel title: %s', self.novel_title)
+        logger.debug("Novel title: %s", self.novel_title)
 
         # No novel cover.
 
@@ -52,10 +50,10 @@ class SyosetuCrawler(Crawler):
         # Syosetu calls parts "chapters"
         soups = []
         pager_last = soup.select_one(".c-pager__item--last")
-        if pager_last and 'href' in pager_last.attrs:
+        if pager_last and "href" in pager_last.attrs:
             page_num = int(pager_last["href"].split("=")[-1])
             with ThreadPoolExecutor() as executor:
-                futures = [executor.submit(self.get_soup, f'{self.novel_url}?p={x}') for x in range(1, page_num + 1)]
+                futures = [executor.submit(self.get_soup, f"{self.novel_url}?p={x}") for x in range(1, page_num + 1)]
                 for future in futures:
                     soups.append(future.result())
         else:
@@ -70,23 +68,27 @@ class SyosetuCrawler(Crawler):
                 if type(tag) is element.NavigableString:
                     continue
 
-                if 'p-eplist__chapter-title' in tag.attrs.get('class', ''):
+                if "p-eplist__chapter-title" in tag.attrs.get("class", ""):
                     # Part/volume (there might be none)
                     volume_id += 1
-                    self.volumes.append(Volume(
-                        id=volume_id,
-                        title=tag.text.strip(),
-                    ))
-                elif tag.select('a')[0]:
+                    self.volumes.append(
+                        Volume(
+                            id=volume_id,
+                            title=tag.text.strip(),
+                        )
+                    )
+                elif tag.select("a")[0]:
                     # Chapter
-                    tag = tag.select('a')[0]
+                    tag = tag.select("a")[0]
                     chapter_id += 1
-                    self.chapters.append(Chapter(
-                        id=chapter_id,
-                        volume=volume_id,
-                        title=tag.text.strip(),
-                        url=self.absolute_url(tag["href"]),
-                    ))
+                    self.chapters.append(
+                        Chapter(
+                            id=chapter_id,
+                            volume=volume_id,
+                            title=tag.text.strip(),
+                            url=self.absolute_url(tag["href"]),
+                        )
+                    )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

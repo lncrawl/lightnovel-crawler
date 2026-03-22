@@ -2,7 +2,8 @@
 
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://arangscans.com/?s=%s&post_type=wp-manga"
@@ -48,12 +49,7 @@ class ArangScans(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="manga-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="manga-author"]')])
         logger.info("%s", self.novel_author)
 
         volumes = set()
@@ -66,8 +62,8 @@ class ArangScans(Crawler):
                 Chapter(
                     id=chap_id,
                     volume=vol_id,
-                    url=self.absolute_url(a['href']),
-                    title=a.text.strip() or 'Chapter %d' % chap_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or "Chapter %d" % chap_id,
                 )
             )
 

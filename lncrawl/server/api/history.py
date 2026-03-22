@@ -10,7 +10,7 @@ from ..security import ensure_user
 router = APIRouter()
 
 
-@router.post("/add/{chapter_id}", summary='Mark a chapter as read')
+@router.post("/add/{chapter_id}", summary="Mark a chapter as read")
 def mark_as_read(
     user: User = Security(ensure_user),
     chapter_id: str = Path(),
@@ -19,25 +19,25 @@ def mark_as_read(
     return True
 
 
-@router.get("/by-novel", summary='Return history by novel id')
+@router.get("/by-novel", summary="Return history by novel id")
 def get_read_history_by_novels(
     user: User = Security(ensure_user),
-    novel_id: str = Query(description='Novel id (can be comma separated)'),
+    novel_id: str = Query(description="Novel id (can be comma separated)"),
 ) -> Dict[str, bool]:
     return ctx.history.list(user.id, novel_id=novel_id)
 
 
-@router.get("/by-volume", summary='Return history by volume id')
+@router.get("/by-volume", summary="Return history by volume id")
 def get_read_history_by_volumes(
     user: User = Security(ensure_user),
-    volume_id: str = Query(description='Volume id (can be comma separated)'),
+    volume_id: str = Query(description="Volume id (can be comma separated)"),
 ) -> Dict[str, bool]:
     return ctx.history.list(user.id, volume_id=volume_id)
 
 
-@router.get("/by-chapter", summary='Return history by chapter id')
+@router.get("/by-chapter", summary="Return history by chapter id")
 def get_read_history_by_chapters(
     user: User = Security(ensure_user),
-    chapter_id: str = Query(description='Chapter id (can be comma separated)'),
+    chapter_id: str = Query(description="Chapter id (can be comma separated)"),
 ) -> Dict[str, bool]:
     return ctx.history.list(user.id, chapter_id=chapter_id)

@@ -16,8 +16,8 @@ class TextIcons:
     SPARKLE = "*"
     INFO = ">"
     RIGHT_ARROW = "->"
-    CHECK = 'Y'
-    CROSS = 'x'
+    CHECK = "Y"
+    CROSS = "x"
 
 
 class RichIcons(TextIcons):

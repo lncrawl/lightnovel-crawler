@@ -4,8 +4,9 @@ import re
 from time import time
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
 from lncrawl.exceptions import LNException
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +63,8 @@ class WattpadCrawler(Crawler):
             self.chapters.append(
                 Chapter(
                     id=len(self.chapters) + 1,
-                    url=self.absolute_url(a['url']),
-                    title=a['title'],
+                    url=self.absolute_url(a["url"]),
+                    title=a["title"],
                 )
             )
 

@@ -61,7 +61,7 @@ class Platform:
     @static_cached_property
     @staticmethod
     def ci():
-        return 'CI' in os.environ
+        return "CI" in os.environ
 
     @static_cached_property
     @staticmethod
@@ -80,6 +80,7 @@ class Platform:
     def has_display():
         try:
             from tkinter import Tk
+
             tk = Tk()
             Screen.width = tk.winfo_screenwidth()
             Screen.height = tk.winfo_screenheight()
@@ -91,7 +92,8 @@ class Platform:
             return True
         except Exception:
             try:
-                import matplotlib  # type:ignore
+                import matplotlib  # type: ignore
+
                 backend = matplotlib.get_backend()
                 return "Agg" not in backend
             except Exception:

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://mangachill.love/?s=%s&post_type=wp-manga"
@@ -40,17 +42,10 @@ class ManhwachillLove(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one(".summary_image a img")["data-src"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one(".summary_image a img")["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="manga-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="manga-author"]')])
         logger.info("%s", self.novel_author)
 
         for a in reversed(soup.select("ul.main li.wp-manga-chapter a")):

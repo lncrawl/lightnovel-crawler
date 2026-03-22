@@ -2,7 +2,8 @@
 import logging
 from urllib.parse import quote
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +65,7 @@ class MachineTransOrg(Crawler):
                 )
             )
 
-        logger.debug(
-            "%d chapters and %d volumes found", len(self.chapters), len(self.volumes)
-        )
+        logger.debug("%d chapters and %d volumes found", len(self.chapters), len(self.volumes))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -22,30 +23,28 @@ class Shw5Crawler(Crawler):
         self.novel_title = possible_title.text
         logger.info("Novel title: %s", self.novel_title)
 
-        possible_novel_cover = soup.select_one('.book img')
+        possible_novel_cover = soup.select_one(".book img")
         if possible_novel_cover:
             self.novel_cover = self.absolute_url(possible_novel_cover["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        possible_synopsis = soup.select_one('.intro dd')
+        possible_synopsis = soup.select_one(".intro dd")
         if possible_synopsis:
             self.novel_synopsis = possible_synopsis.text
         logger.info("Novel synopsis %s", self.novel_synopsis)
 
-        possible_novel_author = soup.select_one('.book .small span')
+        possible_novel_author = soup.select_one(".book .small span")
         if possible_novel_author:
             self.novel_author = possible_novel_author.text
         logger.info("Novel author: %s", self.novel_author)
 
         volumes = set([])
-        chapters = soup.select_one('.listmain')
+        chapters = soup.select_one(".listmain")
         for a in chapters.find_all("a", rel=False):
             ch_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
-            self.chapters.append(
-                Chapter(id=ch_id, volume=vol_id, title=a.text, url=self.absolute_url(a['href']))
-            )
+            self.chapters.append(Chapter(id=ch_id, volume=vol_id, title=a.text, url=self.absolute_url(a["href"])))
 
         self.volumes = [Volume(id=x, title="") for x in volumes]
 

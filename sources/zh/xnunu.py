@@ -1,8 +1,7 @@
 import logging
-from lncrawl.core.soup import PageSoup
-from lncrawl.core.crawler import Crawler
 
-from lncrawl.models import Volume, Chapter
+from lncrawl.core import Crawler, PageSoup
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,7 @@ class Xnunu(Crawler):
         self.cleaner.bad_tag_text_pairs["font"] = [
             "提示您：看后求收藏（",
             "搞事马甲不能掉,新努努书坊,www.xnunu.com",
-            "），接着再看更方便。"
+            "），接着再看更方便。",
         ]
 
     def download_chapter_body(self, chapter: Chapter) -> str:
@@ -40,8 +39,8 @@ class Xnunu(Crawler):
 
         def cleanup_page(page: PageSoup) -> PageSoup:
             """
-                Get rid of repeating author name at the start of every page
-                Thus multiple times per chapter...
+            Get rid of repeating author name at the start of every page
+            Thus multiple times per chapter...
             """
             first_child = page.select("p")[0]
             if first_child is not None and first_child.text.startswith(self.novel_author):
@@ -56,9 +55,7 @@ class Xnunu(Crawler):
             curr_page = self.get_soup(self.absolute_url(curr_page.select_one("#next_url")["href"]))
             chap_data.append(cleanup_page(curr_page.select_one("#chaptercontent")))
 
-        return "\n".join([
-            self.cleaner.extract_contents(chap) for chap in chap_data
-        ])
+        return "\n".join([self.cleaner.extract_contents(chap) for chap in chap_data])
 
     def read_novel_info(self) -> None:
         logger.debug("Visiting %s", self.novel_url)
@@ -68,8 +65,7 @@ class Xnunu(Crawler):
         try:
             int(novel_id)
         except ValueError:
-            logger.error("Couldn't get novel_id from URL, "
-                         "URL should look like https://www.xnunu.com/book/9223")
+            logger.error("Couldn't get novel_id from URL, " "URL should look like https://www.xnunu.com/book/9223")
             return
 
         container = soup.select_one(".book-bookinfo")
@@ -84,13 +80,13 @@ class Xnunu(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        possible_author = container.select_one('p>a.btn-info')
+        possible_author = container.select_one("p>a.btn-info")
         if possible_author:
             self.novel_author = possible_author.text.strip()
         assert self.novel_author, "No novel author, required for cleanup"
         logger.info("Novel Author: %s", self.novel_author)
 
-        possible_tag = soup.select_one('ol.breadcrumb > li:nth-child(2) > a')
+        possible_tag = soup.select_one("ol.breadcrumb > li:nth-child(2) > a")
         if possible_tag:
             self.novel_tags = [possible_tag.text.strip()]
         logger.info("Novel Tag: %s", self.novel_tags)

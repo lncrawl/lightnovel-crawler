@@ -4,8 +4,7 @@ from fastapi import APIRouter, Path, Query, Security
 
 from ...context import ctx
 from ...dao import Library, Novel, User
-from ...server.models import (LibraryCreateRequest, LibraryItem,
-                              LibraryUpdateRequest, Paginated)
+from ...server.models import LibraryCreateRequest, LibraryItem, LibraryUpdateRequest, Paginated
 from ..security import ensure_admin, ensure_user
 
 router = APIRouter()
@@ -19,7 +18,7 @@ router = APIRouter()
 def list_all_libraries(
     offset: int = Query(default=0),
     limit: int = Query(default=20, le=100),
-    query: str = Query(default=''),
+    query: str = Query(default=""),
 ) -> Paginated[Library]:
     return ctx.libraries.list_page(offset, limit, query=query)
 
@@ -32,7 +31,7 @@ def list_all_libraries(
 def list_public_libraries(
     offset: int = Query(default=0),
     limit: int = Query(default=20, le=100),
-    query: str = Query(default=''),
+    query: str = Query(default=""),
 ) -> Paginated[Library]:
     return ctx.libraries.list_page(offset, limit, public_only=True, query=query)
 
@@ -45,7 +44,7 @@ def list_my_libraries(
     offset: int = Query(default=0),
     limit: int = Query(default=20, le=100),
     user: User = Security(ensure_user),
-    query: str = Query(default=''),
+    query: str = Query(default=""),
 ) -> Paginated[Library]:
     return ctx.libraries.list_page(offset, limit, user_id=user.id, query=query)
 

@@ -15,10 +15,12 @@ from .text import make_text
 
 logger = logging.getLogger(__name__)
 
-requires_zip = set([
-    OutputFormat.json,
-    OutputFormat.text,
-])
+requires_zip = set(
+    [
+        OutputFormat.json,
+        OutputFormat.text,
+    ]
+)
 archive_maker: Dict[OutputFormat, Callable[..., None]] = {
     OutputFormat.json: make_json,
     OutputFormat.text: make_text,
@@ -43,11 +45,7 @@ class BinderService:
 
     @cached_property
     def depends_on_epub(self) -> Set[OutputFormat]:
-        return set([
-            k
-            for k, v in archive_maker.items()
-            if v == convert_epub
-        ])
+        return set([k for k, v in archive_maker.items() if v == convert_epub])
 
     @cached_property
     def available_formats(self) -> Set[OutputFormat]:
@@ -71,9 +69,9 @@ class BinderService:
             raise ServerErrors.format_not_available
 
         file_name = safe_filename(novel_title).title()
-        file_name += f'.{format}'
+        file_name += f".{format}"
         if format in requires_zip:
-            file_name += '.zip'
+            file_name += ".zip"
 
         artifact = Artifact(
             novel_id=novel_id,
@@ -83,16 +81,11 @@ class BinderService:
             file_name=file_name,
         )
 
-        working_dir = ctx.config.app.output_path / 'tmp' / artifact.id
+        working_dir = ctx.config.app.output_path / "tmp" / artifact.id
         try:
             shutil.rmtree(working_dir, True)
             working_dir.mkdir(parents=True)
-            make(
-                working_dir,
-                signal=signal,
-                artifact=artifact,
-                epub=epub
-            )
+            make(working_dir, signal=signal, artifact=artifact, epub=epub)
             file = ctx.files.resolve(artifact.output_file)
             if file.is_file():
                 artifact.file_size = file.stat().st_size

@@ -1,7 +1,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +37,14 @@ class AsianNovelCrawler(Crawler):
             if len(match) == 1:
                 chap_id = int(match[0][1])
 
-            self.chapters.append(Chapter(
-                volume=1,
-                id=chap_id,
-                title=title,
-                url=self.absolute_url(a["href"]),
-            ))
+            self.chapters.append(
+                Chapter(
+                    volume=1,
+                    id=chap_id,
+                    title=title,
+                    url=self.absolute_url(a["href"]),
+                )
+            )
 
     def download_chapter_body(self, chapter):
         logger.debug("Visiting %s", chapter["url"])

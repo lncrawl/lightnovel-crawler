@@ -2,6 +2,7 @@
 """
 Decryptor: https://github.com/Pioverpie/privatebin-api/blob/master/privatebinapi/download.py
 """
+
 import logging
 import re
 from datetime import datetime
@@ -9,7 +10,8 @@ from urllib.parse import urlsplit
 
 import regex
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -80,9 +82,7 @@ class QidianComCrawler(Crawler):
                     }
                 )
                 for j in range(int(start_ch), int(final_ch) + 1):
-                    self.chapters.append(
-                        Chapter(id=j, volume=vol_id, url=item['Href'])
-                    )
+                    self.chapters.append(Chapter(id=j, volume=vol_id, url=item["Href"]))
             else:
                 self.volumes.append(
                     {
@@ -90,9 +90,7 @@ class QidianComCrawler(Crawler):
                         "title": "Chapters %s" % (item["Text"]),
                     }
                 )
-                self.chapters.append(
-                    Chapter(id=int(item['Text']), volume=vol_id, url=item['Href'])
-                )
+                self.chapters.append(Chapter(id=int(item["Text"]), volume=vol_id, url=item["Href"]))
 
     def download_chapter_body(self, chapter):
         from lncrawl.utils.pbincli import PasteV2

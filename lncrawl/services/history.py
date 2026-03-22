@@ -26,27 +26,22 @@ class ReadHistoryService:
             stmt = stmt.where(ReadHistory.user_id == user_id)
 
             if novel_id:
-                ids = [x.strip() for x in novel_id.split(',')]
+                ids = [x.strip() for x in novel_id.split(",")]
                 stmt = stmt.where(col(ReadHistory.novel_id).in_(ids))
             if volume_id:
-                ids = [x.strip() for x in volume_id.split(',')]
+                ids = [x.strip() for x in volume_id.split(",")]
                 stmt = stmt.where(col(ReadHistory.volume_id).in_(ids))
             if chapter_id:
-                ids = [x.strip() for x in chapter_id.split(',')]
+                ids = [x.strip() for x in chapter_id.split(",")]
                 stmt = stmt.where(col(ReadHistory.chapter_id).in_(ids))
 
             items = sess.exec(stmt).all()
-            return {
-                item.chapter_id: True
-                for item in items
-            }
+            return {item.chapter_id: True for item in items}
 
     def check(self, user_id: str, chapter_id: str) -> bool:
         with ctx.db.session() as sess:
             item = sess.exec(
-                select(ReadHistory.id)
-                .where(ReadHistory.user_id == user_id)
-                .where(ReadHistory.chapter_id == chapter_id)
+                select(ReadHistory.id).where(ReadHistory.user_id == user_id).where(ReadHistory.chapter_id == chapter_id)
             ).first()
             return bool(item)
 
@@ -76,9 +71,6 @@ class ReadHistoryService:
                 .offset(ctx.config.app.history_limit_per_user)
                 .scalar_subquery()
             )
-            stmt = (
-                sa_delete(ReadHistory)
-                .where(col(ReadHistory.id).in_(tbd))
-            )
+            stmt = sa_delete(ReadHistory).where(col(ReadHistory.id).in_(tbd))
             sess.exec(stmt)
             sess.commit()

@@ -3,7 +3,8 @@ import logging
 import re
 from urllib.parse import quote
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -69,9 +70,7 @@ class MtlReaderCrawler(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             chap_title = re.sub(r"^(\d+[\s:\-]+)", "", a.text.strip())
-            self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=chap_title, url=self.absolute_url(a['href']))
-            )
+            self.chapters.append(Chapter(id=chap_id, volume=vol_id, title=chap_title, url=self.absolute_url(a["href"])))
 
     def download_chapter_body(self, chapter):
         self.get_response(chapter["url"])

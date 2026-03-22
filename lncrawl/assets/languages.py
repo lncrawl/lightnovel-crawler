@@ -190,10 +190,10 @@ language_codes = {
 
 
 def find_code(language: Optional[str]):
-    query = (language or '').strip().lower()
+    query = (language or "").strip().lower()
     if language in language_codes:
         return language
     for key, value in language_codes.items():
         if value.lower() == query:
             return key
-    return ''
+    return ""

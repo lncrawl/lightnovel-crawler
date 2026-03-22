@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "%s?s=%s&post_type=wp-manga&author=&artist=&release="
@@ -43,12 +44,7 @@ class NovelHardCrawler(Crawler):
             self.novel_cover = self.absolute_url(probable_img["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="manga-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="manga-author"]')])
         logger.info("%s", self.novel_author)
 
         # possible_novel_id = soup.select_one("#manga-chapters-holder")

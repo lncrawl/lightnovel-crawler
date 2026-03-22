@@ -11,9 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from ..context import ctx
 from ..dao import NotificationItem, User, UserRole, UserTier, UserToken
 from ..exceptions import ServerErrors
-from ..server.models import (CreateRequest, LoginRequest, Paginated,
-                             PasswordUpdateRequest, SignupRequest,
-                             UpdateRequest)
+from ..server.models import CreateRequest, LoginRequest, Paginated, PasswordUpdateRequest, SignupRequest, UpdateRequest
 from ..utils.time_utils import current_timestamp
 
 logger = logging.getLogger(__name__)
@@ -23,8 +21,8 @@ class UserService:
     def __init__(self) -> None:
         self._admin: Optional[User] = None
         self._passlib = CryptContext(
-            schemes=['argon2'],
-            deprecated='auto',
+            schemes=["argon2"],
+            deprecated="auto",
         )
 
     def _hash(self, plain_password: str) -> str:
@@ -37,11 +35,9 @@ class UserService:
         email = ctx.config.db.admin_email
         password = ctx.config.db.admin_password
         with ctx.db.session() as sess:
-            user = sess.exec(
-                sa.select(User).where(User.email == email).limit(1)
-            ).first()
+            user = sess.exec(sa.select(User).where(User.email == email).limit(1)).first()
             if not user:
-                logger.info('Adding admin user')
+                logger.info("Adding admin user")
                 user = User(
                     email=email,
                     password=self._hash(password),
@@ -52,7 +48,7 @@ class UserService:
                 )
                 sess.add(user)
             else:
-                logger.info('Updating admin user')
+                logger.info("Updating admin user")
                 user.password = self._hash(password)
                 user.role = UserRole.ADMIN
                 user.tier = UserTier.VIP
@@ -69,7 +65,7 @@ class UserService:
         algorithm = ctx.config.server.token_algo
         default_expiry = ctx.config.server.token_expiry
         minutes = expiry_minutes if expiry_minutes else default_expiry
-        payload['exp'] = datetime.now(timezone.utc) + timedelta(minutes=minutes)
+        payload["exp"] = datetime.now(timezone.utc) + timedelta(minutes=minutes)
         return jwt.encode(payload, key, algorithm)
 
     def decode_token(self, token: str) -> Dict[str, Any]:
@@ -87,15 +83,15 @@ class UserService:
         **payload,
     ) -> str:
         payload = {
-            'sub': user.id,
-            'scopes': [user.role, user.tier],
+            "sub": user.id,
+            "scopes": [user.role, user.tier],
         }
         return self.encode_token(payload, expiry_minutes)
 
     def verify_token(self, token: str, required_scopes: List[str] = []) -> User:
         payload = self.decode_token(token)
-        user_id = payload.get('sub')
-        token_scopes = payload.get('scopes', [])
+        user_id = payload.get("sub")
+        token_scopes = payload.get("scopes", [])
         if not user_id:
             raise ServerErrors.unauthorized
         if any(scope not in token_scopes for scope in required_scopes):
@@ -118,7 +114,7 @@ class UserService:
             # Apply filters
             conditions: List[Any] = []
             if search:
-                q = f'%{search}%'
+                q = f"%{search}%"
                 conditions.append(
                     sa.or_(
                         sa.col(User.name).ilike(q),
@@ -196,7 +192,7 @@ class UserService:
                         NotificationItem.NOVEL_SUCCESS: 1,
                         NotificationItem.ARTIFACT_SUCCESS: 1,
                     },
-                )
+                ),
             )
             sess.add(user)
             sess.commit()
@@ -241,9 +237,7 @@ class UserService:
 
     def set_verified(self, email: str) -> None:
         with ctx.db.session() as sess:
-            user = sess.exec(
-                sa.select(User).where(User.email == email)
-            ).first()
+            user = sess.exec(sa.select(User).where(User.email == email)).first()
             if not user:
                 raise ServerErrors.no_such_user
             if user.is_verified:
@@ -251,9 +245,9 @@ class UserService:
 
             user.is_verified = True
 
-            if 'email_alerts' not in user.extra:
+            if "email_alerts" not in user.extra:
                 extra = dict(user.extra)
-                extra['email_alerts'] = {
+                extra["email_alerts"] = {
                     NotificationItem.NOVEL_SUCCESS: 1,
                     NotificationItem.ARTIFACT_SUCCESS: 1,
                 }
@@ -263,27 +257,28 @@ class UserService:
 
     def send_otp(self, email: str) -> str:
         with ctx.db.session() as sess:
-            user = sess.exec(
-                sa.select(User).where(User.email == email).limit(1)
-            ).first()
+            user = sess.exec(sa.select(User).where(User.email == email).limit(1)).first()
             if user and user.is_verified:
                 raise ServerErrors.email_already_verified
 
         otp = str(secrets.randbelow(1000000)).zfill(6)
         ctx.mail.send_otp(email, otp)
 
-        return self.encode_token({
-            'otp': self._hash(otp),
-            'email': email,
-        }, 5)
+        return self.encode_token(
+            {
+                "otp": self._hash(otp),
+                "email": email,
+            },
+            5,
+        )
 
     def verify_otp(self, token: str, input_otp: str) -> None:
         payload = self.decode_token(token)
-        email = payload.get('email')
+        email = payload.get("email")
         if not email:
             raise ServerErrors.not_found
 
-        hashed_otp = payload.get('otp') or ''
+        hashed_otp = payload.get("otp") or ""
         if not self._check(input_otp, hashed_otp):
             raise ServerErrors.wrong_otp
 
@@ -300,7 +295,7 @@ class UserService:
 
         token = self.generate_token(user, 5)
         base_url = ctx.config.server.base_url
-        link = f'{base_url}/reset-password?token={token}'
+        link = f"{base_url}/reset-password?token={token}"
         ctx.mail.send_reset_password_link(email, link)
 
     def generate_user_token(self, user: User) -> str:
@@ -309,9 +304,7 @@ class UserService:
         with ctx.db.session() as sess:
             # check for existing token
             latest_token = sess.exec(
-                sa.select(UserToken)
-                .where(UserToken.user_id == user.id)
-                .order_by(sa.desc(UserToken.expires_at))
+                sa.select(UserToken).where(UserToken.user_id == user.id).order_by(sa.desc(UserToken.expires_at))
             ).first()
             if latest_token and latest_token.expires_at > now + 3 * day:
                 return latest_token.token
@@ -348,9 +341,7 @@ class UserService:
     def list_user_tokens(self, user_id: str) -> List[UserToken]:
         with ctx.db.session() as sess:
             tokens = sess.exec(
-                sa.select(UserToken)
-                .where(UserToken.user_id == user_id)
-                .order_by(sa.desc(UserToken.expires_at))
+                sa.select(UserToken).where(UserToken.user_id == user_id).order_by(sa.desc(UserToken.expires_at))
             ).all()
             return list(tokens)
 

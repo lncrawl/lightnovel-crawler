@@ -121,7 +121,7 @@ class GeneralBrowserTemplate(BasicBrowserTemplate, GeneralSoupTemplate):
         self.visit_chapter_page_in_browser(chapter)
         body = self.select_chapter_body_in_browser()
         if not body:
-            raise LNException('No chapter contents')
+            raise LNException("No chapter contents")
         return self.parse_chapter_body(body)
 
     def visit_chapter_page_in_browser(self, chapter: Chapter) -> None:

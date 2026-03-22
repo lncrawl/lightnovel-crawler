@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
 from concurrent import futures
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
-chapter_list_url = "https://webnovelindonesia.com/wp-json/writerist/v1/chapters?category=%s&perpage=100&order=ASC&paged=%s"
+chapter_list_url = (
+    "https://webnovelindonesia.com/wp-json/writerist/v1/chapters?category=%s&perpage=100&order=ASC&paged=%s"
+)
 
 
 class WebnovelIndonesia(Crawler):
@@ -20,14 +24,10 @@ class WebnovelIndonesia(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one('.section-novel img[class*="lazy"]')["data-src"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one('.section-novel img[class*="lazy"]')["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = soup.select_one(
-            '.section-novel li a[href*="/aut/"]'
-        ).text.strip()
+        self.novel_author = soup.select_one('.section-novel li a[href*="/aut/"]').text.strip()
         logger.info("Novel author: %s", self.novel_author)
 
         possible_chapter_pages = soup.select("#js-chpater-jump > div.jump-to")

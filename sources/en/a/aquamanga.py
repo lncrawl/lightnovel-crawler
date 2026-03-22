@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -55,12 +57,7 @@ class AquaMangaCrawler(Crawler):
 
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="manga-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="manga-author"]')])
         logger.info("%s", self.novel_author)
 
         clean_novel_url = self.novel_url.split("?")[0].strip("/")
@@ -72,12 +69,14 @@ class AquaMangaCrawler(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
                 self.volumes.append(Volume(id=vol_id))
-            self.chapters.append(Chapter(
-                id=chap_id,
-                volume=vol_id,
-                title=a.text.strip(),
-                url=self.absolute_url(a["href"]),
-            ))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
+            )
 
     def download_chapter_body(self, chapter):
         logger.info("Visiting %s", chapter["url"])

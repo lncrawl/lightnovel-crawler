@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core import Crawler
 
 logger = logging.getLogger(__name__)
 
@@ -63,17 +64,13 @@ class VolareNovelsCrawler(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         try:
-            self.novel_author = soup.select("#content-container .p-tb-10-rl-30 p")[
-                1
-            ].text.strip()
+            self.novel_author = soup.select("#content-container .p-tb-10-rl-30 p")[1].text.strip()
         except Exception:
             pass  # not so important to raise errors
         logger.info("Novel author: %s", self.novel_author)
 
         try:
-            self.novel_cover = self.absolute_url(
-                soup.select_one("#content-container .md-d-table img")["src"]
-            )
+            self.novel_cover = self.absolute_url(soup.select_one("#content-container .md-d-table img")["src"])
         except Exception:
             pass  # not so important to raise errors
         logger.info("Novel cover: %s", self.novel_cover)

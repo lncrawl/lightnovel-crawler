@@ -7,24 +7,12 @@ from ..context import ctx
 app = typer.Typer()
 
 
-@app.command(help='Run web server.')
+@app.command(help="Run web server.")
 def server(
-    host: Annotated[
-        str,
-        typer.Option('-h', '--host', help='Server host')
-    ] = '0.0.0.0',
-    port: Annotated[
-        int,
-        typer.Option('-p', '--port', help='Server port')
-    ] = 8080,
-    watch: Annotated[
-        bool,
-        typer.Option('-w', '--watch', help='Run server in watch mode')
-    ] = False,
-    workers: Annotated[
-        int,
-        typer.Option('-n', '--worker', help='Number of workers to run')
-    ] = 1,
+    host: Annotated[str, typer.Option("-h", "--host", help="Server host")] = "0.0.0.0",
+    port: Annotated[int, typer.Option("-p", "--port", help="Server port")] = 8080,
+    watch: Annotated[bool, typer.Option("-w", "--watch", help="Run server in watch mode")] = False,
+    workers: Annotated[int, typer.Option("-n", "--worker", help="Number of workers to run")] = 1,
 ):
     if watch:
         uvicorn.run(
@@ -37,6 +25,7 @@ def server(
         )
     else:
         from ..server.app import app as server
+
         uvicorn.run(
             server,
             port=port,

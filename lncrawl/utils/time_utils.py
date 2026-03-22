@@ -10,7 +10,7 @@ def utc_now():
 
 
 def current_timestamp():
-    '''Current UNIX timestamp in milliseconds'''
+    """Current UNIX timestamp in milliseconds"""
     return round(1000 * utc_now().timestamp())
 
 

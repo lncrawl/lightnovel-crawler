@@ -1,6 +1,7 @@
 """
 Source: https://github.com/r4sas/PBinCLI/blob/master/pbincli/format.py
 """
+
 import json
 import logging
 import ntpath

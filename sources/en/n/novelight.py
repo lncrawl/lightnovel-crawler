@@ -6,7 +6,6 @@ import re
 from typing import Callable, Generator, Optional
 from urllib.parse import quote_plus, urlencode
 
-
 from lncrawl.exceptions import FallbackToBrowser, LNException
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.basic import BasicBrowserTemplate
@@ -55,9 +54,7 @@ class NoveLightCrawler(BasicBrowserTemplate):
         ]
 
     def search_novel_in_soup(self, query) -> Generator[SearchResult, None, None]:
-        soup = self.get_soup(
-            f"{self.home_url}catalog/?search={quote_plus(query.lower())}"
-        )
+        soup = self.get_soup(f"{self.home_url}catalog/?search={quote_plus(query.lower())}")
         yield from self._parse_search_results(soup)
 
     def search_novel_in_browser(self, query) -> Generator[SearchResult, None, None]:
@@ -71,9 +68,7 @@ class NoveLightCrawler(BasicBrowserTemplate):
         if not book_id_match:
             raise LNException("Could not extract book_id from novel page")
         book_id = book_id_match.group(1)
-        csrf_match = re.search(
-            r'.*window.CSRF_TOKEN = "(\w+)".*', scripts_joined
-        )
+        csrf_match = re.search(r'.*window.CSRF_TOKEN = "(\w+)".*', scripts_joined)
         if not csrf_match:
             raise LNException("Could not extract csrfmiddlewaretoken from novel page")
         csrfmiddlewaretoken = csrf_match.group(1)
@@ -95,9 +90,7 @@ class NoveLightCrawler(BasicBrowserTemplate):
         if novel_synopsis:
             self.novel_synopsis = self.cleaner.extract_contents(novel_synopsis)
 
-        novel_tags = soup.select(
-            "div#information section.tags a[href^='/catalog/?tags=']"
-        )
+        novel_tags = soup.select("div#information section.tags a[href^='/catalog/?tags=']")
         for tag in novel_tags:
             self.novel_tags.append(tag.get_text().strip())
 
@@ -146,9 +139,7 @@ class NoveLightCrawler(BasicBrowserTemplate):
             bar.update()
         bar.close()
         if encountered_paid_chapter:
-            logger.warning(
-                "WARNING: Paid chapters are not supported and will be skipped."
-            )
+            logger.warning("WARNING: Paid chapters are not supported and will be skipped.")
 
     def read_novel_info_in_soup(self):
         try:
@@ -169,12 +160,7 @@ class NoveLightCrawler(BasicBrowserTemplate):
             "x-requested-with": "XMLHttpRequest",
         }
 
-        soup = self.make_soup(
-            json_get(
-                chapter.url.replace("chapter", "ajax/read-chapter"),
-                headers=headers
-            )["content"]
-        )
+        soup = self.make_soup(json_get(chapter.url.replace("chapter", "ajax/read-chapter"), headers=headers)["content"])
 
         contents = soup.select_one(".chapter-text")
         self.cleaner.clean_contents(contents)

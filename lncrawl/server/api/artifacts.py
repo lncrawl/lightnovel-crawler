@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.get(
     "s",
-    summary='Returns a list of artifacts',
+    summary="Returns a list of artifacts",
     dependencies=[Security(ensure_user)],
 )
 def list_artifacts(
@@ -35,7 +35,7 @@ def list_artifacts(
     )
 
 
-@router.get("/enabled-formats", summary='Returns a list of enabled formats for the current user')
+@router.get("/enabled-formats", summary="Returns a list of enabled formats for the current user")
 def get_enabled_formats(
     user: User = Security(ensure_user),
 ) -> List[OutputFormat]:
@@ -44,7 +44,7 @@ def get_enabled_formats(
 
 @router.get(
     "/{artifact_id}",
-    summary='Returns a artifact',
+    summary="Returns a artifact",
     dependencies=[Security(ensure_user)],
 )
 def get_artifact(

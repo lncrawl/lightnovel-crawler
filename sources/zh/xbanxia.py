@@ -2,7 +2,7 @@ import logging
 import re
 from typing import List
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
@@ -53,9 +53,7 @@ class Xbanxia(Crawler):
         if canonical_link and "href" in canonical_link.attrs:
             novel_url = canonical_link["href"]
         else:
-            novel_url = self.absolute_url(
-                soup.select_one("div.book-describe a")["href"]
-            )
+            novel_url = self.absolute_url(soup.select_one("div.book-describe a")["href"])
 
         chapter_count = len(soup.select("div.book-list ul li a"))
 
@@ -83,16 +81,12 @@ class Xbanxia(Crawler):
             self.novel_author = author[0].text
         logger.info("Novel author: %s", self.novel_author)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one("div.book-img img")["data-original"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one("div.book-img img")["data-original"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         for possible_genre in soup.select("div.book-describe p"):
             if possible_genre.text.startswith("類型︰"):
-                self.novel_tags.append(
-                    possible_genre.text.replace("類型︰", "").strip()
-                )
+                self.novel_tags.append(possible_genre.text.replace("類型︰", "").strip())
         logger.info("Novel tags: %s", self.novel_tags)
 
         possible_synopsis = soup.select_one("div.book-describe .describe-html")
@@ -116,9 +110,7 @@ class Xbanxia(Crawler):
                     )
                 )
 
-        logger.debug(
-            "%d chapters and %d volumes found", len(self.chapters), len(self.volumes)
-        )
+        logger.debug("%d chapters and %d volumes found", len(self.chapters), len(self.volumes))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

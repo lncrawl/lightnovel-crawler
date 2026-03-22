@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
 from bs4 import Comment
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://morenovel.net/?s=%s&post_type=wp-manga&author=&artist=&release="
@@ -39,17 +42,10 @@ class ListNovelCrawler(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one(".summary_image a img")["data-src"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one(".summary_image a img")["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
         self.novel_id = soup.select_one("#manga-chapters-holder")["data-id"]
@@ -78,9 +74,7 @@ class ListNovelCrawler(Crawler):
 
         contents = soup.select_one("div.text-left")
 
-        for bad in contents.select(
-            ".code-block, script, .adsbygoogle, .adsense-code, .sharedaddy, a, br"
-        ):
+        for bad in contents.select(".code-block, script, .adsbygoogle, .adsense-code, .sharedaddy, a, br"):
             bad.extract()
 
         # Remove html comments from bottom of chapters.

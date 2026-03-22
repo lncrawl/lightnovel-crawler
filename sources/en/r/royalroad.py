@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-import re
 import logging
+import re
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.royalroad.com/fictions/search?keyword=%s"
@@ -38,9 +39,7 @@ class RoyalRoadCrawler(Crawler):
             self.novel_cover = self.absolute_url(possible_cover["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ", ".join(
-            [a.text.strip() for a in soup.select('.fic-header a[href^="/profile/"]')]
-        )
+        self.novel_author = ", ".join([a.text.strip() for a in soup.select('.fic-header a[href^="/profile/"]')])
         logger.info("Novel author: %s", self.novel_author)
 
         self.novel_synopsis = self.cleaner.extract_contents(
@@ -48,17 +47,12 @@ class RoyalRoadCrawler(Crawler):
         )
         logger.info("Novel synopsis: %s", self.novel_synopsis)
 
-        self.novel_tags = [
-            a.text.strip()
-            for a in soup.select('.fiction-info .tags a[href^="/fictions/search"]')
-        ]
+        self.novel_tags = [a.text.strip() for a in soup.select('.fiction-info .tags a[href^="/fictions/search"]')]
         logger.info("Novel tags: %s", self.novel_tags)
 
         for a in soup.select("#chapters .chapter-row td:first-child a[href]"):
             chap_id = len(self.chapters) + 1
-            self.chapters.append(
-                Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a['href']))
-            )
+            self.chapters.append(Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a["href"])))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

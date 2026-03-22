@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +53,7 @@ class DummyNovelsCrawler(Crawler):
                 possible_toc = soup.select_one("#" + str(tab["aria-controls"]))
                 break
 
-        for tab in possible_toc.select(
-            ".elementor-accordion-item .elementor-tab-title"
-        ):
+        for tab in possible_toc.select(".elementor-accordion-item .elementor-tab-title"):
             possible_contents = possible_toc.select_one("#" + str(tab["aria-controls"]))
             if not possible_contents:
                 continue
@@ -63,15 +61,17 @@ class DummyNovelsCrawler(Crawler):
             vol_id = 1 + len(self.volumes)
             vol_title = tab.select_one(".elementor-accordion-title")
             vol_title = vol_title.text if vol_title else None
-            self.volumes.append(Volume(
-                id=vol_id,
-                title=vol_title,
-            ))
+            self.volumes.append(
+                Volume(
+                    id=vol_id,
+                    title=vol_title,
+                )
+            )
 
             for a in possible_contents.select("a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
                 )
 
     def download_chapter_body(self, chapter):

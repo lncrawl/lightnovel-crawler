@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,7 @@ class ReincarnationPalace(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = soup.select("div.elementor-widget-container p")[
-            6
-        ].text.strip()
+        self.novel_author = soup.select("div.elementor-widget-container p")[6].text.strip()
         logger.info("Novel author: %s", self.novel_author)
 
         # Extract volume-wise chapter entries

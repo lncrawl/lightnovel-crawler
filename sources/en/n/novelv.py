@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import re
 import logging
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+import re
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +42,7 @@ class NovelvCrawler(Crawler):
             volume_id = (chapter_id - 1) // 100 + 1
             volumes.add(volume_id)
 
-            self.chapters.append(
-                Chapter(id=chapter_id, title=a.text.strip(), url=possible_url, volume=volume_id)
-            )
+            self.chapters.append(Chapter(id=chapter_id, title=a.text.strip(), url=possible_url, volume=volume_id))
 
         self.volumes = [Volume(id=x, title="") for x in list(volumes)]
 

@@ -2,7 +2,8 @@
 
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +29,7 @@ class TangEatDrinkRead(Crawler):
 
         # Extract volume-wise chapter entries
         # TODO: Chapter title are url links, it's the way translator formatted website.
-        chapters = soup.select(
-            '.entry-content a[href*="88tangeatdrinkread.wordpress.com"]'
-        )
+        chapters = soup.select('.entry-content a[href*="88tangeatdrinkread.wordpress.com"]')
 
         for a in chapters:
             chap_id = len(self.chapters) + 1

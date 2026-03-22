@@ -2,12 +2,11 @@
 
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
-search_url = (
-    "%s?s=%s&post_type=wp-manga&author=&artist=&release="
-)
+search_url = "%s?s=%s&post_type=wp-manga&author=&artist=&release="
 
 
 class OneKissNovelCrawler(Crawler):
@@ -53,12 +52,7 @@ class OneKissNovelCrawler(Crawler):
             self.novel_cover = self.absolute_url(img_src["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="manga-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="manga-author"]')])
         logger.info("%s", self.novel_author)
 
         self.novel_id = soup.select_one("#manga-chapters-holder")["data-id"]
@@ -73,12 +67,14 @@ class OneKissNovelCrawler(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
                 self.volumes.append(Volume(id=vol_id))
-            self.chapters.append(Chapter(
-                id=chap_id,
-                volume=vol_id,
-                title=a.text.strip(),
-                url=self.absolute_url(a["href"]),
-            ))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
+            )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

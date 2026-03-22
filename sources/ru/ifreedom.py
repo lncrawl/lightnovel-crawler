@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +42,7 @@ class IfreedomCrawler(Crawler):
         for a in reversed(soup.select(".menu-ranobe a")):
             chap_id = 1 + (len(self.chapters))
 
-            self.chapters.append(
-                Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a['href']))
-            )
+            self.chapters.append(Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a["href"])))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

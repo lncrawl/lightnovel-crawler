@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://wuxiaworld.site/?s=%s&post_type=wp-manga"
@@ -37,9 +37,7 @@ class WuxiaSiteCrawler(Crawler):
 
         possible_title = soup.select_one(".post-title")
         possible_title = possible_title.select_one("h1, h2, h3")
-        self.novel_title = " ".join(
-            [str(x) for x in possible_title.contents if isinstance(x, str)]
-        ).strip()
+        self.novel_title = " ".join([str(x) for x in possible_title.contents if isinstance(x, str)]).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".summary_image a img")
@@ -65,7 +63,9 @@ class WuxiaSiteCrawler(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=option.text.strip(), url=self.absolute_url(option['data-redirect']))
+                Chapter(
+                    id=chap_id, volume=vol_id, title=option.text.strip(), url=self.absolute_url(option["data-redirect"])
+                )
             )
 
     def download_chapter_body(self, chapter):

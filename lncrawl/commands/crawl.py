@@ -18,43 +18,31 @@ console = Console()
 logger = logging.getLogger(__name__)
 
 max_retry_attempts = 1
-ChapterGroup = Union[Chapter, Tuple[int, int, List['ChapterGroup']]]
+ChapterGroup = Union[Chapter, Tuple[int, int, List["ChapterGroup"]]]
 
 
-@app.command(
-    help='Crawl from novel page URL.'
-)
+@app.command(help="Crawl from novel page URL.")
 def crawl(
     non_interactive: bool = typer.Option(
         False,
-        '--noin',
-        help='Disable interactive mode',
+        "--noin",
+        help="Disable interactive mode",
     ),
-    range_all: Optional[bool] = typer.Option(
-        None,
-        '--all',
-        is_flag=True,
-        help='Download all chapters'
-    ),
-    range_first: Optional[int] = typer.Option(
-        None,
-        '--first',
-        min=1,
-        metavar='N',
-        help='Download first few chapters'
-    ),
+    range_all: Optional[bool] = typer.Option(None, "--all", is_flag=True, help="Download all chapters"),
+    range_first: Optional[int] = typer.Option(None, "--first", min=1, metavar="N", help="Download first few chapters"),
     range_last: Optional[int] = typer.Option(
         None,
-        '--last',
+        "--last",
         min=1,
-        metavar='N',
-        help='Download latest few chapters',
+        metavar="N",
+        help="Download latest few chapters",
     ),
     formats: List[OutputFormat] = typer.Option(
         [],
-        '-f', '--format',
+        "-f",
+        "--format",
         show_choices=True,
-        help='Output formats',
+        help="Output formats",
     ),
     url: str = typer.Argument(
         default=None,
@@ -67,7 +55,7 @@ def crawl(
     # ensure url
     if not url:
         if non_interactive:
-            print('[red]Please enter a novel page URL[/red]')
+            print("[red]Please enter a novel page URL[/red]")
             return
         url = _prompt_url()
     if not url:
@@ -78,40 +66,49 @@ def crawl(
         constructor = ctx.sources.get_crawler(url)
         crawler = ctx.sources.init_crawler(constructor, disable_logger=False)
     except ServerError as e:
-        print(f'[red]{e.format(True)}[/red]')
+        print(f"[red]{e.format(True)}[/red]")
         return
 
     # fetch novel details
-    with console.status('Fetching novel details...'):
+    with console.status("Fetching novel details..."):
         user = ctx.users.get_admin()
         novel = ctx.crawler.fetch_novel(user.id, url, crawler=crawler)
-    print(Panel('\n'.join(filter(None, [
-        f'[cyan]{novel.url}[/cyan]',
-        f'[yellow][b]{novel.title}[/b][/yellow]',
-        f'[green]{novel.authors}[/green]' if novel.authors else None,
-        f'[i]{novel.volume_count} volumes, {novel.chapter_count} chapters[/i]'
-    ]))))
+    print(
+        Panel(
+            "\n".join(
+                filter(
+                    None,
+                    [
+                        f"[cyan]{novel.url}[/cyan]",
+                        f"[yellow][b]{novel.title}[/b][/yellow]",
+                        f"[green]{novel.authors}[/green]" if novel.authors else None,
+                        f"[i]{novel.volume_count} volumes, {novel.chapter_count} chapters[/i]",
+                    ],
+                )
+            )
+        )
+    )
 
     if novel.chapter_count == 0:
-        print('[red]No chapters to download[/red]')
+        print("[red]No chapters to download[/red]")
         return
 
     # select chapters to download
     chapters: List[str] = []
-    if not non_interactive and all([
-        range_all is None,
-        range_first is None,
-        range_last is None,
-    ]):
+    if not non_interactive and all(
+        [
+            range_all is None,
+            range_first is None,
+            range_last is None,
+        ]
+    ):
         chapters = _prompt_range_selection(novel)
     else:
         chapters = ctx.chapters.list_ids(
-            novel_id=novel.id,
-            descending=bool(range_last),
-            limit=range_last or range_first
+            novel_id=novel.id, descending=bool(range_last), limit=range_last or range_first
         )
     if not chapters:
-        print('[red]No chapters to download[/red]')
+        print("[red]No chapters to download[/red]")
         return
 
     # select formats to bind
@@ -123,44 +120,28 @@ def crawl(
 
     # download chapters
     chapter_futures = [
-        crawler.submit_task(
-            ctx.crawler.fetch_chapter,
-            user.id,
-            chapter_id,
-            crawler=crawler
-        ) for chapter_id in sorted(set(chapters))
+        crawler.submit_task(ctx.crawler.fetch_chapter, user.id, chapter_id, crawler=crawler)
+        for chapter_id in sorted(set(chapters))
     ]
     chapter_image_ids = []
-    for chapter in crawler.resolve_as_generator(
-        chapter_futures,
-        desc='Chapters',
-        unit=' c'
-    ):
+    for chapter in crawler.resolve_as_generator(chapter_futures, desc="Chapters", unit=" c"):
         if not chapter:
             continue
         chapter_image_ids += ctx.images.list_ids(chapter_id=chapter.id)
 
     # download chapter images
     image_futures = [
-        crawler.submit_task(
-            ctx.crawler.fetch_image,
-            user.id,
-            image_id,
-            crawler=crawler
-        ) for image_id in sorted(set(chapter_image_ids))
+        crawler.submit_task(ctx.crawler.fetch_image, user.id, image_id, crawler=crawler)
+        for image_id in sorted(set(chapter_image_ids))
     ]
-    crawler.resolve_futures(
-        image_futures,
-        desc='Images',
-        unit=' img'
-    )
+    crawler.resolve_futures(image_futures, desc="Images", unit=" img")
 
     # create artifacts
     artifacts: Dict[OutputFormat, Artifact] = {}
     if ctx.binder.depends_on_epub & set(formats):
         formats.insert(0, OutputFormat.epub)
     for fmt in set(formats) & ctx.binder.available_formats:
-        with console.status(f'Generating {fmt}...'):
+        with console.status(f"Generating {fmt}..."):
             artifact = ctx.binder.make_artifact(
                 novel.id,
                 novel.title,
@@ -172,17 +153,17 @@ def crawl(
             artifacts[fmt] = artifact
             file = ctx.files.resolve(artifact.output_file)
             size = format_size(artifact.file_size or 0)
-            print(f'[b]{fmt}[/b] ({size}): [cyan]{file}[/cyan]')
+            print(f"[b]{fmt}[/b] ({size}): [cyan]{file}[/cyan]")
         else:
-            print(f'[red]Failed to generate [b]{fmt.value}[/b][/red]')
+            print(f"[red]Failed to generate [b]{fmt.value}[/b][/red]")
 
     if not non_interactive:
         cover_file = ctx.files.resolve(novel.cover_file)
-        open_folder(cover_file.parent / 'artifacts')
+        open_folder(cover_file.parent / "artifacts")
 
 
 def _prompt_url() -> str:
-    print('[i]The URL must start with [cyan]http[/cyan] or [cyan]https[/cyan].[/i]')
+    print("[i]The URL must start with [cyan]http[/cyan] or [cyan]https[/cyan].[/i]")
     return questionary.text(
         "Novel page URL:",
         qmark="🌐",
@@ -192,62 +173,58 @@ def _prompt_url() -> str:
 
 def _prompt_range_selection(novel: Novel, attempt=0) -> List[str]:
     choices = [
-        questionary.Choice('All chapters', value='all'),
-        questionary.Choice('Not yet downloaded chapters', value='new'),
+        questionary.Choice("All chapters", value="all"),
+        questionary.Choice("Not yet downloaded chapters", value="new"),
     ]
     if novel.volume_count > 1:
         choices += [
-            questionary.Choice(f'Select volumes ({novel.volume_count} items)', value='volumes'),
+            questionary.Choice(f"Select volumes ({novel.volume_count} items)", value="volumes"),
         ]
     if novel.chapter_count > 1:
         choices += [
-            questionary.Choice(f'Select chapters ({novel.chapter_count} items)', value='chapters'),
+            questionary.Choice(f"Select chapters ({novel.chapter_count} items)", value="chapters"),
         ]
     choices += [
-        questionary.Choice('Downloaded chapters only', value='old'),
-        questionary.Choice('Exit', value='exit', shortcut_key='0')
+        questionary.Choice("Downloaded chapters only", value="old"),
+        questionary.Choice("Exit", value="exit", shortcut_key="0"),
     ]
 
     choice = questionary.select(
         "Select chapters to download",
         choices=choices,
-        default='new',
+        default="new",
         use_shortcuts=True,
-    ).ask(kbi_msg='')
+    ).ask(kbi_msg="")
 
-    if choice == 'all':
+    if choice == "all":
         return ctx.chapters.list_ids(novel_id=novel.id)
 
-    if choice == 'new' or choice == 'old':
+    if choice == "new" or choice == "old":
         return ctx.chapters.list_ids(
             novel_id=novel.id,
-            is_crawled=(choice == 'old'),
+            is_crawled=(choice == "old"),
         )
 
-    if choice == 'volumes':
+    if choice == "volumes":
         volumes = ctx.volumes.list(novel.id)
         voluem_ids = _prompt_select_volumes(volumes)
         if voluem_ids:
-            return [
-                chapter_id
-                for volume_id in voluem_ids
-                for chapter_id in ctx.chapters.list_ids(volume_id=volume_id)
-            ]
+            return [chapter_id for volume_id in voluem_ids for chapter_id in ctx.chapters.list_ids(volume_id=volume_id)]
 
-    if choice == 'chapters':
+    if choice == "chapters":
         chapters = ctx.chapters.list(novel_id=novel.id)
         chapter_ids = _prompt_select_chapters(chapters)
         if chapter_ids:
             return chapter_ids
 
-    if choice == 'exit':
+    if choice == "exit":
         raise KeyboardInterrupt()
 
     if attempt >= max_retry_attempts:
         raise KeyboardInterrupt()
 
-    print('[red]Please make your choice![/red]')
-    print(f'[i]You have {max_retry_attempts - attempt} more chance.[/i]\n')
+    print("[red]Please make your choice![/red]")
+    print(f"[i]You have {max_retry_attempts - attempt} more chance.[/i]\n")
     return _prompt_range_selection(novel, attempt + 1)
 
 
@@ -262,8 +239,8 @@ def _prompt_select_volumes(volumes: List[Volume], attempt=0) -> List[str]:
             )
             for volume in volumes
         ],
-        validate=lambda c: True if c else "Select at least one item"
-    ).ask(kbi_msg='')
+        validate=lambda c: True if c else "Select at least one item",
+    ).ask(kbi_msg="")
 
     if volume_ids:
         return volume_ids
@@ -272,7 +249,7 @@ def _prompt_select_volumes(volumes: List[Volume], attempt=0) -> List[str]:
         print()
         return []
 
-    print('[red]Please select at least one volume[/red]\n')
+    print("[red]Please select at least one volume[/red]\n")
     return _prompt_select_volumes(volumes, attempt + 1)
 
 
@@ -284,7 +261,7 @@ def _prompt_select_chapters(groups: Sequence[ChapterGroup], attempt=0) -> List[s
     while len(groups) > k:
         new_groups: List[ChapterGroup] = []
         for i in range(0, len(groups), k):
-            chunk = groups[i:i + k]
+            chunk = groups[i : i + k]
             a = chunk[0]
             b = chunk[-1]
             sa = a.serial if isinstance(a, Chapter) else a[0]
@@ -302,7 +279,7 @@ def _prompt_select_chapters(groups: Sequence[ChapterGroup], attempt=0) -> List[s
         # Some helpful text
         if len(selected) > 0:
             print(
-                f'{len(selected)} chapters are selected.',
+                f"{len(selected)} chapters are selected.",
                 '[i]You can select more or choose "Done" to finish.[/i]',
             )
 
@@ -314,13 +291,13 @@ def _prompt_select_chapters(groups: Sequence[ChapterGroup], attempt=0) -> List[s
                 choices=[
                     questionary.Choice(
                         value=chapter.id,
-                        title=f'{chapter.serial}) {chapter.title}',
+                        title=f"{chapter.serial}) {chapter.title}",
                         checked=(chapter.id in selected),
                     )
                     for chapter in current
                     if isinstance(chapter, Chapter)
                 ],
-            ).ask(kbi_msg='')
+            ).ask(kbi_msg="")
             for id in chapter_ids:
                 selected.add(id)
             stack.pop()  # pop after processing this node
@@ -331,21 +308,19 @@ def _prompt_select_chapters(groups: Sequence[ChapterGroup], attempt=0) -> List[s
         choice = questionary.select(
             "Select chapters:",
             use_shortcuts=True,
-            choices=[
-                questionary.Choice('Done', value='done')
-            ] + [
+            choices=[questionary.Choice("Done", value="done")]
+            + [
                 questionary.Choice(
                     value=index,
-                    title=f'Chapters {node[0]}-{node[1]}',
+                    title=f"Chapters {node[0]}-{node[1]}",
                 )
                 for index, node in enumerate(current)
                 if isinstance(node, tuple)
-            ] + [
-                questionary.Choice('Back', value='back', shortcut_key='0')
-            ],
-        ).ask(kbi_msg='')
+            ]
+            + [questionary.Choice("Back", value="back", shortcut_key="0")],
+        ).ask(kbi_msg="")
 
-        if choice == 'done':
+        if choice == "done":
             break  # no more selection
 
         if isinstance(choice, int):
@@ -368,7 +343,7 @@ def _prompt_select_chapters(groups: Sequence[ChapterGroup], attempt=0) -> List[s
         print()
         return []
 
-    print('[red]Please select at least one chapter[/red]\n')
+    print("[red]Please select at least one chapter[/red]\n")
     return _prompt_select_chapters(groups, attempt + 1)
 
 
@@ -385,7 +360,7 @@ def _prompt_format_selection() -> List[OutputFormat]:
             for fmt in list(OutputFormat)
             if fmt in ctx.binder.available_formats
         ],
-    ).ask(kbi_msg='')
+    ).ask(kbi_msg="")
     if not result:
         return [OutputFormat.epub]
     return result

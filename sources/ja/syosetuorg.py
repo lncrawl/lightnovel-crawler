@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import quote_plus
-from lncrawl.core.soup import PageSoup
+
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, Volume
 from lncrawl.templates.browser.basic import BasicBrowserTemplate
 
@@ -21,12 +22,8 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
         results = []
         for tab in soup.select(".searchkekka_box"):
             a = tab.select_one(".novel_h a")
-            latest = (
-                tab.select_one(".left").get_text(separator=" ").strip()
-            )  # e.g.: 連載中 (全604部分)
-            votes = tab.select_one(
-                ".attention"
-            ).text.strip()  # e.g.: "総合ポイント： 625,717 pt"
+            latest = tab.select_one(".left").get_text(separator=" ").strip()  # e.g.: 連載中 (全604部分)
+            votes = tab.select_one(".attention").text.strip()  # e.g.: "総合ポイント： 625,717 pt"
             results.append(
                 {
                     "title": a.text.strip(),
@@ -54,7 +51,7 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
             self.novel_title = title_tag.text.strip()
         else:
             self.novel_title = soup.select_one("title").text.split(" - ")[0].strip()
-        logger.debug('Novel title: %s', self.novel_title)
+        logger.debug("Novel title: %s", self.novel_title)
 
         # No novel cover.
 
@@ -77,21 +74,25 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
                     strong = tds[0].select_one("strong")
                     if strong:
                         volume_id += 1
-                        self.volumes.append(Volume(
-                            id=volume_id,
-                            title=strong.text.strip(),
-                        ))
+                        self.volumes.append(
+                            Volume(
+                                id=volume_id,
+                                title=strong.text.strip(),
+                            )
+                        )
                 elif len(tds) == 2:
                     # Chapter row
                     a_tag = tds[0].select_one("a")
                     if a_tag and "href" in a_tag.attrs:
                         chapter_id += 1
-                        self.chapters.append(Chapter(
-                            id=chapter_id,
-                            volume=volume_id,
-                            title=a_tag.text.strip(),
-                            url=self.absolute_url(a_tag["href"]),
-                        ))
+                        self.chapters.append(
+                            Chapter(
+                                id=chapter_id,
+                                volume=volume_id,
+                                title=a_tag.text.strip(),
+                                url=self.absolute_url(a_tag["href"]),
+                            )
+                        )
 
     def download_chapter_body_in_soup(self, chapter):
         """Download chapter content using regular scraper"""

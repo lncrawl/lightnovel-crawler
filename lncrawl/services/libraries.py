@@ -32,7 +32,7 @@ class LibraryService:
         offset: int = 0,
         limit: int = 20,
         *,
-        query: str = '',
+        query: str = "",
         public_only: bool = False,
         user_id: Optional[str] = None,
     ) -> Paginated[Library]:
@@ -49,7 +49,7 @@ class LibraryService:
                 cnt = cnt.where(sa.col(Library.is_public).is_(True))
 
             if query:
-                q = f'%{query.lower()}%'
+                q = f"%{query.lower()}%"
                 stmt = stmt.where(sa.col(Library.name).ilike(q))
                 cnt = cnt.where(sa.col(Library.name).ilike(q))
 
@@ -175,11 +175,7 @@ class LibraryService:
             library = self._get_library(sess, library_id)
             self._ensure_visible(library, user)
 
-            cnt = (
-                sa.select(sa.func.count())
-                .select_from(LibraryNovel)
-                .where(LibraryNovel.library_id == library_id)
-            )
+            cnt = sa.select(sa.func.count()).select_from(LibraryNovel).where(LibraryNovel.library_id == library_id)
             stmt = (
                 sa.select(Novel)
                 .join(LibraryNovel, sa.col(LibraryNovel.novel_id) == sa.col(Novel.id))
@@ -215,8 +211,7 @@ class LibraryService:
                 raise ServerErrors.no_such_novel
 
             existing = sess.scalar(
-                sa.select(LibraryNovel)
-                .where(
+                sa.select(LibraryNovel).where(
                     LibraryNovel.library_id == library_id,
                     LibraryNovel.novel_id == novel_id,
                 )
@@ -245,8 +240,7 @@ class LibraryService:
             self._ensure_owner(library, user)
 
             row = sess.exec(
-                sa.delete(LibraryNovel)
-                .where(
+                sa.delete(LibraryNovel).where(
                     sa.col(LibraryNovel.library_id) == library_id,
                     sa.col(LibraryNovel.novel_id) == novel_id,
                 )

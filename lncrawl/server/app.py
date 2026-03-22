@@ -12,7 +12,7 @@ from ..exceptions import attach_exception_handlers
 from .api import router as api
 from .middleware.staticfiles import CustomStaticFiles, StaticFilesGuard
 
-web_dir = (Path(__file__).parent / 'web').absolute()
+web_dir = (Path(__file__).parent / "web").absolute()
 
 
 @asynccontextmanager
@@ -47,13 +47,10 @@ app.add_middleware(
     minimum_size=1000,
 )
 
-app.add_middleware(
-    StaticFilesGuard,
-    prefix='/static'
-)
+app.add_middleware(StaticFilesGuard, prefix="/static")
 
 # Add APIs
-app.include_router(api, prefix='/api')
+app.include_router(api, prefix="/api")
 
 # Mount static files
 app.mount("/static", CustomStaticFiles(), name="static")

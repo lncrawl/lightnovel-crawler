@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.readlightnovel.org/search/autocomplete"
@@ -29,16 +29,12 @@ class ReadLightNovelCrawler(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        possible_synopsis = soup.select_one(
-            ".novel-right .novel-detail-item .novel-detail-body"
-        )
+        possible_synopsis = soup.select_one(".novel-right .novel-detail-item .novel-detail-body")
         if possible_synopsis:
             self.novel_synopsis = self.cleaner.extract_contents(possible_synopsis)
         logger.info("Novel synopsis: %s", self.novel_synopsis)
 
-        tags = soup.select(
-            ".novel-left .novel-detail-item .novel-detail-body a[href*=genre]"
-        )
+        tags = soup.select(".novel-left .novel-detail-item .novel-detail-body a[href*=genre]")
         self.novel_tags = [tag.text.strip() for tag in tags if tag]
         logger.info("Novel genre: %s", self.novel_tags)
 
@@ -53,7 +49,12 @@ class ReadLightNovelCrawler(Crawler):
             vol_id = (chap_id - 1) // 100 + 1
             volume_ids.add(vol_id)
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or "Chapter %d" % chap_id,
+                )
             )
 
         self.volumes = [Volume(id=i) for i in volume_ids]

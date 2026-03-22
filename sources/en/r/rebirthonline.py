@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.soup import PageSoup
-
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler, PageSoup
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +26,7 @@ class RebirthOnlineCrawler(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         translator = soup.find("h3", {"class": "section-title"}).findNext("p").text
-        author = (
-            soup.find("h3", {"class": "section-title"}).findNext("p").findNext("p").text
-        )
+        author = soup.find("h3", {"class": "section-title"}).findNext("p").findNext("p").text
         self.novel_author = "Author : %s, Translator: %s" % (author, translator)
         logger.info("Novel author: %s", self.novel_author)
 
@@ -38,7 +35,7 @@ class RebirthOnlineCrawler(Crawler):
 
         for a in soup.select(".table_of_content ul li a"):
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a['href']), title=a.text.strip())
+                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a["href"]), title=a.text.strip())
             )
 
     def download_chapter_body(self, chapter):

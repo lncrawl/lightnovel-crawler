@@ -1,6 +1,6 @@
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.exceptions import LNException
 from lncrawl.models.chapter import Chapter
 from lncrawl.models.volume import Volume
@@ -27,9 +27,7 @@ class NovelDeGlace(Crawler):
                 continue
             strong_text = strong.text.strip()
             if strong_text == "Titre complet :":
-                self.novel_title = (
-                    div.text.split(":")[1].split("RSS")[0].split("CMS")[0].strip()
-                )
+                self.novel_title = div.text.split(":")[1].split("RSS")[0].split("CMS")[0].strip()
             elif strong_text == "Auteur :":
                 self.novel_author = div.text.split(":")[1].strip()
 

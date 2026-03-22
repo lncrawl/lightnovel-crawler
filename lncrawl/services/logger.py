@@ -1,6 +1,6 @@
-import os
 import inspect
 import logging
+import os
 from typing import Union
 
 from rich.logging import RichHandler
@@ -28,9 +28,9 @@ class Logger:
 
     def setup(self, level: Union[int, str, None] = None) -> None:
         if level is None:
-            level = int(os.getenv('LNCRAWL_LOG_LEVEL', '0'))
+            level = int(os.getenv("LNCRAWL_LOG_LEVEL", "0"))
         if isinstance(level, int):
-            levels = ['NOTSET', 'WARN', 'INFO', 'DEBUG']
+            levels = ["NOTSET", "WARN", "INFO", "DEBUG"]
             level = levels[max(0, min(level, 3))]
         if level:
             self._level = getattr(logging, level, logging.NOTSET)
@@ -51,9 +51,9 @@ class Logger:
             )
 
     def log(self, level: int, *args, **kwargs) -> None:
-        stacklevel = kwargs.pop('stacklevel', 0) + 2
+        stacklevel = kwargs.pop("stacklevel", 0) + 2
         frame = inspect.stack()[stacklevel]
-        kwargs['stacklevel'] = stacklevel
+        kwargs["stacklevel"] = stacklevel
         logger = logging.getLogger(frame.filename)
         logger.log(level, *args, **kwargs)
 

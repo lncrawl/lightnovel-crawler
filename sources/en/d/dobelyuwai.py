@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -32,16 +33,12 @@ class Dobelyuwai(Crawler):
         # Removes none TOC links from bottom of page.
         toc_parts = soup.select_one("div.entry-content")
 
-        for notoc in toc_parts.select(
-            ".sharedaddy, .inline-ad-slot, .code-block, script, .adsbygoogle"
-        ):
+        for notoc in toc_parts.select(".sharedaddy, .inline-ad-slot, .code-block, script, .adsbygoogle"):
             notoc.extract()
 
         # Extract volume-wise chapter entries
         # Stops external links being selected as chapters
-        chapters = soup.select(
-            'div.entry-content a[href*="https://dobelyuwai.wordpress.com/2"]'
-        )
+        chapters = soup.select('div.entry-content a[href*="https://dobelyuwai.wordpress.com/2"]')
 
         for a in chapters:
             chap_id = len(self.chapters) + 1

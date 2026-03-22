@@ -22,12 +22,15 @@ def __ebook_convert(*args, signal=Event()) -> bool:
     Calls `ebook-convert` with given args
     Visit https://manual.calibre-ebook.com/generated/en/ebook-convert.html for argument list.
     """
-    with __lock.using(signal), subprocess.Popen(
-        args=['ebook-convert'] + [str(a) for a in args],
-        stderr=subprocess.STDOUT if ctx.logger.is_warn else subprocess.DEVNULL,
-        stdout=subprocess.STDOUT if ctx.logger.is_debug else subprocess.DEVNULL,
-    ) as p:
-        logger.debug(shlex.join(p.args))  # type:ignore
+    with (
+        __lock.using(signal),
+        subprocess.Popen(
+            args=["ebook-convert"] + [str(a) for a in args],
+            stderr=subprocess.STDOUT if ctx.logger.is_warn else subprocess.DEVNULL,
+            stdout=subprocess.STDOUT if ctx.logger.is_debug else subprocess.DEVNULL,
+        ) as p,
+    ):
+        logger.debug(shlex.join(p.args))  # type: ignore
 
         while p.poll() is None:
             if signal.is_set():
@@ -70,7 +73,9 @@ def convert_epub(
     if not is_calibre_available():
         raise ServerErrors.calibre_exe_not_found
 
-    logger.info(f'Converting "{epub_file.name}" to "{out_file.name}"', )
+    logger.info(
+        f'Converting "{epub_file.name}" to "{out_file.name}"',
+    )
     args = [
         epub_file,
         tmp_file,

@@ -39,7 +39,7 @@ class FileService:
     def save(self, file_path: StrPath, content: bytes) -> Path:
         file = self.resolve(file_path)
         file.parent.mkdir(parents=True, exist_ok=True)
-        tmp = file.with_suffix(f'{file.suffix}.tmp')
+        tmp = file.with_suffix(f"{file.suffix}.tmp")
         try:
             tmp.write_bytes(content)
             os.replace(tmp, file)
@@ -50,7 +50,7 @@ class FileService:
     def load_text(
         self,
         file_path: StrPath,
-        encoding: str = 'utf-8',
+        encoding: str = "utf-8",
     ) -> str:
         data = self.load(file_path)
         if is_compressed(data):
@@ -62,7 +62,7 @@ class FileService:
         file_path: StrPath,
         content: str,
         compress: bool = True,
-        encoding: str = 'utf-8',
+        encoding: str = "utf-8",
     ) -> Path:
         data = content.encode(encoding)
         if compress or is_compressed(data):

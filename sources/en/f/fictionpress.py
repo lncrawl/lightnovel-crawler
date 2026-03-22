@@ -2,8 +2,9 @@
 import logging
 import re
 from urllib.parse import urlparse
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 chapter_url = "https://www.fictionpress.com/s/%s/%s"
@@ -69,12 +70,15 @@ class FictionPressCrawler(Crawler):
         if chapter_select:
             for option in chapter_select.select("option"):
                 self.chapters.append(
-                    Chapter(volume=1, id=int(option['value']), title=option.text.strip(), url=chapter_url % (self.novel_id, option['value']))
+                    Chapter(
+                        volume=1,
+                        id=int(option["value"]),
+                        title=option.text.strip(),
+                        url=chapter_url % (self.novel_id, option["value"]),
+                    )
                 )
         else:
-            self.chapters.append(
-                Chapter(id=1, volume=1, url=self.novel_url)
-            )
+            self.chapters.append(Chapter(id=1, volume=1, url=self.novel_url))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

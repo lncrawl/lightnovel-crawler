@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.novelall.com/search/?name=%s"
@@ -46,9 +46,7 @@ class NovelAllCrawler(Crawler):
             self.novel_author = " ".join(author)
         logger.info("Novel author: %s", self.novel_author)
 
-        chapters = soup.find("div", {"class": "manga-detailchapter"}).findAll(
-            "a", title=True
-        )
+        chapters = soup.find("div", {"class": "manga-detailchapter"}).findAll("a", title=True)
         chapters.reverse()
         for a in chapters:
             for span in a.findAll("span"):
@@ -60,7 +58,12 @@ class NovelAllCrawler(Crawler):
             if len(self.volumes) < vol_id:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(x['href']), title=x['title'] or 'Chapter %d' % chap_id)
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(x["href"]),
+                    title=x["title"] or "Chapter %d" % chap_id,
+                )
             )
 
     def download_chapter_body(self, chapter):

@@ -4,7 +4,7 @@ import logging
 import re
 from typing import Generator
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
@@ -47,9 +47,7 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
 
     def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
         soup = self.get_soup(f"{self.home_url}search")
-        token_tag = soup.select_one(
-            '#novelSearchForm input[name="__LNRequestVerifyToken"]'
-        )
+        token_tag = soup.select_one('#novelSearchForm input[name="__LNRequestVerifyToken"]')
         assert token_tag, "No request verify token found"
         token = token_tag["value"]
 
@@ -113,10 +111,7 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
                     page_count = v
 
         futures = [self.executor.submit(lambda x: x, soup)]
-        futures += [
-            self.executor.submit(self.get_soup, f"{chapter_page}/page-{p}")
-            for p in range(2, page_count + 1)
-        ]
+        futures += [self.executor.submit(self.get_soup, f"{chapter_page}/page-{p}") for p in range(2, page_count + 1)]
         self.resolve_futures(futures, desc="TOC", unit="page")
 
         for f in futures:

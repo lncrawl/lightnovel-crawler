@@ -2,12 +2,11 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
-search_url = (
-    "https://lightnovelbastion.com/?s=%s&post_type=wp-manga&author=&artist=&release="
-)
+search_url = "https://lightnovelbastion.com/?s=%s&post_type=wp-manga&author=&artist=&release="
 
 
 class LightNovelBastion(Crawler):
@@ -52,17 +51,10 @@ class LightNovelBastion(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one(".summary_image a img")["data-src"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one(".summary_image a img")["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
         if len(soup.select("ul.version-chap li.has-child li.wp-manga-chapter")):
@@ -79,13 +71,13 @@ class LightNovelBastion(Crawler):
                 for a in reversed(li.select("ul.sub-chap li.wp-manga-chapter a")):
                     chap_id = len(self.chapters) + 1
                     self.chapters.append(
-                        Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                        Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
                     )
         else:
             logger.debug("Has no volume definitions")
             for a in reversed(soup.select(".wp-manga-chapter a")):
                 self.chapters.append(
-                    Chapter(id=len(self.chapters) + 1, title=a.text.strip(), url=self.absolute_url(a['href']))
+                    Chapter(id=len(self.chapters) + 1, title=a.text.strip(), url=self.absolute_url(a["href"]))
                 )
 
     def download_chapter_body(self, chapter):

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
-
-from lncrawl.core.crawler import Crawler
-from lncrawl.models import Chapter, Volume
 import urllib.parse
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 headers = {
     "Cache-Control": "no-cache",
@@ -43,8 +43,8 @@ class PiaoTian(Crawler):
 
         # if there is only one result, the search page redirects to bookinfo page of that result
         if response.url.startswith("%sbookinfo/" % self.home_url):
-            author = soup.select('div#content table tr td[width]')[2].get_text()
-            author = author.replace(u'\xa0', "").replace("作 者：", "")
+            author = soup.select("div#content table tr td[width]")[2].get_text()
+            author = author.replace("\xa0", "").replace("作 者：", "")
             results.append(
                 {
                     "title": soup.select_one("div#content table table table h1").get_text(),

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://woopread.com/?s=%s&post_type=wp-manga&author=&artist=&release="
@@ -42,9 +43,7 @@ class WoopReadCrawler(Crawler):
         logger.info("Novel title: %s", self.novel_title)
         self.novel_author = novel_webpage.select_one(".author-content").text.strip()
         logger.info("Novel author: %s", self.novel_author)
-        self.novel_cover = novel_webpage.select_one('meta[property="og:image"]')[
-            "content"
-        ]
+        self.novel_cover = novel_webpage.select_one('meta[property="og:image"]')["content"]
         logger.info("Novel cover: %s", self.novel_title)
 
         response = self.submit_form(self.novel_url.strip("/") + "/ajax/chapters")

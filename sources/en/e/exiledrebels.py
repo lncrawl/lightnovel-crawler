@@ -2,7 +2,8 @@
 
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,7 @@ class ExiledRebelsScanlations(Crawler):
 
         # Extract volume-wise chapter entries
         # Stops external links being selected as chapters
-        chapters = soup.select(
-            'div.lcp_catlist p [href*="exiledrebelsscanlations.com/"]'
-        )
+        chapters = soup.select('div.lcp_catlist p [href*="exiledrebelsscanlations.com/"]')
 
         for a in chapters:
             chap_id = len(self.chapters) + 1

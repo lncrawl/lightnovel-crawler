@@ -3,8 +3,7 @@
 import logging
 from typing import Generator, Union
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, Volume
 from lncrawl.templates.soup.general import GeneralSoupTemplate
 
@@ -38,15 +37,11 @@ class LNTCrawler(GeneralSoupTemplate):
             if "Author" in p.text:
                 yield p.text.replace("Author:", "").strip()
 
-    def parse_chapter_list(
-        self, soup: PageSoup
-    ) -> Generator[Union[Chapter, Volume], None, None]:
+    def parse_chapter_list(self, soup: PageSoup) -> Generator[Union[Chapter, Volume], None, None]:
         _id = 0
         for a in soup.select(".novel_list_chapter_content li.unlock a"):
             _id += 1
-            yield Chapter(
-                id=_id, url=self.absolute_url(a["href"]), title=a.text.strip()
-            )
+            yield Chapter(id=_id, url=self.absolute_url(a["href"]), title=a.text.strip())
 
     def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one(".text_story")

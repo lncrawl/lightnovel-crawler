@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.soup import PageSoup
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler, PageSoup
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://novelonlinefree.com/getsearchstory"
@@ -42,9 +41,7 @@ class NovelOnlineFree(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         try:
-            novel_data = self.submit_form(
-                search_url, {"searchword": self.novel_title}
-            ).json()
+            novel_data = self.submit_form(search_url, {"searchword": self.novel_title}).json()
             self.novel_cover = novel_data[0]["image"]
             self.novel_author = novel_data[0]["author"]
         except Exception:
@@ -56,7 +53,7 @@ class NovelOnlineFree(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
     def download_chapter_body(self, chapter):

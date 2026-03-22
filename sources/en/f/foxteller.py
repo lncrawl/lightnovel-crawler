@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-import json
 import base64
+import json
 import logging
 import re
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.foxteller.com/search"
@@ -91,9 +92,7 @@ class FoxtellerCrawler(Crawler):
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json;charset=UTF-8",
         }
-        logger.debug(
-            "Request to %s with:\ndata = %s\nheaders=%s", chapter_aux_url, data, headers
-        )
+        logger.debug("Request to %s with:\ndata = %s\nheaders=%s", chapter_aux_url, data, headers)
         response = self.scraper.post(chapter_aux_url, data=data, headers=headers)
         data = response.json()
 

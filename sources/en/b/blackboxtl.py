@@ -2,7 +2,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -40,12 +41,14 @@ class BlackboxTL(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
                 self.volumes.append(Volume(id=vol_id))
-            self.chapters.append(Chapter(
-                id=chap_id,
-                volume=vol_id,
-                url=self.absolute_url(a["href"]),
-                title=a.text.strip() or ("Chapter %d" % chap_id),
-            ))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or ("Chapter %d" % chap_id),
+                )
+            )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

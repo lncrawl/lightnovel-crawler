@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.templates.madara import MadaraTemplate
+
 logger = logging.getLogger(__name__)
 
 
@@ -11,12 +11,7 @@ class FenrirTranslationsCrawler(MadaraTemplate):
     base_url = ["https://fenrirtranslations.com/"]
 
     def initialize(self) -> None:
-        self.cleaner.bad_css.update(
-            [
-                "div.chapter-warning",
-                "div.code-block"
-            ]
-        )
+        self.cleaner.bad_css.update(["div.chapter-warning", "div.code-block"])
 
     def parse_authors(self, soup: PageSoup):
         for a in soup.select('.manga-authors a[href*="author"]'):

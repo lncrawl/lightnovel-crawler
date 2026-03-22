@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
-search_url = (
-    "https://www.centinni.com/?s=%s&post_type=wp-manga&author=&artist=&release="
-)
+search_url = "https://www.centinni.com/?s=%s&post_type=wp-manga&author=&artist=&release="
 
 
 class Centinni(Crawler):
@@ -77,12 +76,7 @@ class Centinni(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
         volumes = set()
@@ -95,8 +89,8 @@ class Centinni(Crawler):
                 Chapter(
                     id=chap_id,
                     volume=vol_id,
-                    url=self.absolute_url(a['href']),
-                    title=a.text.strip() or f'Chapter {chap_id}',
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or f"Chapter {chap_id}",
                 )
             )
 

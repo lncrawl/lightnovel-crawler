@@ -3,8 +3,7 @@ import logging
 from typing import Generator
 from urllib.parse import urlencode
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.soup.chapter_only import ChapterOnlySoupTemplate
 from lncrawl.templates.soup.searchable import SearchableSoupTemplate
@@ -13,19 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class AsiaNovelNetCrawler(SearchableSoupTemplate, ChapterOnlySoupTemplate):
-    base_url = [
-        "https://www.asianovel.net/",
-        "https://www.wuxiasky.net/"
-    ]
+    base_url = ["https://www.asianovel.net/", "https://www.wuxiasky.net/"]
 
     def initialize(self) -> None:
         self.init_executor(ratelimit=1)
-        self.cleaner.bad_css.update(
-            [
-                "div.asian-ads-top-content",
-                "div.asian-ads-bottom-content"
-            ]
-        )
+        self.cleaner.bad_css.update(["div.asian-ads-top-content", "div.asian-ads-bottom-content"])
 
     def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
         params = {"s": query, "post_type": "fcn_story"}
@@ -41,11 +32,7 @@ class AsiaNovelNetCrawler(SearchableSoupTemplate, ChapterOnlySoupTemplate):
             info += f"{chapters.text.strip()} chapters | "
         if tags:
             info += f"Tags: {tags.text.strip()}"
-        return SearchResult(
-            title=link.text.strip(),
-            url=self.absolute_url(link["href"]),
-            info=info
-        )
+        return SearchResult(title=link.text.strip(), url=self.absolute_url(link["href"]), info=info)
 
     def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one("div.story__identity h1.story__identity-title")

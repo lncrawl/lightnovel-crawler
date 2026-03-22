@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Crawler, Chapter
 import urllib.parse
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0",
@@ -108,9 +110,7 @@ class sixnineshu(Crawler):
         logger.info("Novel Tag: %s", self.novel_tags)
 
         # https://www.69shuba.com/txt/A43616.htm -> https://www.69shuba.com/A43616/
-        soup = self.get_soup(
-            self.novel_url.replace("/txt/", "/").replace(".htm", "/"), encoding="gbk"
-        )
+        soup = self.get_soup(self.novel_url.replace("/txt/", "/").replace(".htm", "/"), encoding="gbk")
 
         volumes = set([])
         for li in soup.select("div#catalog ul li"):
@@ -119,7 +119,7 @@ class sixnineshu(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
             self.chapters.append(
-                Chapter(id=ch_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=ch_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
     def download_chapter_body(self, chapter):

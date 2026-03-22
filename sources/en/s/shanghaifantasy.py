@@ -2,7 +2,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +43,7 @@ class Shanghaifantasy(Crawler):
             locked = chapter["locked"]
 
             if not locked:
-                self.chapters.append(
-                    Chapter(id=chap_id, title=chapter['title'], url=chapter['permalink'])
-                )
+                self.chapters.append(Chapter(id=chap_id, title=chapter["title"], url=chapter["permalink"]))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

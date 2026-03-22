@@ -4,8 +4,8 @@ import re
 from typing import Generator, List, Optional, Tuple
 
 from bs4 import Comment
-from lncrawl.core.soup import PageSoup
 
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 
@@ -90,9 +90,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
         return None
 
     def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
-        meta = soup.find("meta", {"name": "author"}) or soup.find(
-            "meta", {"property": "article:author"}
-        )
+        meta = soup.find("meta", {"name": "author"}) or soup.find("meta", {"property": "article:author"})
         if meta and meta.get("content"):
             yield meta["content"].strip()
             return
@@ -102,27 +100,19 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
             return
         for p in soup.select(".entry-content p"):
             if re.search(r"(?:author|writer)[:\s]+", p.text, re.IGNORECASE):
-                match = re.search(
-                    r"(?:author|writer)[:\s]+([^,\r\n]+)", p.text, re.IGNORECASE
-                )
+                match = re.search(r"(?:author|writer)[:\s]+([^,\r\n]+)", p.text, re.IGNORECASE)
                 if match:
                     yield match.group(1).strip()
                     return
 
     def parse_description(self, soup: PageSoup) -> Optional[str]:
-        paras = [
-            p.text.strip()
-            for p in soup.select(".entry-content p")[:3]
-            if len(p.text.strip()) > 20
-        ]
+        paras = [p.text.strip() for p in soup.select(".entry-content p")[:3] if len(p.text.strip()) > 20]
         return "\n\n".join(paras) if paras else None
 
     def select_chapter_tags(self, soup: PageSoup) -> Generator[PageSoup, None, None]:
         # Unified: pick first parser with results and yield in chronological order
         chapters = (
-            self._parse_collapsible_volumes(soup)
-            or self._parse_standard_list(soup)
-            or self._parse_fallback_links(soup)
+            self._parse_collapsible_volumes(soup) or self._parse_standard_list(soup) or self._parse_fallback_links(soup)
         )
         for tag in chapters:
             yield tag
@@ -205,9 +195,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
         return title, url
 
     def select_chapter_body(self, soup: PageSoup) -> PageSoup:
-        content = soup.select_one(".epcontent.entry-content") or soup.select_one(
-            ".entry-content"
-        )
+        content = soup.select_one(".epcontent.entry-content") or soup.select_one(".entry-content")
         if content:
             self._clean_chapter_content(content)
         return content

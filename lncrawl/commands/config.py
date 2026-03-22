@@ -10,7 +10,7 @@ from rich.console import Console
 from ..context import ctx
 
 app = typer.Typer(
-    help='View and modify configuration settings.',
+    help="View and modify configuration settings.",
     no_args_is_help=True,
 )
 console = Console()
@@ -23,29 +23,21 @@ def config():
 
 @app.command("view", help="View configuration sections.")
 def view_config(
-    format: Optional[str] = typer.Option(
-        None,
-        "--format", "-f",
-        help="Format to view the configuration"
-    ),
+    format: Optional[str] = typer.Option(None, "--format", "-f", help="Format to view the configuration"),
 ):
     data = ctx.config._data.copy()
-    data.pop('__deprecated__', None)
+    data.pop("__deprecated__", None)
     if format == "yaml":
         print(yaml.dump(data, indent=2, sort_keys=True))
     elif format == "json":
         print(json.dumps(data, indent=2, sort_keys=True))
     else:
         for section in sorted(data.keys()):
-            print(f'[green]{section}[/green]:')
+            print(f"[green]{section}[/green]:")
             for key in sorted(data[section].keys()):
                 value = data[section][key]
                 value_type = type(value).__name__
-                print(
-                    f'  [cyan]{key}[/cyan]'
-                    f': [dim]{value_type}[/dim] =',
-                    json.dumps(value)
-                )
+                print(f"  [cyan]{key}[/cyan]" f": [dim]{value_type}[/dim] =", json.dumps(value))
             print()
 
 
@@ -85,8 +77,7 @@ def get_config(
     value = ctx.config.get(section, key)
     value_type = type(value).__name__
     print(
-        f'[green]{section}[/green].[cyan]{key}[/cyan]'
-        f': [dim]{value_type}[/dim] =',
+        f"[green]{section}[/green].[cyan]{key}[/cyan]" f": [dim]{value_type}[/dim] =",
         value,
     )
 
@@ -133,16 +124,13 @@ def set_config(
 
     if value is not None:
         ctx.config.set(section, key, value)
-        print(f'[green]✓[/green] Set [green]{section}.{key}[/green] =', value)
+        print(f"[green]✓[/green] Set [green]{section}.{key}[/green] =", value)
 
 
 def _prompt_section() -> str:
     return questionary.select(
         "Select a section:",
-        choices=sorted([
-            k for k in ctx.config._data.keys()
-            if k != '__deprecated__'
-        ]),
+        choices=sorted([k for k in ctx.config._data.keys() if k != "__deprecated__"]),
     ).unsafe_ask()
 
 

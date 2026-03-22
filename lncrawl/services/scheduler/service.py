@@ -5,8 +5,8 @@ from typing import Callable, List, Set
 from ...context import ctx
 from ...exceptions import AbortedException
 from ...utils.event_lock import EventLock
-from .scrubber import Scrubber
 from .runner import JobRunner
+from .scrubber import Scrubber
 
 logger = logging.getLogger(__name__)
 
@@ -88,4 +88,4 @@ class JobScheduler:
             except AbortedException:
                 return
             except Exception:
-                logger.error('Unexpected error in scheduler', exc_info=True)
+                logger.error("Unexpected error in scheduler", exc_info=True)

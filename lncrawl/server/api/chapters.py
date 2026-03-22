@@ -11,14 +11,14 @@ from ..security import ensure_user
 router = APIRouter()
 
 
-@router.get("/{chapter_id}", summary='Returns a chapter details')
+@router.get("/{chapter_id}", summary="Returns a chapter details")
 def get_chapter(
     chapter_id: str = Path(),
 ) -> Chapter:
     return ctx.chapters.get(chapter_id)
 
 
-@router.get("/{chapter_id}/fetch", summary='Create a job to fetch chapter content')
+@router.get("/{chapter_id}/fetch", summary="Create a job to fetch chapter content")
 def fetch_chapter(
     user: User = Security(ensure_user),
     chapter_id: str = Path(),
@@ -29,10 +29,9 @@ def fetch_chapter(
     return job
 
 
-@router.get("/{chapter_id}/images", summary='Gets list of chapter images')
+@router.get("/{chapter_id}/images", summary="Gets list of chapter images")
 async def get_chapter_images(
-    chapter_id: str = Path(),
-    available_only: bool = Query(default=False, description='List only available images')
+    chapter_id: str = Path(), available_only: bool = Query(default=False, description="List only available images")
 ) -> List[ChapterImage]:
     return ctx.images.list(
         chapter_id=chapter_id,
@@ -40,7 +39,7 @@ async def get_chapter_images(
     )
 
 
-@router.get("/{chapter_id}/read", summary='Get chapter content for reading')
+@router.get("/{chapter_id}/read", summary="Get chapter content for reading")
 def read_chapter(
     user: User = Security(ensure_user),
     chapter_id: str = Path(),

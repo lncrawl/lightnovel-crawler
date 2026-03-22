@@ -4,10 +4,10 @@ import logging
 import re
 
 from box import Box
-from lncrawl.core.soup import PageSoup
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler, PageSoup
 from lncrawl.exceptions import LNException
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -21,24 +21,24 @@ class ChereadsCrawler(Crawler):
     def parse_metadata(self, soup: PageSoup) -> Box:
         metadata_json = soup.select_one("script#__NEXT_DATA__, script#vite-plugin-ssr_pageContext")
         if not metadata_json:
-            raise LNException('No metadata')
+            raise LNException("No metadata")
         script_text = metadata_json.text
         json_data = json.loads(script_text)
         return Box(json_data)
 
     def read_novel_info(self) -> None:
-        if '/chapterlist/' in self.novel_url:
-            novel_id = self.novel_url.split('/chapterlist/', 2)[1]
-            self.novel_url = f'https://www.chereads.com/novel/{novel_id}'
+        if "/chapterlist/" in self.novel_url:
+            novel_id = self.novel_url.split("/chapterlist/", 2)[1]
+            self.novel_url = f"https://www.chereads.com/novel/{novel_id}"
         soup = self.get_soup(self.novel_url.strip("/"))
         metadata = self.parse_metadata(soup)
 
         book_info = metadata.props.pageProps.data.bookInfo
 
         book_id = str(book_info.bookId)
-        cover_base_url = 'https://book-pic.webnovel.com/1001/bookcover/'
-        cover_params = '?imageMogr2/thumbnail/2000,2000/quality/95/strip'
-        self.novel_cover = f'{cover_base_url}{book_id}{cover_params}'
+        cover_base_url = "https://book-pic.webnovel.com/1001/bookcover/"
+        cover_params = "?imageMogr2/thumbnail/2000,2000/quality/95/strip"
+        self.novel_cover = f"{cover_base_url}{book_id}{cover_params}"
 
         self.novel_title = str(book_info.bookName)
         self.novel_author = str(book_info.authorName)
@@ -71,8 +71,8 @@ class ChereadsCrawler(Crawler):
         contents = metadata.pageProps.pageData.chapterInfo.contents
 
         paras = [str(item.content) for item in contents]
-        if re.match(r'<p>[^Cc]*[Cc]h(ap(ter)?)?.\d+', paras[0]):
-            chapter.title = paras[0][3:-4].strip('*')
+        if re.match(r"<p>[^Cc]*[Cc]h(ap(ter)?)?.\d+", paras[0]):
+            chapter.title = paras[0][3:-4].strip("*")
             paras = paras[1:]
 
         return "".join(paras)

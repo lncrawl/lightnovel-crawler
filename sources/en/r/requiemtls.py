@@ -2,8 +2,8 @@
 import logging
 import re
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,12 @@ class RequieMtlsCrawler(Crawler):
             if chap_id % 100 == 1:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.select_one('.epl-title').text.strip(), url=self.absolute_url(a['href']))
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.select_one(".epl-title").text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     font_ranges = {

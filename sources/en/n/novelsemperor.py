@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -54,8 +55,7 @@ class NovelsEmperorCrawler(Crawler):
             pagination_num = 1
 
         futures = [
-            self.executor.submit(self.get_soup, f"{self.novel_url}?page={i}")
-            for i in range(1, pagination_num + 1)
+            self.executor.submit(self.get_soup, f"{self.novel_url}?page={i}") for i in range(1, pagination_num + 1)
         ]
         page_soups = [f.result() for f in futures]
 
@@ -74,17 +74,13 @@ class NovelsEmperorCrawler(Crawler):
             self.novel_author = author[0].text
         logger.info("Novel author: %s", self.novel_author)
 
-        self.novel_cover = self.absolute_url(
-            page_soups[0].select_one("div.relative > img")["src"]
-        )
+        self.novel_cover = self.absolute_url(page_soups[0].select_one("div.relative > img")["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         # [sp.select("div#chapters-list a") for sp in soup]
         # flattened ->
         # [a for sp in soup for a in sp.select("div#chapters-list a")])
-        for element in reversed(
-            [a for soup in page_soups for a in soup.select("div#chapters-list a")]
-        ):
+        for element in reversed([a for soup in page_soups for a in soup.select("div#chapters-list a")]):
             ch_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
@@ -97,9 +93,7 @@ class NovelsEmperorCrawler(Crawler):
                     url=self.absolute_url(element["href"]),
                 )
             )
-        logger.debug(
-            "%d chapters and %d volumes found", len(self.chapters), len(self.volumes)
-        )
+        logger.debug("%d chapters and %d volumes found", len(self.chapters), len(self.volumes))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

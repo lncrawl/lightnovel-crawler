@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://bestlightnovel.com/getsearchstory"
@@ -41,11 +43,10 @@ class BestLightNovel(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ', '.join([
-            a.text.strip()
-            for a in soup.select('.truyen_info_right a[href*="search_author"]')
-        ])
-        logger.info('%s', self.novel_author)
+        self.novel_author = ", ".join(
+            [a.text.strip() for a in soup.select('.truyen_info_right a[href*="search_author"]')]
+        )
+        logger.info("%s", self.novel_author)
 
         synopsis = soup.select_one("#noidungm")
         if synopsis.select_one("p"):
@@ -53,8 +54,7 @@ class BestLightNovel(Crawler):
         self.novel_synopsis = self.cleaner.extract_contents(synopsis)
 
         self.novel_tags = [
-            a.text.strip()
-            for a in soup.select('.truyen_info_right a[href*="novel_list?type=latest&category="]')
+            a.text.strip() for a in soup.select('.truyen_info_right a[href*="novel_list?type=latest&category="]')
         ]
 
         for a in reversed(soup.select("#list_chapter .chapter-list a")):
@@ -67,7 +67,7 @@ class BestLightNovel(Crawler):
                     id=chap_id,
                     volume=vol_id,
                     title=a.text.strip(),
-                    url=self.absolute_url(a['href']),
+                    url=self.absolute_url(a["href"]),
                 )
             )
 

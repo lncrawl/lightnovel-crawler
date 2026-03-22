@@ -3,7 +3,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -47,14 +48,10 @@ class MangaBuddyCrawler(Crawler):
 
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ", ".join(
-            [a.text.strip() for a in soup.select(".detail a[href*='/authors/'] span")]
-        )
+        self.novel_author = ", ".join([a.text.strip() for a in soup.select(".detail a[href*='/authors/'] span")])
         logger.info("Novel author: %s", self.novel_author)
 
-        soup = self.get_soup(
-            f"{self.home_url}api/manga/{slug}" + "/chapters?source=detail"
-        )
+        soup = self.get_soup(f"{self.home_url}api/manga/{slug}" + "/chapters?source=detail")
 
         for a in reversed(soup.select("#chapter-list > li > a")):
             chap_id = 1 + len(self.chapters)
@@ -79,9 +76,7 @@ class MangaBuddyCrawler(Crawler):
         main_server = ""  # no "main server" present, in such a case img_list contains full URLs
         if server:
             main_server = re.search(r'var mainServer = "(.*)";', server.text).group(1)
-        img_list = (
-            re.search(r"var chapImages = \'(.*)\'", images.text).group(1).split(",")
-        )
+        img_list = re.search(r"var chapImages = \'(.*)\'", images.text).group(1).split(",")
 
         image_urls = [f'<img src="{main_server}{img}">' for img in img_list]
 

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter
-from lncrawl.models import Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -38,16 +37,14 @@ class DivineDaoLibrary(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
 
         body = ""
-        for span in soup.select(
-            'article .entry-content > p span[style="font-weight:400"]'
-        ):
+        for span in soup.select('article .entry-content > p span[style="font-weight:400"]'):
             if not span.text.strip():
                 continue
             body += "<p>" + span.text.strip() + "</p>\n"

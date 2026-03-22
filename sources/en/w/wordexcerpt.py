@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "https://wordexcerpt.com/?s=%s&post_type=wp-manga"
@@ -45,9 +47,7 @@ class WordExcerptCrawler(Crawler):
                 self.novel_cover = self.absolute_url(possible_img["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        possible_author = soup.select_one(
-            '.author-content a, .profile-manga a[href*="/author/"]'
-        )
+        possible_author = soup.select_one('.author-content a, .profile-manga a[href*="/author/"]')
         if possible_author:
             self.novel_author = possible_author.text
         logger.info("Novel author: %s", self.novel_author)
@@ -69,7 +69,7 @@ class WordExcerptCrawler(Crawler):
                 for chapter in chapter_list:
                     chap_id = len(self.chapters) + 1
                     self.chapters.append(
-                        Chapter(id=chap_id, volume=volume['id'], url=chapter['href'], title=chapter.text.strip())
+                        Chapter(id=chap_id, volume=volume["id"], url=chapter["href"], title=chapter.text.strip())
                     )
                     if last_vol != volume["id"]:
                         last_vol = volume["id"]
@@ -89,7 +89,7 @@ class WordExcerptCrawler(Crawler):
                         }
                     )
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, url=chapter['href'], title=chapter.text.strip())
+                    Chapter(id=chap_id, volume=vol_id, url=chapter["href"], title=chapter.text.strip())
                 )
 
     def download_chapter_body(self, chapter):

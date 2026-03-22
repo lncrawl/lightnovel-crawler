@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -28,9 +28,7 @@ class ShalvationTranslations(Crawler):
 
         # Extract volume-wise chapter entries
         # Stops external links being selected as chapters
-        chapters = soup.select(
-            'div.entry-content p [href*="shalvationtranslations.wordpress.com/"]'
-        )
+        chapters = soup.select('div.entry-content p [href*="shalvationtranslations.wordpress.com/"]')
 
         for a in chapters:
             chap_id = len(self.chapters) + 1

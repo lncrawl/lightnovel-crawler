@@ -1,5 +1,6 @@
-import sqlmodel as sa
 from typing import Optional
+
+import sqlmodel as sa
 
 from ._base import BaseTable
 
@@ -18,14 +19,8 @@ class Library(BaseTable, table=True):
         description="Library name",
         index=True,
     )
-    description: Optional[str] = sa.Field(
-        default=None,
-        description="Library description"
-    )
-    is_public: bool = sa.Field(
-        default=False,
-        description="Is library visible to everyone"
-    )
+    description: Optional[str] = sa.Field(default=None, description="Library description")
+    is_public: bool = sa.Field(default=False, description="Is library visible to everyone")
 
 
 class LibraryNovel(sa.SQLModel, table=True):

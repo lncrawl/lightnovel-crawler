@@ -2,7 +2,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.novels.pl/?search=%s"
@@ -44,9 +45,7 @@ class NovelsPlCrawler(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"], "https://www.novels.pl/novel")
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = soup.select_one(
-            '.panel-body .coll a[href^="/author/"]'
-        ).text
+        self.novel_author = soup.select_one('.panel-body .coll a[href^="/author/"]').text
         logger.info("Novel author: %s", self.novel_author)
 
         novel_id = None
@@ -95,7 +94,12 @@ class NovelsPlCrawler(Crawler):
                 vol_id = 1 + chap_id // 100
                 volumes.add(vol_id)
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, title=tr.select_one('a').text, url=self.absolute_url(tr.select_one('a')['href']))
+                    Chapter(
+                        id=chap_id,
+                        volume=vol_id,
+                        title=tr.select_one("a").text,
+                        url=self.absolute_url(tr.select_one("a")["href"]),
+                    )
                 )
 
         self.volumes = [Volume(id=x) for x in volumes]

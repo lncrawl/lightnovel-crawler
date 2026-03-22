@@ -23,7 +23,7 @@ depends_on: Union[str, Sequence[str], None] = None
 try:
     dialect = op.get_context().dialect.name
 except Exception:
-    dialect = ''
+    dialect = ""
 
 
 def upgrade() -> None:
@@ -42,7 +42,9 @@ def upgrade() -> None:
         sa.Column("role", sa.Enum(enums.UserRole, name="userrole"), nullable=False),
         sa.Column("tier", sa.Enum(enums.UserTier, name="usertier"), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.ForeignKeyConstraint(["referrer_id"], ["users.id"], ondelete="SET NULL", name=op.f("users_referrer_id_fkey")),
+        sa.ForeignKeyConstraint(
+            ["referrer_id"], ["users.id"], ondelete="SET NULL", name=op.f("users_referrer_id_fkey")
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("users_pkey")),
     )
     op.create_index(op.f("ix_users_created_at"), "users", ["created_at"], unique=False)
@@ -102,7 +104,9 @@ def upgrade() -> None:
         sa.Column("total", sa.Integer(), nullable=False),
         sa.Column("failed", sa.Integer(), server_default=sa.literal(0), nullable=False),
         sa.ForeignKeyConstraint(["depends_on"], ["jobs.id"], ondelete="CASCADE", name=op.f("jobs_depends_on_fkey")),
-        sa.ForeignKeyConstraint(["parent_job_id"], ["jobs.id"], ondelete="CASCADE", name=op.f("jobs_parent_job_id_fkey")),
+        sa.ForeignKeyConstraint(
+            ["parent_job_id"], ["jobs.id"], ondelete="CASCADE", name=op.f("jobs_parent_job_id_fkey")
+        ),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE", name=op.f("jobs_user_id_fkey")),
         sa.PrimaryKeyConstraint("id", name=op.f("jobs_pkey")),
     )
@@ -175,8 +179,12 @@ def upgrade() -> None:
         "library_novels",
         sa.Column("library_id", AutoString(), nullable=False),
         sa.Column("novel_id", AutoString(), nullable=False),
-        sa.ForeignKeyConstraint(["library_id"], ["libraries.id"], ondelete="CASCADE", name=op.f("library_novels_library_id_fkey")),
-        sa.ForeignKeyConstraint(["novel_id"], ["novels.id"], ondelete="CASCADE", name=op.f("library_novels_novel_id_fkey")),
+        sa.ForeignKeyConstraint(
+            ["library_id"], ["libraries.id"], ondelete="CASCADE", name=op.f("library_novels_library_id_fkey")
+        ),
+        sa.ForeignKeyConstraint(
+            ["novel_id"], ["novels.id"], ondelete="CASCADE", name=op.f("library_novels_novel_id_fkey")
+        ),
         sa.PrimaryKeyConstraint("library_id", "novel_id", name=op.f("library_novels_pkey")),
     )
 
@@ -214,7 +222,9 @@ def upgrade() -> None:
         sa.Column("title", AutoString(), nullable=False),
         sa.Column("is_done", sa.Boolean(), nullable=False),
         sa.ForeignKeyConstraint(["novel_id"], ["novels.id"], ondelete="CASCADE", name=op.f("chapters_novel_id_fkey")),
-        sa.ForeignKeyConstraint(["volume_id"], ["volumes.id"], ondelete="SET NULL", name=op.f("chapters_volume_id_fkey")),
+        sa.ForeignKeyConstraint(
+            ["volume_id"], ["volumes.id"], ondelete="SET NULL", name=op.f("chapters_volume_id_fkey")
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("novel_id", "serial", name="chapters_novel_id_serial_key"),
     )
@@ -235,8 +245,12 @@ def upgrade() -> None:
         sa.Column("chapter_id", AutoString(), nullable=False),
         sa.Column("url", AutoString(), nullable=False),
         sa.Column("is_done", sa.Boolean(), nullable=False),
-        sa.ForeignKeyConstraint(["chapter_id"], ["chapters.id"], ondelete="CASCADE", name=op.f("chapter_images_chapter_id_fkey")),
-        sa.ForeignKeyConstraint(["novel_id"], ["novels.id"], ondelete="CASCADE", name=op.f("chapter_images_novel_id_fkey")),
+        sa.ForeignKeyConstraint(
+            ["chapter_id"], ["chapters.id"], ondelete="CASCADE", name=op.f("chapter_images_chapter_id_fkey")
+        ),
+        sa.ForeignKeyConstraint(
+            ["novel_id"], ["novels.id"], ondelete="CASCADE", name=op.f("chapter_images_novel_id_fkey")
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("chapter_images_pkey")),
     )
     op.create_index(op.f("ix_chapter_image_chapter"), "chapter_images", ["chapter_id"], unique=False)
@@ -274,10 +288,16 @@ def upgrade() -> None:
         sa.Column("chapter_id", AutoString(), nullable=False),
         sa.Column("novel_id", AutoString(), nullable=False),
         sa.Column("volume_id", AutoString(), nullable=True),
-        sa.ForeignKeyConstraint(["chapter_id"], ["chapters.id"], ondelete="CASCADE", name=op.f("read_history_chapter_id_fkey")),
-        sa.ForeignKeyConstraint(["novel_id"], ["novels.id"], ondelete="CASCADE", name=op.f("read_history_novel_id_fkey")),
+        sa.ForeignKeyConstraint(
+            ["chapter_id"], ["chapters.id"], ondelete="CASCADE", name=op.f("read_history_chapter_id_fkey")
+        ),
+        sa.ForeignKeyConstraint(
+            ["novel_id"], ["novels.id"], ondelete="CASCADE", name=op.f("read_history_novel_id_fkey")
+        ),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE", name=op.f("read_history_user_id_fkey")),
-        sa.ForeignKeyConstraint(["volume_id"], ["volumes.id"], ondelete="SET NULL", name=op.f("read_history_volume_id_fkey")),
+        sa.ForeignKeyConstraint(
+            ["volume_id"], ["volumes.id"], ondelete="SET NULL", name=op.f("read_history_volume_id_fkey")
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("read_history_pkey")),
         sa.UniqueConstraint("user_id", "chapter_id", name="read_history_user_id_chapter_id_key"),
     )

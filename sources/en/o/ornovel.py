@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -12,9 +14,7 @@ class OrNovel(Crawler):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = " ".join(
-            [str(x) for x in soup.select_one(".title h1").contents if not x.name]
-        ).strip()
+        self.novel_title = " ".join([str(x) for x in soup.select_one(".title h1").contents if not x.name]).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         probable_img = soup.select_one(".intro-left img.book-image")
@@ -22,9 +22,7 @@ class OrNovel(Crawler):
             self.novel_cover = self.absolute_url(probable_img["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [a.text.strip() for a in soup.select(".author-container")]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select(".author-container")])
         logger.info("%s", self.novel_author)
 
         volumes = set()
@@ -34,7 +32,12 @@ class OrNovel(Crawler):
             vol_id = (chap_id - 1) // 100 + 1
             volumes.add(vol_id)
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or "Chapter %d" % chap_id,
+                )
             )
 
         self.volumes = [Volume(id=x) for x in volumes]
@@ -43,9 +46,7 @@ class OrNovel(Crawler):
         soup = self.get_soup(chapter["url"])
 
         contents = soup.select_one("div.chapter-detail")
-        for bad in contents.select(
-            "h2, ins, .chapter-header .code-block, script, .adsbygoogle"
-        ):
+        for bad in contents.select("h2, ins, .chapter-header .code-block, script, .adsbygoogle"):
             bad.extract()
 
         return str(contents)

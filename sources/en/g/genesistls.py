@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +23,7 @@ class GenesisTlsCrawler(Crawler):
             novel_title = novel_article.select_one("span.ntitle").text
             novel_image = novel_article.select_one("img")["src"].split("?")[0]
 
-            results.append(
-                {
-                    "url": novel_url,
-                    "title": novel_title,
-                    "img": novel_image
-                }
-            )
+            results.append({"url": novel_url, "title": novel_title, "img": novel_image})
 
         return results
 
@@ -39,14 +35,12 @@ class GenesisTlsCrawler(Crawler):
         self.novel_title = potential_novel_title.text
         logger.info("Novel title: %s", self.novel_title)
 
-        potential_author = soup.select_one("a[href^=\"https://genesistls.com/writer/\"]")
+        potential_author = soup.select_one('a[href^="https://genesistls.com/writer/"]')
         assert potential_author, "No author"
         self.novel_author = potential_author.text
         logger.info("Novel author: %s", self.novel_author)
 
-        potential_cover = self.absolute_url(
-            soup.select_one(".bigcontent img[itemprop=image]")["src"]
-        ).split("?")[0]
+        potential_cover = self.absolute_url(soup.select_one(".bigcontent img[itemprop=image]")["src"]).split("?")[0]
         assert potential_cover, "No cover"
         self.novel_cover = potential_cover
         logger.info("Novel cover: %s", self.novel_cover)
@@ -62,7 +56,9 @@ class GenesisTlsCrawler(Crawler):
             vol_id = chapter_id // 100 + 1
 
             potential_chapter_title = ep_list_item.select_one("div.epl-title").text
-            chapter_title = potential_chapter_title if len(potential_chapter_title) else f"Chapter {len(self.chapters) + 1}"
+            chapter_title = (
+                potential_chapter_title if len(potential_chapter_title) else f"Chapter {len(self.chapters) + 1}"
+            )
 
             chapter_url = ep_list_item.select_one("a")["href"]
 
@@ -78,9 +74,7 @@ class GenesisTlsCrawler(Crawler):
                 )
             )
 
-        logger.debug(
-            "%d chapters and %d volumes found", len(self.chapters), len(self.volumes)
-        )
+        logger.debug("%d chapters and %d volumes found", len(self.chapters), len(self.volumes))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

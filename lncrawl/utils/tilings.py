@@ -7,7 +7,7 @@ http://alexwlchan.net/2016/10/tiling-the-plane-with-pillow/
 
 import math
 import random
-from typing import Callable, Generator, List, Tuple, Optional
+from typing import Callable, Generator, List, Optional, Tuple
 
 Point = Tuple[float, float]
 PointGenerator = Generator[List[Point], None, None]
@@ -114,11 +114,13 @@ def generate_unit_hexagons(image_width: int, image_height: int) -> PointGenerato
 
 
 def random_generator() -> TileGenerator:
-    return random.choice([
-        generate_unit_squares,
-        generate_unit_hexagons,
-        generate_unit_triangles,
-    ])
+    return random.choice(
+        [
+            generate_unit_squares,
+            generate_unit_hexagons,
+            generate_unit_triangles,
+        ]
+    )
 
 
 def generate_tiles(

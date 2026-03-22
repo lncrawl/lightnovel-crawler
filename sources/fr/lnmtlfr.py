@@ -1,6 +1,7 @@
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -43,21 +44,14 @@ class Lnmtlfr(Crawler):
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = (
-            soup.find("div", {"class": "post-title"}).find("h1").text.strip()
-        )
-        self.novel_cover = self.absolute_url(
-            soup.find("div", {"class": "summary_image"}).find("img").get("src")
-        )
+        self.novel_title = soup.find("div", {"class": "post-title"}).find("h1").text.strip()
+        self.novel_cover = self.absolute_url(soup.find("div", {"class": "summary_image"}).find("img").get("src"))
 
         self.novel_synopsis = self.cleaner.extract_contents(soup.find("div", {"class": "summary__content"}).find("p"))
         self.language = "fr"
 
         self.novel_author = ", ".join(
-            [
-                e.text.strip()
-                for e in soup.find("div", {"class": "author-content"}).find_all("a")
-            ]
+            [e.text.strip() for e in soup.find("div", {"class": "author-content"}).find_all("a")]
         )
 
         # Chapter are recuperated from a post request.

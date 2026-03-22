@@ -5,8 +5,7 @@ import re
 from typing import List
 from urllib.parse import quote_plus
 
-
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.exceptions import LNException
 from lncrawl.models import Chapter, SearchResult
 
@@ -43,9 +42,7 @@ class NovelFullMeCrawler(Crawler):
 
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ", ".join(
-            [a.text.strip() for a in soup.select(".detail a[href*='/authors/'] span")]
-        )
+        self.novel_author = ", ".join([a.text.strip() for a in soup.select(".detail a[href*='/authors/'] span")])
         logger.info("Novel author: %s", self.novel_author)
 
         soup = self.get_soup(f"{self.home_url}api/novels/{slug}/chapters?source=detail")

@@ -3,7 +3,8 @@ import logging
 import re
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://noveltoon.mobi/en/search?word=%s&source=&lock="
@@ -33,13 +34,7 @@ class NovelsRockCrawler(Crawler):
                 {
                     "url": self.absolute_url(a["href"]),
                     "title": a.select_one(".search-item-title").text.strip(),
-                    "info": ", ".join(
-                        [
-                            e.text.strip()
-                            for e in a.select(".search-label-text")
-                            if e and e.text.strip()
-                        ]
-                    ),
+                    "info": ", ".join([e.text.strip() for e in a.select(".search-label-text") if e and e.text.strip()]),
                 }
             )
 
@@ -66,9 +61,7 @@ class NovelsRockCrawler(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         try:
-            self.novel_author = soup.select_one(
-                ".detail-top .detail-author"
-            ).text.strip()
+            self.novel_author = soup.select_one(".detail-top .detail-author").text.strip()
         except Exception as e:
             logger.debug("Failed to get novel author. %s", e)
         logger.info("Novel author: %s", self.novel_author)

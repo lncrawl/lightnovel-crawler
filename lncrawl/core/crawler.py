@@ -110,10 +110,10 @@ class Crawler(Scraper):
         if ctx.config.crawler.ignore_images or not chapter.body:
             return
 
-        chapter.setdefault('images', {})
+        chapter.setdefault("images", {})
         soup = self.make_soup(chapter.body)
         for img in soup.select("img[src]"):
-            src_url = img.get_attr('src')
+            src_url = img.get_attr("src")
             if not src_url:
                 continue
 

@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class NovelHallCrawler(Crawler):
         book_info = soup.select_one("div.book-info")
         assert book_info, "no book info"
 
-        possible_title = book_info.select_one('h1')
+        possible_title = book_info.select_one("h1")
         assert possible_title, "no novel title"
         self.novel_title = possible_title.get_text(strip=True)
 
@@ -59,15 +59,12 @@ class NovelHallCrawler(Crawler):
             self.novel_cover = self.absolute_url(str(possible_image["src"]))
 
         for span in book_info.select(".booktag span.blue"):
-            key = r'Author：'
+            key = r"Author："
             text = span.get_text(strip=True)
             if key in text:
                 self.novel_author = text.replace(key, "").strip()
 
-        self.novel_tags = [
-            a.get_text(strip=True)
-            for a in book_info.select('.booktag a.red')
-        ]
+        self.novel_tags = [a.get_text(strip=True) for a in book_info.select(".booktag a.red")]
 
         synopsis = soup.select_one(".js-close-wrap")
         if synopsis:

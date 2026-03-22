@@ -12,5 +12,5 @@ def extract_text(html: str) -> str:
     soup = BeautifulSoup(html, "lxml")
     text = "\n\n".join(soup.stripped_strings)
     if Platform.posix:
-        text = __re_line_breaks.sub('\n', text)
+        text = __re_line_breaks.sub("\n", text)
     return text

@@ -4,11 +4,10 @@ import time
 from typing import Mapping
 from urllib.parse import urlencode, urlparse
 
-from lncrawl.core.soup import PageSoup
 from readability import Document
 
+from lncrawl.core import Crawler, PageSoup
 from lncrawl.core.browser import EC
-from lncrawl.core.crawler import Crawler
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
@@ -54,9 +53,7 @@ class NovelupdatesCrawler(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate)
 
     def select_search_items(self, query: str):
         query = dict(sf=1, sh=query, sort="srank", order="asc", rl=1, mrl="min")
-        soup = self.get_soup(
-            f"https://www.novelupdates.com/series-finder/?{urlencode(query)}"
-        )
+        soup = self.get_soup(f"https://www.novelupdates.com/series-finder/?{urlencode(query)}")
         yield from soup.select(".l-main .search_main_box_nu")
 
     def select_search_items_in_browser(self, query: str):

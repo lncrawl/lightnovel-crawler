@@ -8,10 +8,11 @@ provides a wrapper around the GeneralBrowserTemplate to support searching.
 Put your source file inside the language folder. The `en` folder has too many
 files, therefore it is grouped using the first letter of the domain name.
 """
+
 import logging
 from typing import Generator, Union
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult, Volume
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
 
@@ -85,7 +86,7 @@ class MyCrawlerName(SearchableBrowserTemplate):
     # TODO: [REQUIRED] Parse and return the novel cover
     def parse_cover(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
-        return ''
+        return ""
 
     # TODO: [OPTIONAL] Parse and return the novel author in the browser
     def parse_authors_in_browser(self) -> Generator[str, None, None]:
@@ -123,7 +124,7 @@ class MyCrawlerName(SearchableBrowserTemplate):
     # TODO: [OPTIONAL] Parse and return the novel summary or synopsis
     def parse_summary(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
-        return ''
+        return ""
 
     # TODO: [OPTIONAL] Parse and return the volumes and chapters in the browser
     def parse_chapter_list_in_browser(
@@ -132,9 +133,7 @@ class MyCrawlerName(SearchableBrowserTemplate):
         return self.parse_chapter_list(self.browser.soup)
 
     # TODO: [REQUIRED] Parse and set the volumes and chapters
-    def parse_chapter_list(
-        self, soup: PageSoup
-    ) -> Generator[Union[Chapter, Volume], None, None]:
+    def parse_chapter_list(self, soup: PageSoup) -> Generator[Union[Chapter, Volume], None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         yield from []
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 from sources.zh.uukanshu_sj import UukanshuOnlineSJ
 
@@ -44,9 +44,7 @@ class UukanshuOnline(Crawler):
                 self.novel_synopsis = synopsis.select_one("p").text
 
         chapters = soup.select_one("ul#chapterList")
-        for chapter in list(chapters.children)[
-            ::-1
-        ]:  # reverse order as it's newest to oldest
+        for chapter in list(chapters.children)[::-1]:  # reverse order as it's newest to oldest
             # convince typehint that we're looking at Tags & also make sure we skip random text within the ul if any
             # find chapters
             if chapter.has_attr("class") and "volume" in chapter["class"]:
@@ -59,9 +57,7 @@ class UukanshuOnline(Crawler):
                 continue
             anchor = chapter.select_one("a")
             if not anchor:
-                logger.info(
-                    "Found <li> in chapter list, not volume, without link: %s", chapter
-                )
+                logger.info("Found <li> in chapter list, not volume, without link: %s", chapter)
                 continue
             self.chapters.append(
                 Chapter(

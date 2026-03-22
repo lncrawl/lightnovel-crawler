@@ -33,11 +33,7 @@ class CrawlerService:
         return crawler
 
     def fetch_novel(
-        self,
-        user_id: str,
-        url: Union[str, HttpUrl],
-        signal=Event(),
-        crawler: Optional[Crawler] = None
+        self, user_id: str, url: Union[str, HttpUrl], signal=Event(), crawler: Optional[Crawler] = None
     ) -> Novel:
         # validate url
         if isinstance(url, str):
@@ -51,7 +47,7 @@ class CrawlerService:
         if crawler is None:
             crawler = self.get_crawler(user_id, novel_url)
             can_close = True
-        crawler_version = getattr(crawler, 'version')
+        crawler_version = getattr(crawler, "version")
         crawler.scraper.signal = signal
 
         # fetch novel metadata
@@ -61,10 +57,7 @@ class CrawlerService:
         # save to database
         with ctx.db.session() as sess:
             # get or create novel
-            novel = sess.exec(
-                select(Novel)
-                .where(Novel.url == novel_url)
-            ).first()
+            novel = sess.exec(select(Novel).where(Novel.url == novel_url)).first()
             if not novel:
                 novel = Novel(
                     url=novel_url,
@@ -84,7 +77,7 @@ class CrawlerService:
             novel.language = crawler.language
             novel.volume_count = len(crawler.volumes)
             novel.chapter_count = len(crawler.chapters)
-            novel.extra['crawler_version'] = crawler_version
+            novel.extra["crawler_version"] = crawler_version
             sess.add(novel)
             sess.commit()
 
@@ -101,7 +94,7 @@ class CrawlerService:
         download_cover(crawler, ctx.files.resolve(novel.cover_file))
 
         # update output path time
-        ctx.files.utime(f'novels/{novel.id}')
+        ctx.files.utime(f"novels/{novel.id}")
 
         # close crawler
         if can_close:
@@ -128,15 +121,11 @@ class CrawlerService:
             novel_url = ctx.novels.get(chapter.novel_id).url
             crawler = self.get_crawler(user_id, novel_url)
             can_close = True
-        crawler_version = getattr(crawler, 'version')
+        crawler_version = getattr(crawler, "version")
         crawler.scraper.signal = signal
 
         # check if download is necessary
-        if (
-            not refresh
-            and chapter.is_available
-            and chapter.extra.get('crawler_version') == crawler_version
-        ):
+        if not refresh and chapter.is_available and chapter.extra.get("crawler_version") == crawler_version:
             return chapter
 
         # get chapter content
@@ -159,7 +148,7 @@ class CrawlerService:
         with ctx.db.session() as sess:
             chapter.is_done = True
             chapter.title = model.title
-            chapter.extra['crawler_version'] = crawler_version
+            chapter.extra["crawler_version"] = crawler_version
             sess.add(chapter)
             sess.commit()
 
@@ -188,15 +177,11 @@ class CrawlerService:
             novel_url = ctx.novels.get(image.novel_id).url
             crawler = self.get_crawler(user_id, novel_url)
             can_close = True
-        crawler_version = getattr(crawler, 'version')
+        crawler_version = getattr(crawler, "version")
         crawler.scraper.signal = signal
 
         # check if download is necessary
-        if (
-            not refresh
-            and image.is_available
-            and image.extra.get('crawler_version') == crawler_version
-        ):
+        if not refresh and image.is_available and image.extra.get("crawler_version") == crawler_version:
             return image
 
         # download image
@@ -206,7 +191,7 @@ class CrawlerService:
         # update db
         with ctx.db.session() as sess:
             image.is_done = file.is_file()
-            image.extra['crawler_version'] = crawler_version
+            image.extra["crawler_version"] = crawler_version
             sess.add(image)
             sess.commit()
 

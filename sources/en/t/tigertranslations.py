@@ -2,8 +2,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
-from lncrawl.models import Volume, Chapter, SearchResult
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class TigerTranslations(Crawler):
 
         for line in content.text.splitlines():
             if "author:" in line.lower():
-                self.novel_author = line[line.find(':') + 1:].strip()
+                self.novel_author = line[line.find(":") + 1 :].strip()
                 # Use synopsis to refer to translator / source -> not sure if ok to do
                 self.novel_synopsis = "Translated by TigerTranslations.org"
                 break  # no need to continue after finding author
@@ -34,9 +34,7 @@ class TigerTranslations(Crawler):
         logger.info("Novel author: %s", self.novel_author)
 
         # image may or may not be wrapped (in a p) in a span element
-        image_locations = ['div.the-content > img',
-                           'div.the-content > span > img',
-                           'div.the-content > p > span > img']
+        image_locations = ["div.the-content > img", "div.the-content > span > img", "div.the-content > p > span > img"]
 
         for location in image_locations:
             possible_cover = soup.select_one(location)
@@ -53,11 +51,7 @@ class TigerTranslations(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             vol_title = f"Volume {vol_id}"
             if chap_id % 100 == 1:
-                self.volumes.append(
-                    Volume(
-                        id=vol_id,
-                        title=vol_title
-                    ))
+                self.volumes.append(Volume(id=vol_id, title=vol_title))
 
             # chapter name is only present in chapter page, not in overview
             # this workaround makes titles "Chapter-x"
@@ -69,7 +63,7 @@ class TigerTranslations(Crawler):
                     url=self.absolute_url(a["href"]),
                     title=entry_title,
                     volume=vol_id,
-                    volume_title=vol_title
+                    volume_title=vol_title,
                 ),
             )
 
@@ -101,7 +95,7 @@ class TigerTranslations(Crawler):
         novel_title = re.search(f"(<p>{self.novel_title}</p>)", contents_str, re.IGNORECASE).group()
         if novel_title:
             logger.info("Removing novel title at end of chapter like this: %s", novel_title)
-            contents_str = contents_str.replace(novel_title, '')
+            contents_str = contents_str.replace(novel_title, "")
 
         if soup2 is not None:
             contents_html = soup2.select_one("div.the-content")
@@ -110,9 +104,9 @@ class TigerTranslations(Crawler):
 
         # remove annoyances (such as "Page 2")
         for text in self.removable_texts:
-            contents_str = contents_str.replace(text, '')
-            contents_str = contents_str.replace(text.upper(), '')
-            contents_str = contents_str.replace(text.lower(), '')
+            contents_str = contents_str.replace(text, "")
+            contents_str = contents_str.replace(text.upper(), "")
+            contents_str = contents_str.replace(text.lower(), "")
 
         return contents_str
 
@@ -124,11 +118,6 @@ class TigerTranslations(Crawler):
         for novel in novels:
             # simple but at least won't taint results
             if query.lower() in novel.text.lower():
-                results.append(
-                    SearchResult(
-                        title=novel.text,
-                        url=novel["href"]
-                    )
-                )
+                results.append(SearchResult(title=novel.text, url=novel["href"]))
 
         return results

@@ -7,7 +7,8 @@ from hashlib import md5
 
 from Crypto.Cipher import AES
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 BLOCK_SIZE = 16
@@ -125,12 +126,14 @@ class BatoCrawler(Crawler):
             if len(self.volumes) < vol_id:
                 self.volumes.append(Volume(id=vol_id))
 
-            self.chapters.append(Chapter(
-                id=chap_id,
-                volume=vol_id,
-                title=a.text,
-                url=self.absolute_url(a["href"]),
-            ))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text,
+                    url=self.absolute_url(a["href"]),
+                )
+            )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
@@ -150,12 +153,8 @@ class BatoCrawler(Crawler):
 
         # so if it ends up empty or mismatches, just ignore it and return the img list instead
         if len(query_args) != len(img_list):
-            image_urls = [
-                f'<img src="{img}" alt="img">' for img in img_list
-            ]
+            image_urls = [f'<img src="{img}" alt="img">' for img in img_list]
         else:
-            image_urls = [
-                f'<img src="{img}?{args}">' for img, args in zip(img_list, query_args)
-            ]
+            image_urls = [f'<img src="{img}?{args}">' for img, args in zip(img_list, query_args)]
 
         return "<p>" + "</p><p>".join(image_urls) + "</p>"

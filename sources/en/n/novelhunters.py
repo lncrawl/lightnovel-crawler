@@ -2,7 +2,8 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.novelhunters.com/?s=%s&post_type=wp-manga"
@@ -60,30 +61,19 @@ class NovelHunters(Crawler):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = " ".join(
-            [str(x) for x in soup.select_one(".post-title h1").contents if not x.name]
-        ).strip()
+        self.novel_title = " ".join([str(x) for x in soup.select_one(".post-title h1").contents if not x.name]).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         try:
-            self.novel_cover = self.absolute_url(
-                soup.select_one(".summary_image img")["data-src"]
-            )
+            self.novel_cover = self.absolute_url(soup.select_one(".summary_image img")["data-src"])
         except Exception:
             pass
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="novel-author"]')
-            ]
-        )
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("%s", self.novel_author)
 
-        self.novel_id = soup.select_one(
-            ".wp-manga-action-button[data-action=bookmark]"
-        )["data-post"]
+        self.novel_id = soup.select_one(".wp-manga-action-button[data-action=bookmark]")["data-post"]
         logger.info("Novel id: %s", self.novel_id)
 
         for span in soup.select(".page-content-listing span"):

@@ -14,7 +14,8 @@ class ChapterService:
         pass
 
     def list(
-        self, *,
+        self,
+        *,
         novel_id: Optional[str] = None,
         volume_id: Optional[str] = None,
         is_crawled: Optional[bool] = None,
@@ -118,10 +119,7 @@ class ChapterService:
 
     def get_many(self, chapter_ids: List[str]) -> List[Chapter]:
         with ctx.db.session() as sess:
-            items = sess.exec(
-                sq.select(Chapter)
-                .where(sq.col(Chapter.id).in_(chapter_ids))
-            ).all()
+            items = sess.exec(sq.select(Chapter).where(sq.col(Chapter.id).in_(chapter_ids))).all()
             return list(items)
 
     def delete(self, chapter_id: str) -> None:
@@ -168,23 +166,11 @@ class ChapterService:
     def sync(self, novel_id: str, chapters: List[ModelChapter]):
         with ctx.db.session() as sess:
             vol_id_map: Dict[Optional[int], str] = {
-                v.serial: v.id
-                for v in sess.exec(
-                    sq.select(Volume)
-                    .where(Volume.novel_id == novel_id)
-                ).all()
+                v.serial: v.id for v in sess.exec(sq.select(Volume).where(Volume.novel_id == novel_id)).all()
             }
 
-            wanted = {
-                c.id: c for c in chapters
-            }
-            existing = {
-                c.serial: c
-                for c in sess.exec(
-                    sq.select(Chapter)
-                    .where(Chapter.novel_id == novel_id)
-                ).all()
-            }
+            wanted = {c.id: c for c in chapters}
+            existing = {c.serial: c for c in sess.exec(sq.select(Chapter).where(Chapter.novel_id == novel_id)).all()}
 
             wk = set(wanted.keys())
             ek = set(existing.keys())
@@ -205,7 +191,7 @@ class ChapterService:
                             volume_id=vol_id_map.get(wanted[s].volume),
                         ).model_dump()
                         for s in to_insert
-                    ]
+                    ],
                 )
 
             if to_update:
@@ -222,7 +208,7 @@ class ChapterService:
                             volume_id=vol_id_map.get(wanted[s].volume),
                         ).model_dump()
                         for s in to_update
-                    ]
+                    ],
                 )
 
             if to_delete:

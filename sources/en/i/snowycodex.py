@@ -3,8 +3,7 @@
 import logging
 from typing import Generator
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 
@@ -39,10 +38,10 @@ class SnowyCodexCrawler(ChapterOnlyBrowserTemplate):
             return self.absolute_url(tag["data-src"])
         elif tag.has_attr("src"):
             return self.absolute_url(tag["src"])
-        return ''
+        return ""
 
     def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
-        tag = soup.find("strong", string="Author:")  # type:ignore
+        tag = soup.find("strong", string="Author:")  # type: ignore
         if tag:
             next = tag.find_next_sibling()
             if next:

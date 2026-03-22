@@ -5,8 +5,7 @@ import re
 from typing import Generator, Union
 from urllib.parse import urljoin
 
-from lncrawl.core.soup import PageSoup
-
+from lncrawl.core import PageSoup
 from lncrawl.exceptions import FallbackToBrowser, LNException
 from lncrawl.models import Chapter, SearchResult, Volume
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
@@ -109,17 +108,11 @@ class ScribbleHubCrawler(SearchableBrowserTemplate):
             tags += self.browser.soup.select(".main .toc li a")
 
         for _id, _t in enumerate(reversed(tags)):
-            yield Chapter(
-                id=_id, url=self.absolute_url(_t.get("href")), title=_t.text.strip()
-            )
+            yield Chapter(id=_id, url=self.absolute_url(_t.get("href")), title=_t.text.strip())
 
-    def parse_chapter_list(
-        self, soup: PageSoup
-    ) -> Generator[Union[Chapter, Volume], None, None]:
+    def parse_chapter_list(self, soup: PageSoup) -> Generator[Union[Chapter, Volume], None, None]:
         chapter_count = soup.find("span", {"class": "cnt_toc"})
-        chapter_count = (
-            int(chapter_count.text) if chapter_count else -1
-        )
+        chapter_count = int(chapter_count.text) if chapter_count else -1
 
         possible_mypostid = soup.select_one("input#mypostid")
         mypostid = int(str(possible_mypostid["value"]))

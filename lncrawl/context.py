@@ -1,9 +1,9 @@
 import logging
 from functools import cached_property
-from typing import Optional, Union
 from pathlib import Path
+from typing import Optional, Union
 
-_cache: Optional['AppContext'] = None
+_cache: Optional["AppContext"] = None
 
 logger = logging.getLogger(__name__)
 
@@ -12,111 +12,133 @@ class AppContext:
     @cached_property
     def config(self):
         from .config import Config
+
         return Config()
 
     @cached_property
     def logger(self):
         from .services.logger import Logger
+
         return Logger()
 
     @cached_property
     def db(self):
         from .services.db import DB
+
         return DB()
 
     @cached_property
     def mail(self):
         from .services.mail import MailService
+
         return MailService()
 
     @cached_property
     def http(self):
         from .services.fetch import FetchService
+
         return FetchService()
 
     @cached_property
     def files(self):
         from .services.file import FileService
+
         return FileService()
 
     @cached_property
     def sources(self):
         from .services.sources import Sources
+
         return Sources()
 
     @cached_property
     def users(self):
         from .services.users import UserService
+
         return UserService()
 
     @cached_property
     def novels(self):
         from .services.novels import NovelService
+
         return NovelService()
 
     @cached_property
     def tags(self):
         from .services.tags import TagService
+
         return TagService()
 
     @cached_property
     def secrets(self):
         from .services.secrets import SecretService
+
         return SecretService()
 
     @cached_property
     def volumes(self):
         from .services.volumes import VolumeService
+
         return VolumeService()
 
     @cached_property
     def chapters(self):
         from .services.chapters import ChapterService
+
         return ChapterService()
 
     @cached_property
     def images(self):
         from .services.images import ChapterImageService
+
         return ChapterImageService()
 
     @cached_property
     def artifacts(self):
         from .services.artifacts import ArtifactService
+
         return ArtifactService()
 
     @cached_property
     def jobs(self):
         from .services.jobs.service import JobService
+
         return JobService()
 
     @cached_property
     def history(self):
         from .services.history import ReadHistoryService
+
         return ReadHistoryService()
 
     @cached_property
     def libraries(self):
         from .services.libraries import LibraryService
+
         return LibraryService()
 
     @cached_property
     def feedback(self):
         from .services.feedback import FeedbackService
+
         return FeedbackService()
 
     @cached_property
     def crawler(self):
         from .services.crawler import CrawlerService
+
         return CrawlerService()
 
     @cached_property
     def binder(self):
         from .services.binder import BinderService
+
         return BinderService()
 
     @cached_property
     def scheduler(self):
         from .services.scheduler import JobScheduler
+
         return JobScheduler()
 
     def __new__(cls):

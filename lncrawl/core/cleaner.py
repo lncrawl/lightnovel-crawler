@@ -13,19 +13,14 @@ class TextCleaner:
     def __init__(self) -> None:
         self.line_separator = "<br>"
         self.invisible_chars = [
-            code
-            for code in range(sys.maxunicode)
-            if unicodedata.category(chr(code)) in {"Cf", "Cc"}
+            code for code in range(sys.maxunicode) if unicodedata.category(chr(code)) in {"Cf", "Cc"}
         ]
         self.unprintable_chars = itertools.chain(
             range(0x00, 0x20),
             range(0x7F, 0xA0),
             self.invisible_chars,
         )
-        self.nonprintable_mapping = {
-            character: None
-            for character in self.unprintable_chars
-        }
+        self.nonprintable_mapping = {character: None for character in self.unprintable_chars}
 
         self.bad_text_regex: Set[Union[str, re.Pattern[str]]] = set(
             [
@@ -160,13 +155,7 @@ class TextCleaner:
         self.clean_contents(tag)
         body = self.extract_paragraphs(tag)
         paragraphs = " ".join(body).split(self.line_separator)
-        return "".join(
-            [
-                f"<p>{p.strip()}</p>"
-                for p in paragraphs
-                if not self.contains_bad_texts(p)
-            ]
-        )
+        return "".join([f"<p>{p.strip()}</p>" for p in paragraphs if not self.contains_bad_texts(p)])
 
     def clean_contents(self, div):
         if not isinstance(div, Tag):
@@ -207,9 +196,7 @@ class TextCleaner:
                 "|".join([f"({x})" for x in self.substitutions.keys()]),
                 flags=re.IGNORECASE,
             )
-        text = self._subs_.sub(
-            lambda m: self.substitutions[str(m.group(0)).lower()], text
-        )
+        text = self._subs_.sub(lambda m: self.substitutions[str(m.group(0)).lower()], text)
         return text
 
     def extract_on_duplicate_sibling(self, tag: Tag):

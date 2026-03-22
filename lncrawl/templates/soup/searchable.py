@@ -11,9 +11,7 @@ class SearchableSoupTemplate(GeneralSoupTemplate):
         tags = self.select_search_items(query)
         return list(self.process_search_results(tags))
 
-    def process_search_results(
-        self, tags: Generator[PageSoup, None, None]
-    ) -> Generator[SearchResult, None, None]:
+    def process_search_results(self, tags: Generator[PageSoup, None, None]) -> Generator[SearchResult, None, None]:
         """Process novel item tag and generates search results"""
         count = 0
         for tag in tags:

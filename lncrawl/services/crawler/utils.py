@@ -1,11 +1,12 @@
+import html
 import logging
 import math
 import os
 import re
+import unicodedata
 from pathlib import Path
 from typing import Dict
-import html
-import unicodedata
+
 from PIL.Image import Image
 
 from ...context import ctx
@@ -18,23 +19,20 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CHAPTER_PER_VOLUME = 100
 
-_RE_SPACES = re.compile(r'\s+')
+_RE_SPACES = re.compile(r"\s+")
 
 
 def format_title(text):
-    name = html.unescape(str(text or ''))
+    name = html.unescape(str(text or ""))
     name = unicodedata.normalize("NFKC", name)
     return _RE_SPACES.sub(" ", name).strip().title()
 
 
 def __format_volume(crawler: Crawler, vol_id_map: Dict[int, int]):
     if crawler.volumes:
-        crawler.volumes = [
-            vol if isinstance(vol, Volume) else Volume(**vol)
-            for vol in crawler.volumes
-        ]
+        crawler.volumes = [vol if isinstance(vol, Volume) else Volume(**vol) for vol in crawler.volumes]
         next_id = crawler.volumes[-1].id + 1
-        crawler.volumes.append(Volume(id=next_id, title='Others'))
+        crawler.volumes.append(Volume(id=next_id, title="Others"))
         crawler.volumes.sort(key=lambda x: x.id)
     else:
         vol_count = math.ceil(len(crawler.chapters) / DEFAULT_CHAPTER_PER_VOLUME)
@@ -44,20 +42,17 @@ def __format_volume(crawler: Crawler, vol_id_map: Dict[int, int]):
         vol_id_map[item.id] = index
         item.id = index + 1
         item.chapter_count = 0
-        item.extra['crawler_version'] = getattr(crawler, 'version')
-        item.title = format_title(item.title) or f'Volume {item.id}'
+        item.extra["crawler_version"] = getattr(crawler, "version")
+        item.title = format_title(item.title) or f"Volume {item.id}"
 
 
 def __format_chapters(crawler: Crawler, vol_id_map: Dict[int, int]):
-    crawler.chapters = [
-        chap if isinstance(chap, Chapter) else Chapter(**chap)
-        for chap in crawler.chapters
-    ]
+    crawler.chapters = [chap if isinstance(chap, Chapter) else Chapter(**chap) for chap in crawler.chapters]
     crawler.chapters.sort(key=lambda x: x.id)
     for index, item in enumerate(crawler.chapters):
         item.id = index + 1
-        item.extra['crawler_version'] = getattr(crawler, 'version')
-        item.title = format_title(item.title) or f'Chapter {item.id}'
+        item.extra["crawler_version"] = getattr(crawler, "version")
+        item.title = format_title(item.title) or f"Chapter {item.id}"
 
         default_vol = 1 + (index // DEFAULT_CHAPTER_PER_VOLUME)
         vol_index = vol_id_map.get(item.volume or default_vol)
@@ -104,7 +99,7 @@ def download_image(crawler: Crawler, url: str, image_file: Path):
     try:
         img = crawler.download_image(url)
         __save_image(img, image_file)
-        logger.info(f'Image saved: {url} -> {image_file}')
+        logger.info(f"Image saved: {url} -> {image_file}")
     except Exception as e:
         logger.error(
             f"Failed to download image: {repr(e)}",
@@ -120,7 +115,7 @@ def download_cover(crawler: Crawler, cover_file: Path):
     try:
         img = crawler.download_image(url)
         __save_image(img, cover_file)
-        logger.info(f'Cover saved: {url} -> {cover_file}')
+        logger.info(f"Cover saved: {url} -> {cover_file}")
         return
     except Exception as e:
         logger.error(
@@ -135,7 +130,7 @@ def download_cover(crawler: Crawler, cover_file: Path):
     try:
         img = generate_cover_image()
         __save_image(img, cover_file)
-        logger.info(f'Cover generated: {cover_file}')
+        logger.info(f"Cover generated: {cover_file}")
     except Exception as e:
         logger.error(
             f"Failed to generate cover: {repr(e)}",

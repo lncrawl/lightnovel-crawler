@@ -3,8 +3,8 @@ import logging
 import re
 from concurrent import futures
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -69,13 +69,11 @@ class NovelUniverseCrawler(Crawler):
             chapter_id = a.select_one("span").text
             chapter_id = int([x for x in re.findall(r"\d+", chapter_id)][0])
             volume_id = 1 + (chapter_id - 1) // 100
-            chapter_title = " ".join(
-                [str(x).strip() for x in a.contents if not x.name and str(x).strip()]
-            ).strip()
+            chapter_title = " ".join([str(x).strip() for x in a.contents if not x.name and str(x).strip()]).strip()
             chapter_title = "Chapter %d: %s" % (chapter_id, chapter_title)
             self.volumes.append(volume_id)
             self.chapters.append(
-                Chapter(id=chapter_id, url=self.absolute_url(a['href']), title=chapter_title, volume=volume_id)
+                Chapter(id=chapter_id, url=self.absolute_url(a["href"]), title=chapter_title, volume=volume_id)
             )
 
     def download_chapter_body(self, chapter):

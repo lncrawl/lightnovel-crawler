@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Chapter, Crawler, Volume
 from urllib.parse import quote_plus
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -49,9 +51,7 @@ class WuxiaCityCrawler(Crawler):
 
         vol_id = 0
         self.volumes.append(Volume(id=vol_id))
-        chapterItems = soup.find("ul", class_="chapters").find_all(
-            "li", class_="oneline"
-        )
+        chapterItems = soup.find("ul", class_="chapters").find_all("li", class_="oneline")
         for chapter in chapterItems:
             self.chapters.append(
                 Chapter(

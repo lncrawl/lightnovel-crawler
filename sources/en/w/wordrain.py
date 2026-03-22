@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://wordrain69.com/?s=%s"
@@ -63,10 +63,7 @@ class WordRain(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = " ".join(
-            [
-                a.text.strip()
-                for a in soup.select('.author-content a[href*="manga-translator"]')
-            ]
+            [a.text.strip() for a in soup.select('.author-content a[href*="manga-translator"]')]
         )
         logger.info("%s", self.novel_author)
 
@@ -86,7 +83,7 @@ class WordRain(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
             )
 
     def download_chapter_body(self, chapter):

@@ -4,14 +4,7 @@ import sqlmodel as sa
 
 
 class Tag(sa.SQLModel, table=True):
-    __tablename__ = 'tags'  # type: ignore
+    __tablename__ = "tags"  # type: ignore
 
-    name: str = sa.Field(
-        nullable=False,
-        primary_key=True,
-        description="Unique tag name"
-    )
-    description: Optional[str] = sa.Field(
-        default=None,
-        description="Tag description"
-    )
+    name: str = sa.Field(nullable=False, primary_key=True, description="Unique tag name")
+    description: Optional[str] = sa.Field(default=None, description="Tag description")

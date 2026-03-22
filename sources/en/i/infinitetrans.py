@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +27,7 @@ class InfiniteNovelTranslations(Crawler):
 
         # Extract volume-wise chapter entries
         # Stops external links being selected as chapters
-        chapters = soup.select(
-            '.entry-content p a[href*="infinitenoveltranslations.net"]'
-        )
+        chapters = soup.select('.entry-content p a[href*="infinitenoveltranslations.net"]')
 
         for a in chapters:
             chap_id = len(self.chapters) + 1

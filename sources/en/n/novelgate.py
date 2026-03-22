@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Crawler, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "%ssearch/%s"
@@ -47,9 +49,7 @@ class NovelGate(Crawler):
             self.novel_author = author[0].text
         logger.info("Novel author: %s", self.novel_author)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one(".book-cover")["data-original"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one(".book-cover")["data-original"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         for div in soup.select(".block-film #list-chapters .book"):
@@ -67,13 +67,9 @@ class NovelGate(Crawler):
                 ch_title = a.text
                 ch_id = [int(x) for x in re.findall(r"\d+", ch_title)]
                 ch_id = ch_id[0] if len(ch_id) else len(self.chapters) + 1
-                self.chapters.append(
-                    Chapter(id=ch_id, volume=vol_id, title=ch_title, url=self.absolute_url(a['href']))
-                )
+                self.chapters.append(Chapter(id=ch_id, volume=vol_id, title=ch_title, url=self.absolute_url(a["href"])))
 
-        logger.debug(
-            "%d chapters and %d volumes found", len(self.chapters), len(self.volumes)
-        )
+        logger.debug("%d chapters and %d volumes found", len(self.chapters), len(self.volumes))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

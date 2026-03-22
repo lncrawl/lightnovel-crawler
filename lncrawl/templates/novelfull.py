@@ -2,7 +2,7 @@ import re
 from typing import Generator
 from urllib.parse import urlencode
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.exceptions import LNException
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.soup.chapter_only import ChapterOnlySoupTemplate
@@ -41,7 +41,7 @@ class NovelFullTemplate(SearchableSoupTemplate, ChapterOnlySoupTemplate):
             ".info a[href*='/au/']",
             ".info a[href*='author']",
         ]
-        for a in soup.select(','.join(selectors)):
+        for a in soup.select(",".join(selectors)):
             yield a.text.strip()
 
     def parse_genres(self, soup: PageSoup):

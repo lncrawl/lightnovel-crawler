@@ -63,16 +63,8 @@ class VolumeService:
 
     def sync(self, novel_id: str, volumes: List[ModelVolume]):
         with ctx.db.session() as sess:
-            wanted = {
-                v.id: v for v in volumes
-            }
-            existing = {
-                v.serial: v
-                for v in sess.exec(
-                    sq.select(Volume)
-                    .where(Volume.novel_id == novel_id)
-                ).all()
-            }
+            wanted = {v.id: v for v in volumes}
+            existing = {v.serial: v for v in sess.exec(sq.select(Volume).where(Volume.novel_id == novel_id)).all()}
 
             wk = set(wanted.keys())
             ek = set(existing.keys())
@@ -92,7 +84,7 @@ class VolumeService:
                             chapter_count=wanted[s].chapter_count,
                         ).model_dump()
                         for s in to_insert
-                    ]
+                    ],
                 )
 
             if to_update:
@@ -108,7 +100,7 @@ class VolumeService:
                             chapter_count=wanted[s].chapter_count,
                         ).model_dump()
                         for s in to_update
-                    ]
+                    ],
                 )
 
             if to_delete:

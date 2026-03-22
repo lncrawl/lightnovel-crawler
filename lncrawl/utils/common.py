@@ -1,6 +1,6 @@
-from typing import TypeVar, Generic, Callable, Type
+from typing import Callable, Generic, Type, TypeVar
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class static_cached_property(Generic[T]):

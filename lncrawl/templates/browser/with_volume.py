@@ -6,9 +6,7 @@ from ..soup.with_volume import ChapterWithVolumeSoupTemplate
 from .general import GeneralBrowserTemplate
 
 
-class ChapterWithVolumeBrowserTemplate(
-    GeneralBrowserTemplate, ChapterWithVolumeSoupTemplate
-):
+class ChapterWithVolumeBrowserTemplate(GeneralBrowserTemplate, ChapterWithVolumeSoupTemplate):
     """Attempts to crawl using cloudscraper first, if failed use the browser."""
 
     def parse_chapter_list_in_browser(
@@ -34,9 +32,7 @@ class ChapterWithVolumeBrowserTemplate(
         """Parse a single volume from volume list item tag from the browser"""
         return self.parse_volume_item(tag, id)
 
-    def select_chapter_tags_in_browser(
-        self, tag: PageSoup, vol: Volume
-    ) -> Generator[PageSoup, None, None]:
+    def select_chapter_tags_in_browser(self, tag: PageSoup, vol: Volume) -> Generator[PageSoup, None, None]:
         """Select chapter list item tags from volume tag from the browser"""
         return self.select_chapter_tags(tag, vol, self.browser.soup)
 

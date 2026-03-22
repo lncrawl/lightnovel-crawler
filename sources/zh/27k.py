@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
 import urllib.parse
 
-from lncrawl.models import Volume, Chapter
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
-              "application/signed-exchange;v=b3;q=0.7",
+    "application/signed-exchange;v=b3;q=0.7",
     "Accept-Encoding": "gzip, deflate, utf-8",
     "Accept-Language": "en-US,en;q=0.9,de-CH;q=0.8,de;q=0.7",
     "Cache-Control": "no-cache",
@@ -58,7 +58,8 @@ class LeYueDu(Crawler):
                 {
                     "title": novel.select_one("h3 a:not([imgbox])").text.title(),
                     "url": self.absolute_url(novel.select_one("h3 a")["href"]),
-                    "info": "Latest: %s" % novel.select_one("div.zxzj p").text.replace("最近章节", "").replace("最近章節", ""),
+                    "info": "Latest: %s"
+                    % novel.select_one("div.zxzj p").text.replace("最近章节", "").replace("最近章節", ""),
                 }
             )
 

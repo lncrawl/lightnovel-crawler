@@ -10,7 +10,7 @@ from ..exceptions import ServerErrors
 from ..server.models import LoginData, Paginated
 from ..utils.url_tools import extract_host
 
-SECRET_KEY_ID = '--server-secret-key--'
+SECRET_KEY_ID = "--server-secret-key--"
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +23,7 @@ class SecretService:
         with ctx.db.session() as sess:
             secret = sess.get(Secret, SECRET_KEY_ID)
             if not secret:
-                logger.info('Creating secret key')
+                logger.info("Creating secret key")
                 value = Fernet.generate_key()
                 secret = Secret(
                     name=SECRET_KEY_ID,
@@ -53,7 +53,7 @@ class SecretService:
         user_id: str,
         offset: int = 0,
         limit: int = 20,
-        search: str = '',
+        search: str = "",
     ) -> Paginated[Secret]:
         with ctx.db.session() as sess:
             stmt = select(Secret)

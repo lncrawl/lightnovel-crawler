@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://boxnovel.online/?s=%s&post_type=wp-manga&author=&artist=&release="
@@ -32,9 +33,7 @@ class BoxNovelOnline(Crawler):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = " ".join(
-            [str(x) for x in soup.select_one(".post-title h1").contents if not x.name]
-        ).strip()
+        self.novel_title = " ".join([str(x) for x in soup.select_one(".post-title h1").contents if not x.name]).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         probable_img = soup.select_one(".summary_image img")
@@ -59,8 +58,8 @@ class BoxNovelOnline(Crawler):
                 Chapter(
                     id=chap_id,
                     volume=vol_id,
-                    url=self.absolute_url(a['href']),
-                    title=a.text.strip() or f'Chapter {chap_id}',
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip() or f"Chapter {chap_id}",
                 )
             )
 

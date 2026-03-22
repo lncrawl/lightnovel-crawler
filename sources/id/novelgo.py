@@ -3,8 +3,7 @@
 import logging
 import urllib.parse
 
-
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -35,9 +34,7 @@ class NovelGoCrawler(Crawler):
 
         thumbnail = soup.find("div", {"class": "novel-thumbnail"})
         if thumbnail:
-            thumbnail_src = (
-                str(thumbnail["data-bg"]).replace("url(", "").replace(")", "")
-            )
+            thumbnail_src = str(thumbnail["data-bg"]).replace("url(", "").replace(")", "")
             self.novel_cover = self.absolute_url(thumbnail_src)
         logger.info("Novel cover: %s", self.novel_cover)
 
@@ -73,8 +70,7 @@ class NovelGoCrawler(Crawler):
         #    })
 
         data = self.get_json(
-            "https://novelgo.id/wp-json/noveils/v1/chapters?paged=1&perpage=10000&category=%s"
-            % book_id
+            "https://novelgo.id/wp-json/noveils/v1/chapters?paged=1&perpage=10000&category=%s" % book_id
         )
 
         for chapter in data:

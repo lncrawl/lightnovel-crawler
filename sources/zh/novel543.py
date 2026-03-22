@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler, Chapter
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter
 
 # import urllib.parse
 
@@ -78,9 +80,7 @@ class Novel543(Crawler):
             self.novel_author = author_tag.text.strip()
         else:
             # Fallback for author if specific span not found
-            author_meta_tag = soup.select_one(
-                "#detail .media-content p.meta span:contains('作者：')"
-            )
+            author_meta_tag = soup.select_one("#detail .media-content p.meta span:contains('作者：')")
             if author_meta_tag:
                 self.novel_author = author_meta_tag.text.replace("作者：", "").strip()
             else:
@@ -109,9 +109,7 @@ class Novel543(Crawler):
             chap_title = a_tag.text.strip()
             chap_url = self.absolute_url(a_tag["href"])
             if chap_title and chap_url:
-                self.chapters.append(
-                    Chapter(id=idx + 1, volume=1, url=chap_url, title=chap_title)
-                )
+                self.chapters.append(Chapter(id=idx + 1, volume=1, url=chap_url, title=chap_title))
 
         logger.info("Found %d chapters for %s", len(self.chapters), self.novel_title)
 
@@ -153,8 +151,6 @@ class Novel543(Crawler):
             next_url = self.absolute_url(next_["href"])
             if next_url.count("_") > 1:  # if it has multiple _ it means it's a multi-page chapter
                 next_url = next_url.rsplit("_", 1)[0] + "_2.html"
-                extracted_content += self.download_chapter_body(
-                    {"url": next_url, "title": chapter["title"]}
-                )
+                extracted_content += self.download_chapter_body({"url": next_url, "title": chapter["title"]})
 
         return extracted_content

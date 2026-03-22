@@ -59,16 +59,14 @@ def gather_data_files():
     results = []
     for src, dst in file_map.items():
         if src.exists():
-            results.extend([
-                '--add-data', f'{src.as_posix()}:{dst}'
-            ])
+            results.extend(["--add-data", f"{src.as_posix()}:{dst}"])
     return results
 
 
 def gather_hidden_imports():
     hidden = [
-        'passlib.handlers.argon2',
-        'selenium.webdriver.chrome.options',
+        "passlib.handlers.argon2",
+        "selenium.webdriver.chrome.options",
     ]
 
     for py_file in (ROOT / "sources").rglob("*.py"):
@@ -77,26 +75,20 @@ def gather_hidden_imports():
             module = "sources." + rel_path[:-3].replace(os.sep, ".")
             hidden.append(module)
 
-    return [
-        f"--hidden-import={module}"
-        for module in hidden
-    ]
+    return [f"--hidden-import={module}" for module in hidden]
 
 
 def gather_excluded_modules():
     exclude = [
-        'pip',
-        'wheel',
-        'altgraph',
-        'macholib',
-        'pyinstaller',
-        'pkg_resources',
-        'pyinstaller-hooks-contrib',
+        "pip",
+        "wheel",
+        "altgraph",
+        "macholib",
+        "pyinstaller",
+        "pkg_resources",
+        "pyinstaller-hooks-contrib",
     ]
-    return [
-        flag for mod in exclude
-        for flag in ["--exclude-module", mod]
-    ]
+    return [flag for mod in exclude for flag in ["--exclude-module", mod]]
 
 
 def package():
@@ -111,15 +103,16 @@ def package():
     SPEC_DIR.mkdir(parents=True, exist_ok=True)
 
     # Run PyInstaller
-    from PyInstaller import __main__ as pyi  # type:ignore
+    from PyInstaller import __main__ as pyi  # type: ignore
+
     pyi.run(command)
 
     # Cleanup temp build dir
     shutil.rmtree(BUILD_DIR, ignore_errors=True)
 
     # Final output confirmation
-    OUTPUT_EXE = DIST_DIR / 'lncrawl.exe'
-    OUTPUT_POSIX = DIST_DIR / 'lncrawl'
+    OUTPUT_EXE = DIST_DIR / "lncrawl.exe"
+    OUTPUT_POSIX = DIST_DIR / "lncrawl"
     if OUTPUT_EXE.is_file():
         print(f"✅ Executable created: {OUTPUT_EXE}")
     elif OUTPUT_POSIX.is_file():

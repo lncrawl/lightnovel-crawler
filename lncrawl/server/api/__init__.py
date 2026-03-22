@@ -19,90 +19,90 @@ router = APIRouter()
 
 router.include_router(
     auth,
-    prefix='/auth',
-    tags=['Auth'],
+    prefix="/auth",
+    tags=["Auth"],
 )
 
 router.include_router(
     user,
-    prefix='/user',
-    tags=['Users'],
+    prefix="/user",
+    tags=["Users"],
     dependencies=[Depends(ensure_admin)],
 )
 
 router.include_router(
     settings,
-    prefix='/settings',
-    tags=['Settings'],
+    prefix="/settings",
+    tags=["Settings"],
     dependencies=[Security(ensure_user)],
 )
 
 router.include_router(
     job,
-    prefix='/job',
-    tags=['Jobs'],
+    prefix="/job",
+    tags=["Jobs"],
     dependencies=[Security(ensure_user)],
 )
 
 router.include_router(
     novel,
-    prefix='/novel',
-    tags=['Novels'],
+    prefix="/novel",
+    tags=["Novels"],
     dependencies=[Depends(ensure_user)],
 )
 
 router.include_router(
     library,
-    prefix='/library',
-    tags=['Libraries'],
+    prefix="/library",
+    tags=["Libraries"],
     dependencies=[Depends(ensure_user)],
 )
 
 router.include_router(
     volume,
-    prefix='/volume',
-    tags=['Volumes'],
+    prefix="/volume",
+    tags=["Volumes"],
     dependencies=[Depends(ensure_user)],
 )
 
 router.include_router(
     chapter,
-    prefix='/chapter',
-    tags=['Chapters'],
+    prefix="/chapter",
+    tags=["Chapters"],
     dependencies=[Depends(ensure_user)],
 )
 
 router.include_router(
     artifact,
-    prefix='/artifact',
-    tags=['Artifacts'],
+    prefix="/artifact",
+    tags=["Artifacts"],
     dependencies=[Depends(ensure_user)],
 )
 
 router.include_router(
     history,
-    prefix='/read-history',
-    tags=['Read History'],
+    prefix="/read-history",
+    tags=["Read History"],
     dependencies=[Depends(ensure_user)],
 )
 
 router.include_router(
     feedback,
-    prefix='/feedback',
-    tags=['Feedback'],
+    prefix="/feedback",
+    tags=["Feedback"],
     dependencies=[Depends(ensure_user)],
 )
 
 router.include_router(
     metadata,
-    prefix='/meta',
-    tags=['Metadata'],
+    prefix="/meta",
+    tags=["Metadata"],
 )
 
 router.include_router(
     admin,
-    prefix='/admin',
-    tags=['Admin'],
+    prefix="/admin",
+    tags=["Admin"],
     dependencies=[Depends(ensure_admin)],
 )
 

@@ -5,13 +5,14 @@ Revises: 0d1f6e13db1a
 Create Date: 2026-03-19 21:33:54.189838
 """
 
-from typing import Sequence, Union, Tuple
+from typing import Sequence, Tuple, Union
 
 import sqlmodel as sa
 from alembic import op
+
 from lncrawl.context import ctx
+from lncrawl.core import TaskManager
 from lncrawl.dao.artifact import Artifact
-from lncrawl.core.taskman import TaskManager
 
 # revision identifiers, used by Alembic.
 revision: str = "16272c44ed84"
@@ -42,26 +43,21 @@ def upgrade() -> None:
                 user_id=row[3],
                 format=row[4],
                 file_name=row[5],
-            )
+            ),
         )
-        for row in conn.execute(sa.text(
-            "SELECT id, novel_id, job_id, user_id, format, file_name "
-            "FROM artifacts"
-        )).all()
+        for row in conn.execute(
+            sa.text("SELECT id, novel_id, job_id, user_id, format, file_name " "FROM artifacts")
+        ).all()
     ]
     if not tasks:
         return
 
     ctx.logger.info(f"Migrating {len(tasks)} artifacts")
-    results = executor.resolve_futures(tasks, fail_fast=True, unit='file')
+    results = executor.resolve_futures(tasks, fail_fast=True, unit="file")
 
     conn.execute(
         sa.text("UPDATE artifacts SET file_size = :file_size WHERE id = :id"),
-        [
-            {"id": item[0], "file_size": item[1]}
-            for item in results
-            if item is not None
-        ]
+        [{"id": item[0], "file_size": item[1]} for item in results if item is not None],
     )
 
 

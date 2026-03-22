@@ -9,10 +9,11 @@ and the chapter list.
 Put your source file inside the language folder. The `en` folder has too many
 files, therefore it is grouped using the first letter of the domain name.
 """
+
 import logging
 from typing import Generator
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult, Volume
 from lncrawl.templates.soup.searchable import SearchableSoupTemplate
 from lncrawl.templates.soup.with_volume import ChapterWithVolumeSoupTemplate
@@ -70,7 +71,7 @@ class MyCrawlerName(SearchableSoupTemplate, ChapterWithVolumeSoupTemplate):
     # TODO: [REQUIRED] Parse and return the novel cover
     def parse_cover(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
-        return ''
+        return ""
 
     # TODO: [OPTIONAL] Parse and return the novel authors
     def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
@@ -96,7 +97,7 @@ class MyCrawlerName(SearchableSoupTemplate, ChapterWithVolumeSoupTemplate):
     # TODO: [OPTIONAL] Parse and return the novel summary or synopsis
     def parse_summary(self, soup: PageSoup) -> str:
         # The soup here is the result of `self.get_soup(self.novel_url)`
-        return ''
+        return ""
 
     # TODO: [REQUIRED] Select volume list item tags from the page soup
     def select_volume_tags(self, soup: PageSoup) -> Generator[PageSoup, None, None]:

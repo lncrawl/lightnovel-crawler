@@ -20,20 +20,24 @@ SLOT_TIMEOUT_IN_SECOND = {
 }
 
 ENABLED_FORMATS = {
-    UserTier.BASIC: set([
-        OutputFormat.epub,
-    ]),
-    UserTier.PREMIUM: set([
-        OutputFormat.json,
-        OutputFormat.epub,
-        OutputFormat.text,
-        OutputFormat.mobi,
-        OutputFormat.docx,
-        OutputFormat.fb2,
-        OutputFormat.azw3,
-        OutputFormat.lit,
-        OutputFormat.pdb,
-        OutputFormat.tcr,
-    ]),
+    UserTier.BASIC: set(
+        [
+            OutputFormat.epub,
+        ]
+    ),
+    UserTier.PREMIUM: set(
+        [
+            OutputFormat.json,
+            OutputFormat.epub,
+            OutputFormat.text,
+            OutputFormat.mobi,
+            OutputFormat.docx,
+            OutputFormat.fb2,
+            OutputFormat.azw3,
+            OutputFormat.lit,
+            OutputFormat.pdb,
+            OutputFormat.tcr,
+        ]
+    ),
     UserTier.VIP: set(OutputFormat),
 }

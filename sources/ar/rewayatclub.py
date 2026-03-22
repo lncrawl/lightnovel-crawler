@@ -4,8 +4,7 @@ import math
 
 import execjs  # type: ignore
 
-from lncrawl.core.crawler import Crawler
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import Crawler, PageSoup
 from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
@@ -38,9 +37,7 @@ class RewayatClubCrawler(Crawler):
         self.novel_cover = "https://api.rewayat.club" + novel_info["poster_url"]
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ", ".join(
-            [x["username"] for x in novel_info["contributors"]]
-        )
+        self.novel_author = ", ".join([x["username"] for x in novel_info["contributors"]])
         logger.info("Novel author: %s", self.novel_author)
 
         novel_slug = novel_info["slug"]
@@ -59,11 +56,13 @@ class RewayatClubCrawler(Crawler):
         for f in futures:
             data = f.result()
             for item in data["results"]:
-                self.chapters.append(Chapter(
-                    id=len(self.chapters) + 1,
-                    title=item["title"],
-                    url=chapter_body_url % (novel_slug, item["number"]),
-                ))
+                self.chapters.append(
+                    Chapter(
+                        id=len(self.chapters) + 1,
+                        title=item["title"],
+                        url=chapter_body_url % (novel_slug, item["number"]),
+                    )
+                )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
@@ -78,11 +77,8 @@ class RewayatClubCrawler(Crawler):
         return self.cleaner.extract_contents(body)
 
     def extract_nuxt_data(self, soup: PageSoup) -> dict:
-        script = soup.find(
-            name="script",
-            string=lambda s: s.startswith("window.__NUXT__")
-        )
-        script_content = script.text.replace('window.__NUXT__=', '')[:-1]
+        script = soup.find(name="script", string=lambda s: s.startswith("window.__NUXT__"))
+        script_content = script.text.replace("window.__NUXT__=", "")[:-1]
 
         data = execjs.eval(script_content)
         assert isinstance(data, dict)

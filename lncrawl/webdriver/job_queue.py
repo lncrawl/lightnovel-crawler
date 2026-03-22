@@ -22,10 +22,10 @@ def __override_quit(driver: WebDriver):
             __semaphore.release()
             __open_browsers.remove(driver)
             logger.info("Destroyed instance: %s", driver.session_id)
-        if not original._started.is_set():  # type:ignore
+        if not original._started.is_set():  # type: ignore
             original.start()
 
-    driver.quit = override  # type:ignore
+    driver.quit = override  # type: ignore
 
 
 def _acquire_queue(timeout: Optional[float] = None):

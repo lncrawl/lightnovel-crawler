@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +25,7 @@ class WuxiaLeagueCrawler(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        possible_authors = [
-            a.text for a in soup.select('#bookinfo a[href*="/author/"]')
-        ]
+        possible_authors = [a.text for a in soup.select('#bookinfo a[href*="/author/"]')]
         self.novel_author = ", ".join(possible_authors)
         logger.info("Novel author: %s", self.novel_author)
 

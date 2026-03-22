@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
-search_url = (
-    "https://www.worldnovel.online/wp-json/writerist/v1/novel/search?keyword=%s"
-)
+search_url = "https://www.worldnovel.online/wp-json/writerist/v1/novel/search?keyword=%s"
 chapter_list_url = "https://www.worldnovel.online/wp-json/novel-id/v1/dapatkan_chapter_dengan_novel?category=%s&perpage=100&order=ASC&paged=%s"
 
 

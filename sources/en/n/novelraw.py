@@ -3,7 +3,8 @@ import logging
 import re
 from concurrent import futures
 
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -61,13 +62,16 @@ class NovelRawCrawler(Crawler):
 
         for page in reversed(sorted(all_entry.keys())):
             for entry in reversed(all_entry[page]):
-                possible_urls = [
-                    x["href"] for x in entry["link"] if x["rel"] == "alternate"
-                ]
+                possible_urls = [x["href"] for x in entry["link"] if x["rel"] == "alternate"]
                 if not len(possible_urls):
                     continue
                 self.chapters.append(
-                    Chapter(id=len(self.chapters) + 1, volume=len(self.chapters) // 100 + 1, title=entry['title']['$t'], url=possible_urls[0])
+                    Chapter(
+                        id=len(self.chapters) + 1,
+                        volume=len(self.chapters) // 100 + 1,
+                        title=entry["title"]["$t"],
+                        url=possible_urls[0],
+                    )
                 )
 
         self.volumes = [Volume(id=x + 1) for x in range(len(self.chapters) // 100 + 1)]

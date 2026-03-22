@@ -3,14 +3,12 @@ import logging
 from base64 import b64decode
 from urllib.parse import quote_plus
 
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
-novel_search_url = b64decode(
-    "aHR0cHM6Ly9jb21yYWRlbWFvLmNvbS8/cG9zdF90eXBlPW5vdmVsJnM9".encode()
-).decode()
+novel_search_url = b64decode("aHR0cHM6Ly9jb21yYWRlbWFvLmNvbS8/cG9zdF90eXBlPW5vdmVsJnM9".encode()).decode()
 
 
 class Fu_kCom_ademao(Crawler):
@@ -50,9 +48,7 @@ class Fu_kCom_ademao(Crawler):
         self.novel_title = possible_title.text.rsplit(r"\u2013", 1)[0].strip()
         logger.debug("Novel title = %s", self.novel_title)
 
-        possible_image = soup.select_one(
-            "img.attachment-post-thumbnail, .seriedetailcontent img"
-        )
+        possible_image = soup.select_one("img.attachment-post-thumbnail, .seriedetailcontent img")
         if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
@@ -73,7 +69,7 @@ class Fu_kCom_ademao(Crawler):
                     Chapter(
                         id=chap_id,
                         volume=vol_id,
-                        url=self.absolute_url(str(a['href'])),
+                        url=self.absolute_url(str(a["href"])),
                         title=a.text.strip(),
                     )
                 )
@@ -85,9 +81,7 @@ class Fu_kCom_ademao(Crawler):
             futures_to_check = []
             novel_url = self.novel_url.split("?")[0].strip("/")
             for i in range(page_count - 1):
-                future = self.executor.submit(
-                    self.get_soup, novel_url + "/page/%d" % (page_count - i)
-                )
+                future = self.executor.submit(self.get_soup, novel_url + "/page/%d" % (page_count - i))
                 futures_to_check.append(future)
             futures_to_check.append(self.executor.submit(lambda: soup))
 
@@ -101,7 +95,7 @@ class Fu_kCom_ademao(Crawler):
                         Chapter(
                             id=chap_id,
                             volume=vol_id,
-                            url=self.absolute_url(str(a['href'])),
+                            url=self.absolute_url(str(a["href"])),
                             title=a.text.strip(),
                         )
                     )

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
-
-from lncrawl.core.crawler import Crawler, Chapter, Volume
 from urllib.parse import urlparse
+
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,7 @@ class ChrysanthemumGarden(Crawler):
         #     self.novel_synopsis = self.cleaner.extract_contents(possible_synopsis)
         # logger.info("Novel synopsis: %s", self.novel_synopsis)
 
-        self.novel_tags = [
-            a.text.split(" (")[0].strip() for a in soup.select("a.series-tag")
-        ]
+        self.novel_tags = [a.text.split(" (")[0].strip() for a in soup.select("a.series-tag")]
         logger.info("Novel tags: %s", self.novel_tags)
 
         possible_image = soup.select_one(".novel-cover img")
@@ -56,7 +55,7 @@ class ChrysanthemumGarden(Crawler):
                     id=ch_id,
                     volume=vol_id,
                     title=a.text.strip(),
-                    url=self.absolute_url(a['href']),
+                    url=self.absolute_url(a["href"]),
                 )
             )
 

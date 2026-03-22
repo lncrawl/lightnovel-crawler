@@ -60,10 +60,7 @@ class WebElement(_WebElement):
         return self._tag
 
     def find_all(self, selector: str, by: By = By.CSS_SELECTOR) -> List["WebElement"]:
-        return [
-            WebElement(self, el)
-            for el in self.find_elements(str(by), selector)
-        ]
+        return [WebElement(self, el) for el in self.find_elements(str(by), selector)]
 
     def find(self, selector: str, by: By = By.CSS_SELECTOR) -> "WebElement":
         return WebElement(self, self.find_element(str(by), selector))
@@ -77,8 +74,7 @@ class WebElement(_WebElement):
 
 def _add_virtual_authenticator(chrome: WebDriver):
     try:
-        from selenium.webdriver.common.virtual_authenticator import (
-            Transport, VirtualAuthenticatorOptions)
+        from selenium.webdriver.common.virtual_authenticator import Transport, VirtualAuthenticatorOptions
 
         auth_options = VirtualAuthenticatorOptions()
         auth_options.transport = Transport.INTERNAL

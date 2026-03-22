@@ -26,6 +26,7 @@ def create_new(
         os.makedirs(user_data_dir, exist_ok=True)
     if ctx.config.crawler.selenium_grid:
         from .remote import create_remote
+
         return create_remote(
             address=ctx.config.crawler.selenium_grid,
             options=options,
@@ -33,6 +34,7 @@ def create_new(
         )
     else:
         from .local import create_local
+
         return create_local(
             options=options,
             timeout=timeout,

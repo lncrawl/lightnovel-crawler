@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import quote
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core import Crawler
 from lncrawl.models.chapter import Chapter
 
 logger = logging.getLogger(__name__)

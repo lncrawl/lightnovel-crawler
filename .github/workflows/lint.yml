@@ -56,7 +56,7 @@ jobs:
         run: uv sync --frozen --extra dev
 
       - name: 🧹 Lint Code
-        run: uv run flake8 -v --count --show-source --statistics
+        run: uv run flake8 --config .flake8 -v --count --show-source --statistics
 
       - name: 🏗️ Build Wheel
         run: uv run python -m build --wheel --no-isolation

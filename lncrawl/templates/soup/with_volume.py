@@ -7,9 +7,7 @@ from .general import GeneralSoupTemplate
 
 
 class ChapterWithVolumeSoupTemplate(GeneralSoupTemplate):
-    def parse_chapter_list(
-        self, soup: PageSoup
-    ) -> Generator[Union[Chapter, Volume], None, None]:
+    def parse_chapter_list(self, soup: PageSoup) -> Generator[Union[Chapter, Volume], None, None]:
         vol_id = 0
         chap_id = 0
         for vol in self.select_volume_tags(soup):
@@ -29,10 +27,7 @@ class ChapterWithVolumeSoupTemplate(GeneralSoupTemplate):
 
     def parse_volume_item(self, tag: PageSoup, id: int) -> Volume:
         """Parse a single volume from volume list item tag"""
-        return Volume(
-            id=id,
-            title=tag.text
-        )
+        return Volume(id=id, title=tag.text)
 
     @abstractmethod
     def select_chapter_tags(self, tag: PageSoup, vol: Volume, soup: PageSoup) -> Generator[PageSoup, None, None]:

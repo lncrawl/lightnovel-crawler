@@ -120,18 +120,13 @@ def __get_free_proxy_list(url):
 
     html = resp.content.decode("utf8", "ignore")
     soup = BeautifulSoup(html, "lxml")
-    return [
-        [td.text for td in tr.select("td")]
-        for tr in soup.select(".fpl-list table tbody tr")
-    ]
+    return [[td.text for td in tr.select("td")] for tr in soup.select(".fpl-list table tbody tr")]
 
 
 def __find_proxies():
     err_count = 0
     while err_count < 3 and not __has_exit:
-        logger.debug(
-            "Fetching proxies | Current checklist: %d", len(__proxy_visited_at)
-        )
+        logger.debug("Fetching proxies | Current checklist: %d", len(__proxy_visited_at))
         try:
             rows = __get_free_proxy_list("https://free-proxy-list.net/")
             rows += __get_free_proxy_list("https://www.sslproxies.org/")

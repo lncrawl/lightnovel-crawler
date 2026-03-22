@@ -7,12 +7,13 @@ It should be able to do searching and generating only chapter list excluding vol
 Put your source file inside the language folder. The `en` folder has too many
 files, therefore it is grouped using the first letter of the domain name.
 """
+
 import logging
 import re
 from typing import Generator, List
 from urllib.parse import urlencode
 
-from lncrawl.core.soup import PageSoup
+from lncrawl.core import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.soup.chapter_only import ChapterOnlySoupTemplate
 from lncrawl.templates.soup.searchable import SearchableSoupTemplate
@@ -40,7 +41,7 @@ class MyCrawlerName(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         # The tag here comes from self.select_search_items
         return SearchResult(
             title=tag.select_one("div.title h3 a").text.strip(),
-            url=f"{self.home_url}{tag.select_one('div.title h3 a')['href']}"
+            url=f"{self.home_url}{tag.select_one('div.title h3 a')['href']}",
         )
 
     def get_novel_soup(self) -> PageSoup:
@@ -73,7 +74,7 @@ class MyCrawlerName(SearchableSoupTemplate, ChapterOnlySoupTemplate):
     def select_chapter_tags(self, soup: PageSoup) -> Generator[PageSoup, None, None]:
         # The soup here is the result of `self.get_soup(self.novel_url)`
         script = soup.select_one("div.layout script").text
-        pattern = r'(var|let|const)\s+(\w+)\s*=\s*(.*?);'
+        pattern = r"(var|let|const)\s+(\w+)\s*=\s*(.*?);"
         matches = re.findall(pattern, script)
         variables = {}
         for _, name, value in matches:

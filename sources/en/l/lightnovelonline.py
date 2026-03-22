@@ -3,7 +3,8 @@ import logging
 from concurrent import futures
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://light-novel.online/search.ajax?query=%s"
@@ -44,9 +45,7 @@ class LightNovelOnline(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one(".series-cover .content")["data-src"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one(".series-cover .content")["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         # self.novel_author

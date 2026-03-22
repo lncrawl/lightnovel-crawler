@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from threading import Event
 
-from ebooklib import epub  # type:ignore
+from ebooklib import epub  # type: ignore
 
 from ...assets.epub import epub_chapter_xhtml, epub_cover_xhtml, epub_style_css
 from ...context import ctx
@@ -16,15 +16,18 @@ STYLE_FILE_NAME = "style.css"
 COVER_IMAGE_NAME = "cover.jpg"
 PROJECT_URL = "https://github.com/lncrawl/lightnovel-crawler"
 
-RE_WHITESPACE = re.compile(r'^\s+|\n', re.MULTILINE)
+RE_WHITESPACE = re.compile(r"^\s+|\n", re.MULTILINE)
 
 
 def build_cover() -> epub.EpubHtml:
-    content = RE_WHITESPACE.sub('', f"""
+    content = RE_WHITESPACE.sub(
+        "",
+        f"""
         <div id="cover">
             <img src="{COVER_IMAGE_NAME}" alt="cover" />
         </div>
-    """)
+    """,
+    )
     item = epub.EpubHtml(
         file_name="front.xhtml",
         title="Front Page",
@@ -39,7 +42,9 @@ def build_cover() -> epub.EpubHtml:
 
 
 def build_intro(novel: Novel) -> epub.EpubHtml:
-    content = RE_WHITESPACE.sub('', f"""
+    content = RE_WHITESPACE.sub(
+        "",
+        f"""
     <div id="intro">
         <h1>{novel.title}</h1>
         <h3>{novel.authors}</h3>
@@ -53,7 +58,8 @@ def build_intro(novel: Novel) -> epub.EpubHtml:
             <a href="{PROJECT_URL}">Lightnovel Crawler</a></b></i>
         </div>
     </div>
-    """)
+    """,
+    )
     item = epub.EpubHtml(
         file_name="intro.xhtml",
         title="Intro Page",
@@ -68,11 +74,14 @@ def build_intro(novel: Novel) -> epub.EpubHtml:
 
 
 def build_volume(volume: Volume) -> epub.EpubHtml:
-    content = RE_WHITESPACE.sub('', f"""
+    content = RE_WHITESPACE.sub(
+        "",
+        f"""
     <div id="volume">
         <h1>{volume.title}</h1>
     </div>
-    """)
+    """,
+    )
     item = epub.EpubHtml(
         file_name=f"volume_{volume.serial:03}.xhtml",
         title=volume.title,
@@ -90,14 +99,17 @@ def build_chapter(chapter: Chapter) -> epub.EpubHtml:
     if chapter.is_available:
         text = ctx.files.load_text(chapter.content_file)
     else:
-        text = '<p><em>No content available</em></p>'
-    content = RE_WHITESPACE.sub('', f"""
+        text = "<p><em>No content available</em></p>"
+    content = RE_WHITESPACE.sub(
+        "",
+        f"""
     <div id="chapter">
         <h4 style="opacity: 0.8">#{chapter.serial}</h4>
         <h1>{chapter.title}</h1>
         {text}
     </div>
-    """)
+    """,
+    )
     item = epub.EpubHtml(
         file_name=f"chapter_{chapter.serial:05}.xhtml",
         title=chapter.title,
@@ -111,12 +123,7 @@ def build_chapter(chapter: Chapter) -> epub.EpubHtml:
     return item
 
 
-def make_epub(
-    working_dir: Path,
-    artifact: Artifact,
-    signal=Event(),
-    **kwargs
-) -> None:
+def make_epub(working_dir: Path, artifact: Artifact, signal=Event(), **kwargs) -> None:
     out_file = ctx.files.resolve(artifact.output_file)
     tmp_file = working_dir / out_file.name
 
@@ -130,16 +137,16 @@ def make_epub(
     book.set_title(novel.title)
     book.add_author(novel.authors)
     book.set_language(novel.language)
-    book.add_metadata('DC', 'description', novel.synopsis)
+    book.add_metadata("DC", "description", novel.synopsis)
     if novel.rtl:
         book.set_direction("rtl")
     for tag in novel.tags:
         book.add_metadata("DC", "subject", tag)
 
     # add series metadata
-    book.add_metadata(None, 'meta', 'series', {'property': 'collection-type'})
-    book.add_metadata(None, 'meta', novel.title, {'property': 'belongs-to-collection'})
-    book.add_metadata(None, 'meta', str(novel.updated_at), {'property': 'group-position'})
+    book.add_metadata(None, "meta", "series", {"property": "collection-type"})
+    book.add_metadata(None, "meta", novel.title, {"property": "belongs-to-collection"})
+    book.add_metadata(None, "meta", str(novel.updated_at), {"property": "group-position"})
 
     # add template
     book.set_template("cover", epub_cover_xhtml())
@@ -195,10 +202,7 @@ def make_epub(
             book.add_item(chapter_item)
             spine.append(chapter_item)
 
-        volume_section = epub.Section(
-            volume.title,
-            href=volume_item.file_name
-        )
+        volume_section = epub.Section(volume.title, href=volume_item.file_name)
         toc.append([volume_section, volume_contents])
 
     # provide table of contents

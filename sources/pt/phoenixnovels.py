@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core import Crawler
 from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
@@ -11,10 +12,12 @@ class PhoenixNovels(Crawler):
     base_url = "https://phoenixnovels.com.br/"
 
     def initialize(self):
-        self.cleaner.bad_css.update([
-            "div.padSection",
-            "div#padSection",
-        ])
+        self.cleaner.bad_css.update(
+            [
+                "div.padSection",
+                "div#padSection",
+            ]
+        )
 
     def search_novel(self, query):
         query = query.lower().replace(" ", "+")
@@ -27,14 +30,14 @@ class PhoenixNovels(Crawler):
                 continue
             latest = tab.select_one(".latest-chap .chapter a")
             votes = tab.select_one(".rating .total_votes")
-            results.append({
-                "title": a.text.strip(),
-                "url": self.absolute_url(a["href"]),
-                "info": "%s | Rating: %s" % (
-                    latest.text.strip() if latest else "N/A",
-                    votes.text.strip() if votes else "0"
-                ),
-            })
+            results.append(
+                {
+                    "title": a.text.strip(),
+                    "url": self.absolute_url(a["href"]),
+                    "info": "%s | Rating: %s"
+                    % (latest.text.strip() if latest else "N/A", votes.text.strip() if votes else "0"),
+                }
+            )
 
         return results
 
@@ -57,10 +60,7 @@ class PhoenixNovels(Crawler):
             self.novel_cover = self.absolute_url(cover_url)
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join([
-            a.text.strip()
-            for a in soup.select('.author-content a[href*="novel-author"]')
-        ])
+        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="novel-author"]')])
         logger.info("Author(s): %s", self.novel_author)
 
         chapter_list_url = self.absolute_url("ajax/chapters", self.novel_url)
@@ -81,12 +81,14 @@ class PhoenixNovels(Crawler):
                 for span in a.find_all("span"):
                     span.extract()
                 chap_id += 1
-                self.chapters.append(Chapter(
-                    id=chap_id,
-                    volume=volume_id,
-                    title=a.text.strip(),
-                    url=self.absolute_url(a["href"]),
-                ))
+                self.chapters.append(
+                    Chapter(
+                        id=chap_id,
+                        volume=volume_id,
+                        title=a.text.strip(),
+                        url=self.absolute_url(a["href"]),
+                    )
+                )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

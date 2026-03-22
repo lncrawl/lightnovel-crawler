@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://meionovels.com/wp-admin/admin-ajax.php"
@@ -44,9 +45,7 @@ class MeionovelCrawler(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         # Cover
-        self.novel_cover = self.absolute_url(
-            soup.select_one(".summary_image img")["src"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one(".summary_image img")["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         # Author
