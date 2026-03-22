@@ -39,10 +39,10 @@ jobs:
       - name: 🧰 Install OpenSSL
         run: choco install -y --no-progress openssl
 
-      - name: 🐍 Install uv & Python 3.10
+      - name: 🐍 Install uv & Python
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.10"
+          python-version: "3.14"
           enable-cache: true
 
       - name: 🏗️ Build Executable
@@ -85,10 +85,10 @@ jobs:
           git submodule sync
           git submodule update --init --remote --merge
 
-      - name: 🐍 Install uv & Python 3.10
+      - name: 🐍 Install uv & Python
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.10"
+          python-version: "3.14"
           enable-cache: true
 
       - name: 🏗️ Build Executable
@@ -130,10 +130,10 @@ jobs:
           git submodule sync
           git submodule update --init --remote --merge
 
-      - name: 🐍 Install uv & Python 3.10
+      - name: 🐍 Install uv & Python
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.10"
+          python-version: "3.14"
           enable-cache: true
 
       - name: 🏗️ Build Executable

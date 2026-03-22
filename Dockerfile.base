@@ -1,13 +1,13 @@
 # Stage 1: download and strip Calibre
-FROM ghcr.io/astral-sh/uv:python3.10-bookworm-slim AS calibre
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim AS calibre
 
 RUN apt-get update -yq && \
     apt-get install -yq --no-install-recommends \
-    fontconfig \
+    wget \
     libegl1 \
     libopengl0 \
+    libfontconfig \
     libxcb-cursor0 \
-    wget \
     xdg-utils \
     xz-utils \
     && rm -rf /var/lib/apt/lists/*
@@ -23,7 +23,7 @@ RUN rm -rf /opt/calibre/resources/content-server \
     true
 
 # Stage 2: base runtime image
-FROM ghcr.io/astral-sh/uv:python3.10-bookworm-slim
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -36,12 +36,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update -yq && \
     apt-get install -yq --no-install-recommends \
     ca-certificates \
-    libfontconfig \
-    libasound2 \
     libegl1 \
+    libopengl0 \
     libglx0 \
     libnss3 \
-    libopengl0 \
+    libasound2 \
+    libfontconfig \
     libxkbcommon0 \
     && rm -rf /var/lib/apt/lists/*
 
