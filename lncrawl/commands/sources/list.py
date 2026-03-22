@@ -114,8 +114,6 @@ def list_all(
                     'MTL': bool(item.info.has_mtl),
                 },
                 'disabled': item.disable_reason if item.is_disabled else False,
-                'total_commits': item.info.total_commits,
-                'contributors': ', '.join(item.info.contributors),
             }
             for item in sources
         ]

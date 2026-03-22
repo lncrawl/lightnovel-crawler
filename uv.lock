@@ -1594,7 +1594,7 @@ resolution-markers = [
     "python_full_version == '3.10.*'",
 ]
 dependencies = [
-    { name = "zipp", marker = "python_full_version >= '3.10'" },
+    { name = "zipp", marker = "python_full_version == '3.10.*'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a9/01/15bb152d77b21318514a96f43af312635eb2500c96b55398d020c93d86ea/importlib_metadata-9.0.0.tar.gz", hash = "sha256:a4f57ab599e6a2e3016d7595cfd72eb4661a5106e787a95bcc90c7105b831efc", size = 56405, upload-time = "2026-03-20T06:42:56.999Z" }
 wheels = [
@@ -1776,6 +1776,7 @@ dependencies = [
     { name = "python-dotenv", version = "1.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "python-jose", extra = ["cryptography"] },
     { name = "python-slugify" },
+    { name = "pyyaml" },
     { name = "questionary" },
     { name = "readability-lxml" },
     { name = "regex", version = "2026.1.15", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -1814,6 +1815,7 @@ dev = [
     { name = "types-python-dateutil", version = "2.9.0.20260124", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "types-python-dateutil", version = "2.9.0.20260305", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "types-python-jose" },
+    { name = "types-pyyaml" },
     { name = "types-setuptools", version = "81.0.0.20260209", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "types-setuptools", version = "82.0.0.20260210", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "types-tqdm", version = "4.67.3.20260205", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -1858,6 +1860,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.0,<2.0.0" },
     { name = "python-jose", extras = ["cryptography"], specifier = ">=3.4.0" },
     { name = "python-slugify", specifier = ">=8.0.0,<9.0.0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "questionary", specifier = ">=2.0.0,<3.0.0" },
     { name = "readability-lxml", specifier = ">=0.8.0,<1.0.0" },
     { name = "regex", specifier = ">=2024.0.0" },
@@ -1874,6 +1877,7 @@ requires-dist = [
     { name = "types-passlib", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "types-python-dateutil", marker = "extra == 'dev'", specifier = ">=2.8.0" },
     { name = "types-python-jose", marker = "extra == 'dev'", specifier = ">=3.3.0" },
+    { name = "types-pyyaml", marker = "extra == 'dev'", specifier = ">=6.0.12.20250915" },
     { name = "types-setuptools", marker = "extra == 'dev'", specifier = ">=65.0.0" },
     { name = "types-tqdm", marker = "extra == 'dev'", specifier = ">=4.65.0" },
     { name = "types-zstd", marker = "extra == 'dev'", specifier = ">=1.5.0" },
@@ -4569,6 +4573,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/89/c8/09095e22b8e5eb3992f47722a3e1b31098b55c5e8325f4b21c5f1bdcb06b/types_python_jose-3.5.0.20250531.tar.gz", hash = "sha256:dbac2bc99fbb8124068696617f8709acfe4a43d79c6df3e59800006d46d621fe", size = 11891, upload-time = "2025-05-31T03:04:29.017Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/67/33/9d8c351a44e68896a53003e00fb01e1158b9e5b68cf3b75c1e4b51eb5263/types_python_jose-3.5.0.20250531-py3-none-any.whl", hash = "sha256:1609ee4d40a8a2ef5f62fcda99ec977b2ae773dfee9355cfb7e5002afa063c55", size = 14725, upload-time = "2025-05-31T03:04:27.802Z" },
+]
+
+[[package]]
+name = "types-pyyaml"
+version = "6.0.12.20250915"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7e/69/3c51b36d04da19b92f9e815be12753125bd8bc247ba0470a982e6979e71c/types_pyyaml-6.0.12.20250915.tar.gz", hash = "sha256:0f8b54a528c303f0e6f7165687dd33fafa81c807fcac23f632b63aa624ced1d3", size = 17522, upload-time = "2025-09-15T03:01:00.728Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bd/e0/1eed384f02555dde685fff1a1ac805c1c7dcb6dd019c916fe659b1c1f9ec/types_pyyaml-6.0.12.20250915-py3-none-any.whl", hash = "sha256:e7d4d9e064e89a3b3cae120b4990cd370874d2bf12fa5f46c97018dd5d3c9ab6", size = 20338, upload-time = "2025-09-15T03:00:59.218Z" },
 ]
 
 [[package]]

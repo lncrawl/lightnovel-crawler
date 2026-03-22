@@ -63,6 +63,7 @@ dependencies = [
   "uvicorn>=0.32.0",
   "websocket-client>=1.8.0",
   "zstd>=1.5.7.0",
+  "pyyaml>=6.0.3",
 ]
 description = "Download lightnovels from various online sources and generate output in different formats, e.g. epub, mobi, json, text, docx, pdf, html etc."
 dynamic = ["version"]
@@ -85,6 +86,7 @@ dev = [
   "types-passlib>=1.7.0",
   "types-python-dateutil>=2.8.0",
   "types-python-jose>=3.3.0",
+  "types-pyyaml>=6.0.12.20250915",
   "types-setuptools>=65.0.0",
   "types-tqdm>=4.65.0",
   "types-zstd>=1.5.0",
