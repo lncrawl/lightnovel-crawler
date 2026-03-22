@@ -11,11 +11,9 @@ from urllib.parse import ParseResult, urlparse
 from cloudscraper import create_scraper
 from PIL import Image, UnidentifiedImageError
 from requests import Response
-from requests.exceptions import ProxyError
 from requests.structures import CaseInsensitiveDict
 
 from ..context import ctx
-from .proxy import get_a_proxy, remove_faulty_proxy
 from .soup import PageSoup
 from .taskman import TaskManager
 
@@ -115,8 +113,6 @@ class Scraper(TaskManager):
         *args,
         **kwargs,
     ):
-        _parsed = urlparse(url)
-
         kwargs.setdefault("allow_redirects", True)
 
         headers = CaseInsensitiveDict(kwargs.pop("headers", {}) or {})
@@ -124,27 +120,18 @@ class Scraper(TaskManager):
         headers.setdefault("Referer", self.last_soup_url or self.home_url)
         kwargs["headers"] = headers
 
-        if self.use_proxy and _parsed.scheme:
-            proxies = kwargs.setdefault("proxies", {})
-            proxies[_parsed.scheme] = get_a_proxy(_parsed.scheme)
+        response = self.scraper.request(
+            method,
+            url,
+            *args,
+            **kwargs,
+        )
+        response.raise_for_status()
 
-        try:
-            response = self.scraper.request(
-                method,
-                url,
-                *args,
-                **kwargs,
-            )
-            response.raise_for_status()
+        self.cookies.update({x.name: x.value for x in response.cookies})
 
-            self.cookies.update({x.name: x.value for x in response.cookies})
-
-            response.encoding = "utf8"
-            return response
-        except ProxyError:
-            if self.use_proxy and _parsed.scheme:
-                remove_faulty_proxy(kwargs["proxies"][_parsed.scheme])
-            raise
+        response.encoding = "utf8"
+        return response
 
     # ------------------------------------------------------------------------- #
     # Helpers

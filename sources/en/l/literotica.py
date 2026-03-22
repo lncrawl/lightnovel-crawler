@@ -22,7 +22,7 @@ class LiteroticaCrawler(Crawler):
         return results
 
     def read_novel_info(self) -> None:
-        soup = self.get_soup(self.novel_url.replace("www.", "speedy.", 1), timeout=50, verify=False)
+        soup = self.get_soup(self.novel_url.replace("www.", "speedy.", 1), timeout=50)
         isSeries = "/series/" in self.novel_url
         seriesLink = soup.select_one("a.bn_av")
         self.novel_cover = soup.select_one("a.y_eR > img")["src"] or None
@@ -32,7 +32,6 @@ class LiteroticaCrawler(Crawler):
                 soup = self.get_soup(
                     seriesLink["href"].replace("www.", "speedy.", 1),
                     timeout=50,
-                    verify=False,
                 )
 
             self.novel_title = soup.select_one("h1.j_bm").text
@@ -51,13 +50,13 @@ class LiteroticaCrawler(Crawler):
             self.chapters.append(dict(id=1, title=self.novel_title, url=self.novel_url))
 
     def download_chapter_body(self, chapter: Chapter) -> str:
-        soup = self.get_soup(f"{chapter['url'].replace('www.', 'speedy.', 1)}", timeout=50, verify=False)
+        soup = self.get_soup(f"{chapter['url'].replace('www.', 'speedy.', 1)}", timeout=50)
         chapterText = ""
         while 1:
             chapterText += self.cleaner.extract_contents(soup.select_one("div.aa_ht"))
             try:
                 nextUrl = "https://speedy.literotica.com" + soup.select_one("a.l_bJ.l_bL").attrs["href"]
-                soup = self.get_soup(nextUrl, timeout=100, verify=False)
+                soup = self.get_soup(nextUrl, timeout=100)
             except Exception:
                 break
         return chapterText.replace('"/images/', '"https://speedy.literotica.com/images/').replace(
