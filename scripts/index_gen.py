@@ -106,7 +106,7 @@ except Exception:
     logger.warning("Failed to get current git branch", exc_info=True)
     REPO_BRANCH = "dev"
 
-github_cache_result: Dict[str, str] = {}
+github_cache_result: Dict[str, Any] = {}
 github_cache_event: Dict[str, Event] = {}
 
 
