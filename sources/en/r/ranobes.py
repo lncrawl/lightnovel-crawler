@@ -2,7 +2,7 @@
 import json
 import logging
 import re
-from typing import Generator, Optional
+from typing import Generator
 from urllib.parse import quote_plus, urljoin
 
 from lncrawl.core.soup import PageSoup

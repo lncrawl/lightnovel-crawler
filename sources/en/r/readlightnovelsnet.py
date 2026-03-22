@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import Optional
 from urllib.parse import urlencode
 
 from lncrawl.core.soup import PageSoup

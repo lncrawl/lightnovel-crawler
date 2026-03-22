@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Generator, Optional, Union
+from typing import Generator, Union
 from urllib.parse import urljoin
 
 from lncrawl.core.soup import PageSoup

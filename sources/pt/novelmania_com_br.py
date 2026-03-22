@@ -1,5 +1,5 @@
 import logging
-from typing import Generator, Optional
+from typing import Generator
 
 from lncrawl.core.soup import PageSoup
 

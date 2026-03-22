@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from typing import Generator, Optional, Union
+from typing import Generator, Union
 
 from lncrawl.core.soup import PageSoup
 

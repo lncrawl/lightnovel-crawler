@@ -1,7 +1,7 @@
 import logging
 import re
 import time
-from typing import Mapping, Optional
+from typing import Mapping
 from urllib.parse import urlencode, urlparse
 
 from lncrawl.core.soup import PageSoup

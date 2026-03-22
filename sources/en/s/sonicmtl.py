@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from lncrawl.core.soup import PageSoup
 
