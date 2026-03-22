@@ -44,6 +44,16 @@ def crawl(
         show_choices=True,
         help="Output formats",
     ),
+    username: Optional[str] = typer.Option(
+        None,
+        "--user",
+        help="Username/Email",
+    ),
+    password: Optional[str] = typer.Option(
+        None,
+        "--pass",
+        help="Password/Token",
+    ),
     url: str = typer.Argument(
         default=None,
         help="Novel details page URL.",
@@ -65,9 +75,18 @@ def crawl(
     try:
         constructor = ctx.sources.get_crawler(url)
         crawler = ctx.sources.init_crawler(constructor, disable_logger=False)
+        can_login = getattr(crawler, "can_login", False)
     except ServerError as e:
         print(f"[red]{e.format(True)}[/red]")
         return
+
+    # get login details
+    if can_login:
+        if not (username and password):
+            if not non_interactive:
+                username, password = _prompt_login_details()
+        if username and password:
+            crawler.login(username, password)
 
     # fetch novel details
     with console.status("Fetching novel details..."):
@@ -160,6 +179,25 @@ def crawl(
     if not non_interactive:
         cover_file = ctx.files.resolve(novel.cover_file)
         open_folder(cover_file.parent / "artifacts")
+
+
+def _prompt_login_details() -> Tuple[Optional[str], Optional[str]]:
+    wants_login = questionary.confirm(
+        "Do you want to login?",
+        qmark="🔒",
+        default=True,
+    ).ask()
+    if not wants_login:
+        return (None, None)
+    username = questionary.text(
+        "Username/Email:",
+        qmark="🔒",
+    ).ask(kbi_msg="")
+    password = questionary.text(
+        "Password/Token:",
+        qmark="🔒",
+    ).ask(kbi_msg="")
+    return (username, password)
 
 
 def _prompt_url() -> str:
