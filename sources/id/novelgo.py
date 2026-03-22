@@ -3,7 +3,6 @@
 import logging
 import urllib.parse
 
-from lncrawl.core.soup import PageSoup
 
 from lncrawl.core.crawler import Crawler
 from lncrawl.models import Chapter, Volume

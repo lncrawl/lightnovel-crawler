@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import Generator, List, Optional, Union
+from typing import Generator, List, Union
 
 from lncrawl.core.soup import PageSoup
 from lncrawl.models import Chapter, SearchResult, Volume

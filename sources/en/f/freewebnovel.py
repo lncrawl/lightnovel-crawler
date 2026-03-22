@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import unicodedata
-from typing import Any, List, Optional
+from typing import Any, List
 
 from lncrawl.core.soup import PageSoup
 

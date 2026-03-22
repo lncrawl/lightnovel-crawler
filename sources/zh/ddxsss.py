@@ -4,7 +4,7 @@ import re
 
 from lncrawl.core.crawler import Crawler
 
-from lncrawl.models import Volume, Chapter, SearchResult
+from lncrawl.models import Chapter, SearchResult
 
 logger = logging.getLogger(__name__)
 
