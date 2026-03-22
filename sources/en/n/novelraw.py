@@ -3,7 +3,7 @@ import logging
 import re
 from concurrent import futures
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -67,15 +67,10 @@ class NovelRawCrawler(Crawler):
                 if not len(possible_urls):
                     continue
                 self.chapters.append(
-                    {
-                        "id": len(self.chapters) + 1,
-                        "volume": len(self.chapters) // 100 + 1,
-                        "title": entry["title"]["$t"],
-                        "url": possible_urls[0],
-                    }
+                    Chapter(id=len(self.chapters) + 1, volume=len(self.chapters) // 100 + 1, title=entry['title']['$t'], url=possible_urls[0])
                 )
 
-        self.volumes = [{"id": x + 1} for x in range(len(self.chapters) // 100 + 1)]
+        self.volumes = [Volume(id=x + 1) for x in range(len(self.chapters) // 100 + 1)]
 
     def download_chapter_list(self, index):
         url = chapter_list_url % (self.novel_title, index)

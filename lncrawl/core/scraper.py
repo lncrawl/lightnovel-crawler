@@ -1,12 +1,13 @@
 import base64
+import json
 import logging
 import os
 import re
+from functools import cached_property
 from io import BytesIO
-from typing import Any, Callable, Dict, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, MutableMapping, Optional, Tuple, Union
 from urllib.parse import ParseResult, urlparse
 
-from bs4 import BeautifulSoup
 from cloudscraper import create_scraper
 from PIL import Image, UnidentifiedImageError
 from requests import Response
@@ -14,14 +15,14 @@ from requests.exceptions import ProxyError
 from requests.structures import CaseInsensitiveDict
 
 from ..context import ctx
-from .proxy import get_a_proxy, remove_faulty_proxies
-from .soup import SoupMaker
+from .proxy import get_a_proxy, remove_faulty_proxy
+from .soup import PageSoup
 from .taskman import TaskManager
 
 logger = logging.getLogger(__name__)
 
 
-class Scraper(TaskManager, SoupMaker):
+class Scraper(TaskManager):
     # ------------------------------------------------------------------------- #
     # Initializers
     # ------------------------------------------------------------------------- #
@@ -53,24 +54,18 @@ class Scraper(TaskManager, SoupMaker):
 
         self.home_url = ""
         self.last_soup_url = ""
+        self.parser = parser or "lxml"
         self.use_proxy = os.getenv("use_proxy")
 
     def close(self) -> None:
-        if hasattr(self, "scraper"):
-            self.scraper.close()
         super().close()
+        self.scraper.close()
 
-    def init_parser(self, parser: Optional[str] = None):
-        self._soup_tool = SoupMaker(parser)
-        self.make_tag = self._soup_tool.make_tag  # type:ignore
-        self.make_soup = self._soup_tool.make_soup  # type:ignore
-
-    def init_scraper(self):
+    @cached_property
+    def scraper(self):
         """Check for option: https://github.com/VeNoMouS/cloudscraper"""
-        if hasattr(self, "scraper"):
-            self.scraper.close()
         # OPTIMAL CONFIGURATION for preventing your specific 403 issues
-        self.scraper = create_scraper(
+        scraper = create_scraper(
             debug=ctx.logger.is_debug,     # Enable for monitoring (disable in production)
 
             # KEY SETTINGS to prevent 403 errors
@@ -102,47 +97,46 @@ class Scraper(TaskManager, SoupMaker):
             },
         )
 
+        # Override close method to clear cached property
+        original_close = scraper.close
+
+        def _close():
+            original_close()
+            self.__dict__.pop("scraper", None)
+        scraper.close = _close
+
+        return scraper
+
     # ------------------------------------------------------------------------- #
     # Internal methods
     # ------------------------------------------------------------------------- #
-
-    def __get_proxies(self, scheme, timeout: float = 0):
-        if self.use_proxy and scheme:
-            return {scheme: get_a_proxy(scheme, timeout)}
-        return {}
 
     def __process_request(
         self,
         method: str,
         url: str,
         *args,
-        headers: Optional[MutableMapping] = {},
         **kwargs,
     ):
-        method_call: Callable[..., Response] = getattr(self.scraper, method)
-        if not callable(method_call):
-            raise Exception(f"No request method: {method}")
-
         _parsed = urlparse(url)
 
-        kwargs = kwargs or dict()
         kwargs.setdefault("allow_redirects", True)
-        kwargs["proxies"] = self.__get_proxies(_parsed.scheme)
 
-        headers = CaseInsensitiveDict(headers)
+        headers = CaseInsensitiveDict(kwargs.pop('headers', {}) or {})
         headers.setdefault("Origin", self.home_url.strip("/"))
         headers.setdefault("Referer", self.last_soup_url or self.home_url)
+        kwargs["headers"] = headers
 
-        logger.debug(
-            f"[{method.upper()}] {url}\n"
-            + "\n".join([f"    {k} = {v}" for k, v in kwargs.items()])
-        )
+        if self.use_proxy and _parsed.scheme:
+            proxies = kwargs.setdefault("proxies", {})
+            proxies[_parsed.scheme] = get_a_proxy(_parsed.scheme)
+
         try:
-            response = method_call(
+            response = self.scraper.request(
+                method,
                 url,
                 *args,
                 **kwargs,
-                headers=headers,
             )
             response.raise_for_status()
 
@@ -154,9 +148,8 @@ class Scraper(TaskManager, SoupMaker):
             response.encoding = "utf8"
             return response
         except ProxyError:
-            for proxy_url in kwargs.get("proxies", {}).values():
-                remove_faulty_proxies(proxy_url)
-            kwargs["proxies"] = self.__get_proxies(_parsed.scheme, 5)
+            if self.use_proxy and _parsed.scheme:
+                remove_faulty_proxy(kwargs["proxies"][_parsed.scheme])
             raise
 
     # ------------------------------------------------------------------------- #
@@ -180,7 +173,10 @@ class Scraper(TaskManager, SoupMaker):
     @property
     def cookies(self) -> Dict[str, Optional[str]]:
         """Current session cookies"""
-        return {x.name: x.value for x in self.scraper.cookies}
+        return {
+            x.name: x.value
+            for x in self.scraper.cookies
+        }
 
     def set_cookie(self, name: str, value: str) -> None:
         """Set a session cookie"""
@@ -209,7 +205,7 @@ class Scraper(TaskManager, SoupMaker):
     # ------------------------------------------------------------------------- #
 
     def _ping_request(self, url: str, timeout=5, **kwargs):
-        return self.__process_request("head", url, **kwargs, max_retries=2, timeout=timeout)
+        return self.__process_request("head", url, **kwargs, timeout=timeout)
 
     def get_response(
         self,
@@ -242,8 +238,7 @@ class Scraper(TaskManager, SoupMaker):
     def post_response(
         self,
         url: str,
-        data: Optional[MutableMapping] = {},
-        max_retries: Optional[int] = 0,
+        data: Optional[Union[MutableMapping, str, bytes]] = {},
         **kwargs
     ) -> Response:
         """Make a POST request and return the response"""
@@ -257,7 +252,7 @@ class Scraper(TaskManager, SoupMaker):
     def submit_form(
         self,
         url: str,
-        data: Optional[MutableMapping] = None,
+        data: Optional[Union[MutableMapping, str, bytes]] = None,
         multipart: bool = False,
         headers: Optional[MutableMapping] = {},
         **kwargs
@@ -338,7 +333,7 @@ class Scraper(TaskManager, SoupMaker):
     def post_json(
         self,
         url: str,
-        data: Optional[MutableMapping] = {},
+        data: Optional[Union[MutableMapping, str, bytes]] = {},
         headers: Optional[MutableMapping] = {},
         **kwargs,
     ) -> Any:
@@ -349,13 +344,20 @@ class Scraper(TaskManager, SoupMaker):
             "Accept",
             "application/json,text/plain,*/*",
         )
-        response = self.post_response(url, data=data, headers=headers, **kwargs)
+        if isinstance(data, dict):
+            data = json.dumps(data)
+        response = self.post_response(
+            url,
+            data=data,
+            headers=headers,
+            **kwargs,
+        )
         return response.json()
 
     def submit_form_json(
         self,
         url: str,
-        data: Optional[MutableMapping] = {},
+        data: Optional[Union[MutableMapping, str, bytes]] = None,
         headers: Optional[MutableMapping] = {},
         multipart: Optional[bool] = False,
         **kwargs
@@ -366,6 +368,8 @@ class Scraper(TaskManager, SoupMaker):
             "Accept",
             "application/json,text/plain,*/*",
         )
+        if isinstance(data, dict):
+            data = json.dumps(data)
         response = self.submit_form(
             url,
             data=data,
@@ -375,14 +379,21 @@ class Scraper(TaskManager, SoupMaker):
         )
         return response.json()
 
+    def make_soup(
+        self,
+        data: Union[Response, bytes, str, Any],
+        encoding: Optional[str] = None,
+    ) -> PageSoup:
+        return PageSoup.create(data, encoding, self.parser)
+
     def get_soup(
         self,
         url: str,
         headers: Optional[MutableMapping] = {},
         encoding: Optional[str] = None,
         **kwargs,
-    ) -> BeautifulSoup:
-        """Fetch the content and return a BeautifulSoup instance of the page"""
+    ) -> PageSoup:
+        """Fetch the content and return a PageSoup instance of the page"""
         headers = CaseInsensitiveDict(headers)
         headers.setdefault(
             "Accept",
@@ -399,12 +410,12 @@ class Scraper(TaskManager, SoupMaker):
     def post_soup(
         self,
         url: str,
-        data: Optional[MutableMapping] = {},
+        data: Optional[Union[MutableMapping, str, bytes]] = None,
         headers: Optional[MutableMapping] = {},
         encoding: Optional[str] = None,
         **kwargs
-    ) -> BeautifulSoup:
-        """Make a POST request and return BeautifulSoup instance of the response"""
+    ) -> PageSoup:
+        """Make a POST request and return PageSoup instance of the response"""
         headers = CaseInsensitiveDict(headers)
         headers.setdefault(
             "Accept",
@@ -421,13 +432,13 @@ class Scraper(TaskManager, SoupMaker):
     def submit_form_for_soup(
         self,
         url: str,
-        data: Optional[MutableMapping] = {},
+        data: Optional[Union[MutableMapping, str, bytes]] = None,
         headers: Optional[MutableMapping] = {},
         multipart: Optional[bool] = False,
         encoding: Optional[str] = None,
         **kwargs
-    ) -> BeautifulSoup:
-        """Simulate submit form request and return a BeautifulSoup instance of the response"""
+    ) -> PageSoup:
+        """Simulate submit form request and return a PageSoup instance of the response"""
         headers = CaseInsensitiveDict(headers)
         headers.setdefault(
             "Accept",

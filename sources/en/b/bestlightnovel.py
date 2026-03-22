@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://bestlightnovel.com/getsearchstory"
@@ -38,7 +37,7 @@ class BestLightNovel(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".info_image img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
@@ -62,14 +61,14 @@ class BestLightNovel(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a['href']),
+                )
             )
 
         self.get_response(change_bad_words_off)

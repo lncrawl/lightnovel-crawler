@@ -1,10 +1,9 @@
 import time
 from concurrent.futures import Future
-from typing import List, Optional
+from typing import List
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from bs4 import BeautifulSoup, Tag
-
+from lncrawl.core.soup import PageSoup
 from lncrawl.exceptions import LNException
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
@@ -21,7 +20,7 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
     def select_search_items(self, query: str):
         soup = self.get_soup(f"{self.home_url}search.html")
         form = soup.select_one('.search-container form[method="post"]')
-        if not isinstance(form, Tag):
+        if not form:
             raise LNException("No search form")
 
         action_url = self.absolute_url(form["action"])
@@ -32,21 +31,17 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         soup = self.make_soup(response)
         yield from soup.select("ul.novel-list .novel-item a")
 
-    def parse_search_item(self, tag: Tag) -> SearchResult:
-        title = tag.select_one(".novel-title")
-        assert title
+    def parse_search_item(self, tag: PageSoup) -> SearchResult:
         return SearchResult(
-            title=title.get_text(strip=True),
             url=self.absolute_url(tag["href"]),
+            title=tag.select_one(".novel-title").text,
             info=" | ".join([x.text.strip() for x in tag.select(".novel-stats")]),
         )
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
-        tag = soup.select_one(".novel-info .novel-title")
-        assert tag
-        return tag.text.strip()
+    def parse_title(self, soup: PageSoup) -> str:
+        return soup.select_one(".novel-info .novel-title").text
 
-    def parse_cover(self, soup: BeautifulSoup):
+    def parse_cover(self, soup: PageSoup):
         tag = soup.select_one("#novel figure.cover img")
         if not tag:
             return None
@@ -55,7 +50,7 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         elif tag.has_attr("src"):
             return self.absolute_url(tag["src"])
 
-    def parse_authors(self, soup: BeautifulSoup):
+    def parse_authors(self, soup: PageSoup):
         for a in soup.select('.novel-info .author span[itemprop="author"]'):
             yield a.text.strip()
 
@@ -63,13 +58,13 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         for a in soup.select(".categories a"):
             yield a.text.strip()
 
-    def parse_summary(self, soup: BeautifulSoup) -> str:
+    def parse_summary(self, soup: PageSoup) -> str:
         return self.cleaner.extract_contents(soup.select_one(".summary .content"))
 
-    def select_chapter_tags(self, soup: BeautifulSoup):
-        tag = soup.select("#chapters .pagination li a")
-        if tag:
-            last_page = str(tag[-1]["href"])
+    def select_chapter_tags(self, soup: PageSoup):
+        tags = list(soup.select("#chapters .pagination li a"))
+        if tags:
+            last_page = str(tags[-1]["href"])
             last_page_qs = parse_qs(urlparse(last_page).query)
             max_page = int(last_page_qs["page"][0])
             wjm = last_page_qs["wjm"][0]
@@ -95,14 +90,14 @@ class NovelMTLTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         else:
             yield from soup.select("ul.chapter-list li a")
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         title = tag.select_one(".chapter-title")
         assert title, 'No chapter title'
         return Chapter(
             id=id,
             url=self.absolute_url(tag["href"]),
-            title=title.get_text(strip=True),
+            title=title.text,
         )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one(".chapter-content")

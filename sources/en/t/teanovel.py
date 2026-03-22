@@ -2,9 +2,8 @@
 import json
 import logging
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 from lncrawl.exceptions import LNException
 
 logger = logging.getLogger(__name__)
@@ -22,7 +21,7 @@ class TeaNovelCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         script_tag = soup.select_one("script#__NEXT_DATA__")
-        if not isinstance(script_tag, Tag):
+        if not script_tag:
             raise LNException("No script data found")
 
         next_data = json.loads(script_tag.get_text())
@@ -33,18 +32,14 @@ class TeaNovelCrawler(Crawler):
         self.novel_author = novel_data["author"]
 
         img_tag = soup.select_one("main img[src*='_next/']")
-        if isinstance(img_tag, Tag):
+        if img_tag:
             self.novel_cover = self.absolute_url(img_tag["src"])
 
         chapters = self.get_soup(self.novel_url + "/chapter-list").select("a.border-b")
         for chapter in chapters:
             chapter_id = len(self.chapters) + 1
             self.chapters.append(
-                {
-                    "id": chapter_id,
-                    "title": chapter.select_one("p").get_text(strip=True),
-                    "url": self.absolute_url(chapter["href"]),
-                }
+                Chapter(id=chapter_id, title=chapter.select_one('p').get_text(strip=True), url=self.absolute_url(chapter['href']))
             )
 
     def download_chapter_body(self, chapter):

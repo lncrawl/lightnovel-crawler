@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 from urllib.parse import quote_plus
 
 logger = logging.getLogger(__name__)
@@ -48,19 +48,19 @@ class WuxiaCityCrawler(Crawler):
         self.novel_cover = soup.find("div", class_="book-img").img.get("src")
 
         vol_id = 0
-        self.volumes.append({"id": vol_id})
+        self.volumes.append(Volume(id=vol_id))
         chapterItems = soup.find("ul", class_="chapters").find_all(
             "li", class_="oneline"
         )
         for chapter in chapterItems:
             self.chapters.append(
-                {
-                    "id": int(chapter.find("span", class_="chapter-num").text),
-                    "volume": vol_id,
-                    "url": f'{self.home_url.strip("/")}{chapter.a.get("href")}',
-                    "title": chapter.a.p.text,
-                    "hash": chapter.a.get("href").split("/")[-1],
-                }
+                Chapter(
+                    id=int(chapter.find("span", class_="chapter-num").text),
+                    volume=vol_id,
+                    url=f'{self.home_url.strip("/")}{chapter.a.get("href")}',
+                    title=chapter.a.p.text,
+                    hash=chapter.a.get("href").split("/")[-1],
+                )
             )
         self.chapters.sort(key=lambda c: c["id"])
 

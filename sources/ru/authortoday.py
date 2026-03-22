@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +30,7 @@ class AuthorTodayCrawler(Crawler):
         self.novel_cover = book_info["coverUrl"]
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_synopsis = (
-            book_info["annotation"] if book_info["annotation"] else None
-        )
+        self.novel_synopsis = book_info.get("annotation")
         logger.info("Novel synopsis: %s", self.novel_synopsis)
 
         chap_id = 0
@@ -42,11 +40,11 @@ class AuthorTodayCrawler(Crawler):
 
             chap_id = chap_id + 1
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "url": f"https://author.today/reader/{chapter['workId']}/chapter?id={chapter['id']}",
-                    "title": chapter["title"],
-                }
+                Chapter(
+                    id=chap_id,
+                    title=chapter['title'],
+                    url=f"https://author.today/reader/{chapter['workId']}/chapter?id={chapter['id']}",
+                )
             )
 
     def download_chapter_body(self, chapter):

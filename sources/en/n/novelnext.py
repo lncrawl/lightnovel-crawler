@@ -2,7 +2,7 @@
 import logging
 from typing import Optional
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.templates.novelfull import NovelFullTemplate
 
@@ -29,5 +29,5 @@ class NovelNextCrawler(NovelFullTemplate):
             }
         )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one("#chr-content, #chapter-content")

@@ -3,7 +3,6 @@ import json
 import logging
 import re
 
-from bs4 import Tag
 
 from lncrawl.core.crawler import Crawler
 
@@ -32,18 +31,18 @@ class GreensiaCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_image = soup.select_one('meta[property="og:image"]')
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = possible_image['content']
         logger.info('Novel cover: %s', self.novel_cover)
 
         response = None
 
         script_tag = soup.select_one('script[src^="/feeds/posts/default/-/"]')
-        if isinstance(script_tag, Tag):
+        if script_tag:
             response = self.get_response(self.absolute_url(script_tag['src']))
 
         a_search = soup.select_one('#breadcrumb a[href*="/search/label/"], #main span.search-label')
-        if not response and isinstance(a_search, Tag):
+        if not response and bool(a_search):
             response = self.get_response(self.absolute_url(novel_info_url % a_search.text.strip()))
 
         if not response:
@@ -87,5 +86,4 @@ class GreensiaCrawler(Crawler):
         logger.debug('Visiting %s', chapter['url'])
         soup = self.get_soup(chapter['url'])
         body = soup.select_one('.post-body')
-        assert isinstance(body, Tag)
         return self.cleaner.extract_contents(body)

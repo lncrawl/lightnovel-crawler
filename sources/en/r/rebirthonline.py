@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import BeautifulSoup
+from lncrawl.core.soup import PageSoup
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +38,7 @@ class RebirthOnlineCrawler(Crawler):
 
         for a in soup.select(".table_of_content ul li a"):
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.text.strip(),
-                }
+                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a['href']), title=a.text.strip())
             )
 
     def download_chapter_body(self, chapter):
@@ -71,6 +67,6 @@ class RebirthOnlineCrawler(Crawler):
             tmp = ""
             for content in contents:
                 tmp = tmp + "<p>" + content.text + "</p>"
-                contents = BeautifulSoup(tmp, "lxml")
+                contents = PageSoup.create(tmp, parser="lxml")
 
         return str(contents)

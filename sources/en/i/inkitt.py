@@ -4,9 +4,8 @@ import logging
 from typing import List
 from urllib.parse import quote
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 from lncrawl.exceptions import LNException
 from lncrawl.models import SearchResult
 
@@ -34,7 +33,7 @@ class InkittCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
         id_tag = soup.select_one("#reading-lists-block-container")
 
-        if not isinstance(id_tag, Tag):
+        if not id_tag:
             raise LNException("Novel id not found")
 
         self.novel_id = json.loads(id_tag["props"])["storyId"]
@@ -49,13 +48,7 @@ class InkittCrawler(Crawler):
 
         for chapter in chapters:
             self.chapters.append(
-                {
-                    "id": len(self.chapters) + 1,
-                    "title": f"{chapter['chapter_number']}. {chapter['name']}",
-                    "url": self.absolute_url(
-                        f"{self.novel_url.strip('/')}/chapters/{chapter['chapter_number']}"
-                    ),
-                }
+                Chapter(id=len(self.chapters) + 1, title=f"{chapter['chapter_number']}. {chapter['name']}", url=self.absolute_url(f"{self.novel_url.strip('/')}/chapters/{chapter['chapter_number']}"))
             )
 
     def download_chapter_body(self, chapter):

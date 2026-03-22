@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 novel_page = "https://4scanlation.com/%s"
@@ -49,15 +49,15 @@ class FourScanlationCrawler(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": possible_url,
-                    "title": a.text.strip(),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=possible_url,
+                    title=a.text.strip(),
+                )
             )
 
-        self.volumes = [{"id": x} for x in volumes]
+        self.volumes = [Volume(id=x) for x in volumes]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

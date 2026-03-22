@@ -3,9 +3,8 @@ import logging
 import re
 from urllib.parse import quote_plus
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "%s/tim-kiem-nang-cao?title=%s"
@@ -55,30 +54,29 @@ class ListNovelCrawler(Crawler):
         logger.info("%s", self.novel_author)
 
         possible_image = soup.select_one(".series-cover .img-in-ratio")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             urls = re.findall(r"url\('([^']+)'\)", str(possible_image["style"]))
             self.novel_cover = self.absolute_url(urls[0]) if urls else None
         logger.info("Novel cover: %s", self.novel_cover)
 
         for section in soup.select(".volume-list"):
             vol_id = 1 + len(self.volumes)
-            vol_title = section.select_one(".sect-title")
-            vol_title = vol_title.text.strip() if isinstance(vol_title, Tag) else None
+            vol_title = section.select_one(".sect-title").text
             self.volumes.append(
-                {
-                    "id": vol_id,
-                    "title": vol_title,
-                }
+                Volume(
+                    id=vol_id,
+                    title=vol_title,
+                )
             )
             for a in section.select(".list-chapters a"):
                 chap_id = 1 + len(self.chapters)
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "title": a["title"],
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(
+                        id=chap_id,
+                        volume=vol_id,
+                        title=a['title'],
+                        url=self.absolute_url(a['href']),
+                    )
                 )
 
     def download_chapter_body(self, chapter):

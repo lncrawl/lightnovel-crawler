@@ -2,6 +2,7 @@
 import logging
 import re
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "%s/wp-admin/admin-ajax.php?action=autosuggest&q=%s"
@@ -74,11 +75,11 @@ class MtlnovelCrawler(Crawler):
             if self.novel_url not in a["href"]:
                 continue
             chap_id = 1 + len(self.chapters)
-            self.chapters.append({
-                "id": chap_id,
-                "title": a.text.strip(),
-                "url": self.absolute_url(a['href']).strip('/') + '/',
-            })
+            self.chapters.append(Chapter(
+                id=chap_id,
+                title=a.text.strip(),
+                url=self.absolute_url(a['href']).strip('/') + '/',
+            ))
 
         # NOTE: JSON files are not available now
         # for item in soup.select("div.ch-list amp-list"):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import urlparse
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -78,14 +78,14 @@ class WNMTLCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": CHAPTER_CONTENT_URL % item["id"],
-                    "title": "Chapter %d: %s" % (item["chapterOrder"], item["title"]),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=CHAPTER_CONTENT_URL % item["id"],
+                    title="Chapter %d: %s" % (item["chapterOrder"], item["title"]),
+                )
             )
 
     def download_chapter_body(self, chapter):

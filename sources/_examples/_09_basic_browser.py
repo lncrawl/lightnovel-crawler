@@ -71,7 +71,7 @@ class MyCrawlerName(BasicBrowserTemplate):
         # This gets called only when the `read_novel_info_in_soup` fails.
         # The current input url is available at `self.novel_url`.
         # You can use `self.visit`, `self.browser.wait` etc. utilities.
-        # Get a BeautifulSoup Tag instance from browser: `self.browser.find(..).as_tag()`
+        # Get a PageSoup instance from browser: `self.browser.soup`
         #
         # You must set the following parameters:
         #       `self.novel_title`: the title of the novel
@@ -99,11 +99,6 @@ class MyCrawlerName(BasicBrowserTemplate):
         # Use the `chapter['url']` to get the chapter contents.
         # You can use `self.visit` to visit the chapter in browser tab.
         # There can be only one thread using the browser at a time.
-        # Get a BeautifulSoup Tag instance from browser: `self.browser.find(..).as_tag()`
+        # Get a PageSoup instance from browser: `self.browser.soup`
         # To clean chapter HTML easily, use `self.cleaner.extract_contents`.
-        raise NotImplementedError()
-
-    # TODO: [OPTIONAL] Return the index in self.chapters which contains a chapter URL
-    def index_of_chapter(self, url: str) -> int:
-        # To get more help, check the default implemention in the `Crawler` class.
         raise NotImplementedError()

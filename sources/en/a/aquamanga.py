@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -71,22 +71,20 @@ class AquaMangaCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
-            self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
-            )
+                self.volumes.append(Volume(id=vol_id))
+            self.chapters.append(Chapter(
+                id=chap_id,
+                volume=vol_id,
+                title=a.text.strip(),
+                url=self.absolute_url(a["href"]),
+            ))
 
     def download_chapter_body(self, chapter):
         logger.info("Visiting %s", chapter["url"])
         soup = self.get_soup(chapter["url"])
         contents = soup.select_one("div.reading-content")
 
-        for img in contents.findAll("img"):
+        for img in contents.find_all("img"):
             if img.has_attr("data-src"):
                 src_url = img["data-src"]
                 parent = img.parent

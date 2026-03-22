@@ -2,7 +2,7 @@
 
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -33,16 +33,11 @@ class SteambunCrawler(Crawler):
             volume_id = 1 + (chapter_id - 1) // 100
             volumes.add(volume_id)
             self.chapters.append(
-                {
-                    "id": chapter_id,
-                    "volume": volume_id,
-                    "title": title,
-                    "url": a["href"],
-                }
+                Chapter(id=chapter_id, volume=volume_id, title=title, url=a['href'])
             )
 
         self.chapters.sort(key=lambda x: x["id"])
-        self.volumes = [{"id": x, "title": ""} for x in volumes]
+        self.volumes = [Volume(id=x, title="") for x in volumes]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

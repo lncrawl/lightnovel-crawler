@@ -4,8 +4,8 @@ import shutil
 import sys
 from pathlib import Path
 
-if sys.version_info[:2] < (3, 8):
-    raise RuntimeError("This app only supports Python 3.8 and later.")
+if sys.version_info[:2] < (3, 9):
+    raise RuntimeError("This app only supports Python 3.9 and later.")
 
 ROOT = Path(__file__).resolve().parent
 

@@ -1,7 +1,7 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class AsianNovelCrawler(Crawler):
 
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.volumes.append({"id": 1})
+        self.volumes.append(Volume(id=1))
         for a in soup.select("#toc > div a"):
             title = a.select_one("div:first-of-type").get_text().strip()
 
@@ -36,14 +36,12 @@ class AsianNovelCrawler(Crawler):
             if len(match) == 1:
                 chap_id = int(match[0][1])
 
-            self.chapters.append(
-                {
-                    "volume": 1,
-                    "id": chap_id,
-                    "title": title,
-                    "url": self.absolute_url(a["href"]),
-                }
-            )
+            self.chapters.append(Chapter(
+                volume=1,
+                id=chap_id,
+                title=title,
+                url=self.absolute_url(a["href"]),
+            ))
 
     def download_chapter_body(self, chapter):
         logger.debug("Visiting %s", chapter["url"])

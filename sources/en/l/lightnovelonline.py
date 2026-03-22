@@ -3,7 +3,7 @@ import logging
 from concurrent import futures
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://light-novel.online/search.ajax?query=%s"
@@ -78,9 +78,16 @@ class LightNovelOnline(Crawler):
             for chap in reversed(temp_chapters[page]):
                 chap["id"] = len(self.chapters) + 1
                 chap["volume"] = len(self.chapters) // 100 + 1
-                self.chapters.append(chap)
+                self.chapters.append(
+                    Chapter(
+                        id=chap["id"],
+                        volume=chap["volume"],
+                        title=chap["title"],
+                        url=chap["url"],
+                    )
+                )
 
-        self.volumes = [{"id": i + 1} for i in range(1 + len(self.chapters) // 100)]
+        self.volumes = [Volume(id=i + 1) for i in range(1 + len(self.chapters) // 100)]
 
     def extract_chapter_list(self, page):
         url = novel_page_url % (self.novel_id, page)

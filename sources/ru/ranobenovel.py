@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 chapter_ajax_url = "https://ranobe-novels.ru/wp-content/themes/ranobe-novels/template-parts/category/chapters-query.php"
@@ -52,7 +52,7 @@ class RanobeNovel(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one("picture.category-img img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
@@ -62,7 +62,7 @@ class RanobeNovel(Crawler):
         logger.info("%s", self.novel_author)
 
         possible_synopsis = soup.select_one("div.category-exerpt.description")
-        if isinstance(possible_synopsis, Tag):
+        if possible_synopsis:
             self.novel_synopsis = self.cleaner.extract_contents(possible_synopsis)
         logger.info("Novel synopsis: %s", self.novel_synopsis)
 
@@ -102,14 +102,14 @@ class RanobeNovel(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": item["post_title"].strip(),
-                    "url": self.absolute_url(f"/{item['post_name']}/"),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=item["post_title"].strip(),
+                    url=self.absolute_url(f"/{item['post_name']}/"),
+                )
             )
         logger.info("Found %d chapters", len(self.chapters))
 

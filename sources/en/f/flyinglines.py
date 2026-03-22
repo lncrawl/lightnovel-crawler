@@ -4,7 +4,7 @@ from datetime import datetime
 from hashlib import md5
 from urllib.parse import urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +37,14 @@ class FlyingLinesCrawler(Crawler):
             chap_id = int(a["data-chapter-number"])
             vol_id = 1 + (chap_id - 1) // 100
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     def download_chapter_body(self, chapter):

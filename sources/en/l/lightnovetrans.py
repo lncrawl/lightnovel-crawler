@@ -3,7 +3,7 @@
 import logging
 from typing import Generator, Optional, Union
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.models import Chapter, Volume
 from lncrawl.templates.soup.general import GeneralSoupTemplate
@@ -17,15 +17,15 @@ class LNTCrawler(GeneralSoupTemplate):
     has_manga = False
     has_mtl = False
 
-    def get_novel_soup(self) -> BeautifulSoup:
+    def get_novel_soup(self) -> PageSoup:
         return self.get_soup(f"{self.novel_url}/?tab=table_contents")
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one(".novel_title")
         assert tag
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one(".novel-image img")
         assert tag
         if tag.has_attr("data-src"):
@@ -33,13 +33,13 @@ class LNTCrawler(GeneralSoupTemplate):
         if tag.has_attr("src"):
             return self.absolute_url(tag["src"])
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         for p in soup.select(".entry-content > p"):
             if "Author" in p.text:
                 yield p.text.replace("Author:", "").strip()
 
     def parse_chapter_list(
-        self, soup: BeautifulSoup
+        self, soup: PageSoup
     ) -> Generator[Union[Chapter, Volume], None, None]:
         _id = 0
         for a in soup.select(".novel_list_chapter_content li.unlock a"):
@@ -48,5 +48,5 @@ class LNTCrawler(GeneralSoupTemplate):
                 id=_id, url=self.absolute_url(a["href"]), title=a.text.strip()
             )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one(".text_story")

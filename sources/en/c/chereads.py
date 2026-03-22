@@ -4,7 +4,7 @@ import logging
 import re
 
 from box import Box
-from bs4 import BeautifulSoup
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.core.crawler import Chapter, Crawler, Volume
 from lncrawl.exceptions import LNException
@@ -18,7 +18,7 @@ class ChereadsCrawler(Crawler):
     def initialize(self):
         self.init_executor(workers=4)
 
-    def parse_metadata(self, soup: BeautifulSoup) -> Box:
+    def parse_metadata(self, soup: PageSoup) -> Box:
         metadata_json = soup.select_one("script#__NEXT_DATA__, script#vite-plugin-ssr_pageContext")
         if not metadata_json:
             raise LNException('No metadata')

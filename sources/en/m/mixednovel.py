@@ -2,9 +2,8 @@
 import logging
 from urllib.parse import quote_plus
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ class MixedNovelNet(Crawler):
         logger.info("%s", self.novel_author)
 
         possible_image = soup.select_one(".summary_image img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             urls = possible_image['data-lazy-src']
             self.novel_cover = self.absolute_url(urls) if urls else None
         logger.info("Novel cover: %s", self.novel_cover)
@@ -62,11 +61,7 @@ class MixedNovelNet(Crawler):
             chap_id = len(all_chapter_soup) - len(self.chapters)
             a = chapter.select_one("a")
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

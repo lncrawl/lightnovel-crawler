@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://boxnovel.online/?s=%s&post_type=wp-manga&author=&artist=&release="
@@ -55,15 +56,15 @@ class BoxNovelOnline(Crawler):
             vol_id = (chap_id - 1) // 100 + 1
             volumes.add(vol_id)
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.text.strip() or ("Chapter %d" % chap_id),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a['href']),
+                    title=a.text.strip() or f'Chapter {chap_id}',
+                )
             )
 
-        self.volumes = [{"id": x} for x in volumes]
+        self.volumes = [Volume(id=vol_id) for vol_id in volumes]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

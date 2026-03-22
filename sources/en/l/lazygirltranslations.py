@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +45,15 @@ class LazyGirlTranslationsCrawler(Crawler):
             chap_id = 1 + len(self.chapters)
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.text.strip(),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip(),
+                )
             )
 
     def download_chapter_body(self, chapter):

@@ -3,7 +3,7 @@ import json
 import logging
 
 from colorama import Fore, Style
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -52,11 +52,7 @@ class RenovelsCrawler(Crawler):
             chap_id = 1 + (len(self.chapters))
             chap_name = chapter["name"]
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "title": chap_name if chap_name else chapter["chapter"],
-                    "url": f"{self.novel_url}/{chapter['id']}"
-                }
+                Chapter(id=chap_id, title=chap_name if chap_name else chapter['chapter'], url=f"{self.novel_url}/{chapter['id']}")
             )
 
         print(

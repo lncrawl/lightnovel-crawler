@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +33,11 @@ class DummyNovelsCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_title = soup.select_one(".elementor-heading-title")
-        assert isinstance(possible_title, Tag)
         self.novel_title = possible_title.text
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".elementor-image img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
@@ -54,34 +52,26 @@ class DummyNovelsCrawler(Crawler):
             if "Table of Contents" in str(tab.text):
                 possible_toc = soup.select_one("#" + str(tab["aria-controls"]))
                 break
-        assert isinstance(possible_toc, Tag), "No table of contents"
 
         for tab in possible_toc.select(
             ".elementor-accordion-item .elementor-tab-title"
         ):
             possible_contents = possible_toc.select_one("#" + str(tab["aria-controls"]))
-            if not isinstance(possible_contents, Tag):
+            if not possible_contents:
                 continue
 
             vol_id = 1 + len(self.volumes)
             vol_title = tab.select_one(".elementor-accordion-title")
-            vol_title = vol_title.text if isinstance(vol_title, Tag) else None
-            self.volumes.append(
-                {
-                    "id": vol_id,
-                    "title": vol_title,
-                }
-            )
+            vol_title = vol_title.text if vol_title else None
+            self.volumes.append(Volume(
+                id=vol_id,
+                title=vol_title,
+            ))
 
             for a in possible_contents.select("a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "title": a.text.strip(),
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
                 )
 
     def download_chapter_body(self, chapter):

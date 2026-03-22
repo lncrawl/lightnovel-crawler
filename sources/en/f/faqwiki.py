@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4.element import Tag
 from lncrawl.core.crawler import Crawler
 from lncrawl.models import Volume, Chapter, SearchResult
 
@@ -28,9 +27,7 @@ class FaqWiki(Crawler):
         content = soup.select_one(".entry-content")
 
         entry_title = soup.select_one("h1.entry-title")
-        assert isinstance(
-            entry_title, Tag
-        )  # this must be here, is part of normal site structure/framework
+        assert entry_title
         self.novel_title = entry_title.text.strip()
         # remove suffix from completed novels' title
         if self.novel_title.endswith(" – All Chapters"):

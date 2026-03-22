@@ -3,8 +3,7 @@ import logging
 import re
 from concurrent import futures
 
-
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "http://boxnovel.org/search?keyword=%s"
@@ -85,8 +84,8 @@ class BoxNovelOrgCrawler(Crawler):
         logger.info("Adding volumes...")
         mini = self.chapters[0]["volume"]
         maxi = self.chapters[-1]["volume"]
-        for i in range(mini, maxi + 1):
-            self.volumes.append({"id": i})
+        for vol_id in range(mini, maxi + 1):
+            self.volumes.append(Volume(id=vol_id))
 
     def download_chapter_list(self, page):
         url = self.novel_url.split("?")[0].strip("/")
@@ -107,13 +106,12 @@ class BoxNovelOrgCrawler(Crawler):
             if len(match) == 1:
                 volume_id = int(match[0][1])
 
-            data = {
-                "title": title,
-                "id": chapter_id,
-                "volume": volume_id,
-                "url": self.absolute_url(a["href"]),
-            }
-            self.chapters.append(data)
+            self.chapters.append(Chapter(
+                title=title,
+                id=chapter_id,
+                volume=volume_id,
+                url=self.absolute_url(a["href"]),
+            ))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

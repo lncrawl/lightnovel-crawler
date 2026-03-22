@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4.element import Tag
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -14,17 +13,16 @@ class TravisTranslations(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_title = soup.select_one(".novel-info h1[title]")
-        assert isinstance(possible_title, Tag)
         self.novel_title = possible_title["title"]
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one('meta[property="og:image"]')
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["content"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = soup.select_one(".novel-info .author")
-        if isinstance(possible_author, Tag):
+        if possible_author:
             self.novel_author = possible_author.text.strip()
         logger.info("Novel author: %s", self.novel_author)
 
@@ -32,20 +30,15 @@ class TravisTranslations(Crawler):
             chap_id = 1 + len(self.chapters)
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
             title = None
             possible_chapter_title = a.select_one("span")
-            if isinstance(possible_chapter_title, Tag):
+            if possible_chapter_title:
                 title = possible_chapter_title.text.strip()
 
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": title,
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=title, url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

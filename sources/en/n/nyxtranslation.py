@@ -2,7 +2,6 @@
 import logging
 import re
 
-from bs4.element import Tag
 from lncrawl.core.crawler import Crawler
 from lncrawl.models import Volume, Chapter
 
@@ -26,7 +25,6 @@ class NYXTranslation(Crawler):
         content = soup.select_one("main#main > article")
 
         entry_title = content.select_one("h1.entry-title")
-        assert isinstance(entry_title, Tag)
         self.novel_title = entry_title.text.strip()
         pre_tags = content.find("strong", text=re.compile(r"Genre.*:.*"))
         if pre_tags:
@@ -57,9 +55,8 @@ class NYXTranslation(Crawler):
         description_start = content.find("p", text="Description")
         d_next = description_start.next_sibling
         while True:
-            if not isinstance(d_next, Tag):
-                d_next = d_next.next_sibling
-                continue
+            if not d_next:
+                break
             if "Alternative Name(s)" in d_next.next_sibling or d_next.name != "p":
                 break
             description += d_next.text + "\n"
@@ -71,9 +68,6 @@ class NYXTranslation(Crawler):
         c_next = chapters_start.next_sibling
         chap = ""
         while c_next:
-            if not isinstance(c_next, Tag):
-                c_next = c_next.next_sibling
-                continue
 
             # there are some aria-hidden spacing divs within the chapter list
             # also skip text-emtpy elements

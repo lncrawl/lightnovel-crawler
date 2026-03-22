@@ -2,8 +2,8 @@
 import logging
 import re
 from concurrent import futures
-from lncrawl.core.crawler import Crawler
-from bs4 import BeautifulSoup
+from lncrawl.core.crawler import Chapter, Crawler, Volume
+from lncrawl.core.soup import PageSoup
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.newsnovel.net/search/%s"
@@ -73,7 +73,7 @@ class NewsNovelCrawler(Crawler):
         mini = self.chapters[0]["volume"]
         maxi = self.chapters[-1]["volume"]
         for i in range(mini, maxi + 1):
-            self.volumes.append({"id": i})
+            self.volumes.append(Volume(id=i))
 
     def download_chapter_list(self, page, novel_id):
         # Uses an AJAX based pagination that calls this address:
@@ -81,7 +81,7 @@ class NewsNovelCrawler(Crawler):
 
         url = pagination_url.split("?")[0].strip("/")
         # url += '?action=tw_ajax&type=pagination&id=%spage=%s' % (novel_id, page)
-        soup = BeautifulSoup(
+        soup = PageSoup.create(
             self.submit_form(
                 url,
                 {
@@ -91,7 +91,7 @@ class NewsNovelCrawler(Crawler):
                     "page": page,
                 },
             ).json()["list_chap"],
-            "lxml",
+            parser="lxml",
         )
 
         if not soup.find("body"):
@@ -110,13 +110,14 @@ class NewsNovelCrawler(Crawler):
             if len(match) == 1:
                 volume_id = int(match[0][1])
 
-            data = {
-                "title": title,
-                "id": chapter_id,
-                "volume": volume_id,
-                "url": self.absolute_url(a["href"]),
-            }
-            self.chapters.append(data)
+            self.chapters.append(
+                Chapter(
+                    title=title,
+                    id=chapter_id,
+                    volume=volume_id,
+                    url=self.absolute_url(a["href"]),
+                )
+            )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

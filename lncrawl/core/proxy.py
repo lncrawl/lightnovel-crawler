@@ -72,7 +72,7 @@ def get_a_proxy(scheme: str = "http", timeout: float = 0):
     return url
 
 
-def remove_faulty_proxies(faulty_url: str):
+def remove_faulty_proxy(faulty_url: str):
     if faulty_url and not __is_private_proxy[faulty_url]:
         __proxy_use_count[faulty_url] = __max_use_per_proxy + 1
 

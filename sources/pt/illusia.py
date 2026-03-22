@@ -11,8 +11,9 @@ import logging
 import re
 from urllib.parse import urljoin
 
-from bs4 import BeautifulSoup, Tag
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Volume
+from lncrawl.core.soup import PageSoup
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 SEARCH_URL = "https://illusia.com.br/?s=%s&post_type=wp-manga"
@@ -73,7 +74,7 @@ class Illusia(Crawler):
             self.novel_cover = self.absolute_url(og["content"])
         else:
             img = soup.select_one(".summary_image img")
-            if isinstance(img, Tag):
+            if img:
                 self.novel_cover = self.absolute_url(
                     img.get("data-src") or img.get("src")
                 )
@@ -132,7 +133,7 @@ class Illusia(Crawler):
         else:
             # se não conseguir detectar volumes, mantém Volume 1
             if not self.volumes:
-                self.volumes = [{"id": 1, "title": "Volume 1"}]
+                self.volumes = [Volume(id=1, title="Volume 1")]
                 self._set_display_numbers()
 
     # --------------- CONTEÚDO DO CAPÍTULO ---------------
@@ -153,8 +154,8 @@ class Illusia(Crawler):
         Não altera títulos; apenas adiciona 'display_number' no dict de cada volume."""
         try:
             for i, v in enumerate(self.volumes or [], start=1):
-                if isinstance(v, dict):
-                    v['display_number'] = i
+                if isinstance(v, (dict, Volume)):
+                    v["display_number"] = i
         except Exception:
             pass
 
@@ -195,7 +196,7 @@ class Illusia(Crawler):
             for it in data:
                 link = it.get("link")
                 t_html = it.get("title", {}).get("rendered", "") or ""
-                t_text = BeautifulSoup(t_html, "html.parser").get_text(strip=True)
+                t_text = PageSoup.create(t_html, parser="html.parser").get_text(strip=True)
                 order = it.get("menu_order", 0)
                 all_items.append((order, t_text, self.absolute_url(link)))
 
@@ -210,12 +211,12 @@ class Illusia(Crawler):
         all_items.sort(key=lambda x: (x[0], x[2]))
         self.chapters = []
         for idx, (_, title, link) in enumerate(all_items, start=1):
-            self.chapters.append({"id": idx, "volume": 1, "title": title, "url": link})
-        self.volumes = [{"id": 1, "title": "Volume 1"}]
+            self.chapters.append(Chapter(id=idx, volume=1, title=title, url=link))
+        self.volumes = [Volume(id=1, title="Volume 1")]
         logger.info("Capítulos via REST: %d", len(self.chapters))
         return True
 
-    def _extract_volume_map_from_html(self, soup: BeautifulSoup):
+    def _extract_volume_map_from_html(self, soup: PageSoup):
         """
         Lê a página da obra e extrai:
           - lista de volumes (na ordem em tela) -> [{"id": n, "title": "..."}]
@@ -297,7 +298,7 @@ class Illusia(Crawler):
             return [], {}
         return vol_list, url_to_vol
 
-    def _load_chapters_from_html(self, soup: BeautifulSoup) -> None:
+    def _load_chapters_from_html(self, soup: PageSoup) -> None:
         """
         Fallback se REST falhar: extrai volumes e capítulos direto do HTML
         (pode ser mais lento).
@@ -322,10 +323,10 @@ class Illusia(Crawler):
                 title = an.get_text(" ", strip=True) or an.get("title") or an.get("aria-label") or href
                 chap_id += 1
                 self.chapters.append(
-                    {"id": chap_id, "volume": 1, "title": title, "url": self.absolute_url(href)}
+                    Chapter(id=chap_id, volume=1, title=title, url=self.absolute_url(href))
                 )
             if self.chapters and not self.volumes:
-                self.volumes = [{"id": 1, "title": "Volume 1"}]
+                self.volumes = [Volume(id=1, title="Volume 1")]
                 self._set_display_numbers()
             return
 
@@ -355,6 +356,6 @@ class Illusia(Crawler):
                 continue  # ignora links fora dos blocos de volume
             title = a.get_text(" ", strip=True) or a.get("title") or a.get("aria-label") or url
             chap_id += 1
-            self.chapters.append({"id": chap_id, "volume": vol_id, "title": title, "url": url})
+            self.chapters.append(Chapter(id=chap_id, volume=vol_id, title=title, url=url))
         self._set_display_numbers()
         logger.info("Capítulos via HTML: %d | Volumes: %d", len(self.chapters), len(self.volumes))

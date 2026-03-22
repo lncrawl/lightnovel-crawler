@@ -2,8 +2,8 @@
 import logging
 import re
 from urllib.parse import urlparse
-from bs4.element import Tag
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.models import Volume
 
 logger = logging.getLogger(__name__)
 chapter_url = "https://www.fictionpress.com/s/%s/%s"
@@ -50,9 +50,9 @@ class FictionPressCrawler(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = soup.select_one("#profile_top, #content")
-        if isinstance(possible_author, Tag):
+        if possible_author:
             possible_author = possible_author.select_one('a[href*="/u/"]')
-        if isinstance(possible_author, Tag):
+        if possible_author:
             self.novel_author = possible_author.text.strip()
         logger.info("Novel author: %s", self.novel_author)
 
@@ -61,33 +61,19 @@ class FictionPressCrawler(Crawler):
 
         if soup.select_one("#pre_story_links"):
             origin_book = soup.select("#pre_story_links a")[-1]
-            self.volumes.append(
-                {
-                    "id": 1,
-                    "title": origin_book.text.strip(),
-                }
-            )
+            self.volumes.append(Volume(id=1, title=origin_book.text.strip()))
         else:
-            self.volumes.append({"id": 1})
+            self.volumes.append(Volume(id=1))
 
         chapter_select = soup.select_one("#chap_select, select#jump")
         if chapter_select:
             for option in chapter_select.select("option"):
                 self.chapters.append(
-                    {
-                        "volume": 1,
-                        "id": int(option["value"]),
-                        "title": option.text.strip(),
-                        "url": chapter_url % (self.novel_id, option["value"]),
-                    }
+                    Chapter(volume=1, id=int(option['value']), title=option.text.strip(), url=chapter_url % (self.novel_id, option['value']))
                 )
         else:
             self.chapters.append(
-                {
-                    "id": 1,
-                    "volume": 1,
-                    "url": self.novel_url,
-                }
+                Chapter(id=1, volume=1, url=self.novel_url)
             )
 
     def download_chapter_body(self, chapter):

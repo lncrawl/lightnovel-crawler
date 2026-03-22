@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
 from urllib.parse import quote
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "%s/book/searchByPageInShelf?curr=1&limit=10&keyword=%s"
@@ -38,11 +37,9 @@ class NovelHiCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_book_id = soup.select_one("input#bookId")
-        assert isinstance(possible_book_id, Tag), "No book id"
         self.novel_id = possible_book_id["value"]
 
         possible_image = soup.select_one("a.book_cover img.cover")
-        assert isinstance(possible_image, Tag), "No novel title"
 
         self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
@@ -62,14 +59,9 @@ class NovelHiCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": item["indexName"],
-                    "url": "%s/%s" % (self.novel_url.strip("/"), item["indexNum"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=item['indexName'], url='%s/%s' % (self.novel_url.strip('/'), item['indexNum']))
             )
 
     def download_chapter_body(self, chapter):

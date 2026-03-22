@@ -1,9 +1,7 @@
 import logging
-from typing import Optional
 from urllib.parse import urlencode
 
-from bs4 import BeautifulSoup, Tag
-
+from lncrawl.core.soup import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 from lncrawl.templates.soup.searchable import SearchableSoupTemplate
@@ -31,34 +29,32 @@ class MadaraTemplate(SearchableSoupTemplate, ChapterOnlyBrowserTemplate):
         soup = self.get_soup(f"{self.home_url}?{urlencode(params)}")
         yield from soup.select(".c-tabs-item__content")
 
-    def parse_search_item(self, tag: Tag) -> SearchResult:
+    def parse_search_item(self, tag: PageSoup) -> SearchResult:
         a = tag.select_one(".post-title h3 a")
         latest = tag.select_one(".latest-chap .chapter a")
         votes = tag.select_one(".rating .total_votes")
-        assert a and latest and votes
         return SearchResult(
-            title=a.get_text(strip=True),
+            title=a.text,
             url=self.absolute_url(a["href"]),
-            info="%s | Rating: %s" % (latest, votes),
+            info="%s | Rating: %s" % (latest.text, votes.text),
         )
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one(".post-title h1")
         assert tag
         for span in tag.select("span"):
             span.extract()
-        return tag.text.strip()
+        return tag.text
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one(".summary_image a img")
-        if isinstance(tag, Tag):
-            if tag.has_attr("data-src"):
-                return self.absolute_url(tag["data-src"])
-            if tag.has_attr("src"):
-                return self.absolute_url(tag["src"])
+        if tag.has_attr("data-src"):
+            return self.absolute_url(tag["data-src"])
+        if tag.has_attr("src"):
+            return self.absolute_url(tag["src"])
         return ""
 
-    def parse_authors(self, soup: BeautifulSoup):
+    def parse_authors(self, soup: PageSoup):
         for a in soup.select('.author-content a[href*="manga-author"]'):
             yield a.text.strip()
 
@@ -70,13 +66,13 @@ class MadaraTemplate(SearchableSoupTemplate, ChapterOnlyBrowserTemplate):
         possible_summary = soup.select_one(".description-summary a")
         return self.cleaner.extract_contents(possible_summary)
 
-    def select_chapter_tags(self, soup: BeautifulSoup):
+    def select_chapter_tags(self, soup: PageSoup):
         try:
             clean_novel_url = self.novel_url.split("?")[0].strip("/")
             response = self.submit_form(f"{clean_novel_url}/ajax/chapters/")
             soup = self.make_soup(response)
             chapters = soup.select("ul.main .wp-manga-chapter a")
-            yield from reversed(chapters)
+            yield from reversed(list(chapters))
             use_alternate = True
         except Exception as e:
             use_alternate = True
@@ -84,7 +80,7 @@ class MadaraTemplate(SearchableSoupTemplate, ChapterOnlyBrowserTemplate):
 
         if use_alternate:
             nl_id = soup.select_one("#manga-chapters-holder[data-id]")
-            if not isinstance(nl_id, Tag):
+            if not nl_id:
                 logger.debug("No chapter id tag found for alternate method")
                 return
             try:
@@ -97,16 +93,16 @@ class MadaraTemplate(SearchableSoupTemplate, ChapterOnlyBrowserTemplate):
                 )
                 soup = self.make_soup(response)
                 chapters = soup.select("ul.main .wp-manga-chapter a")
-                yield from reversed(chapters)
+                yield from reversed(list(chapters))
             except Exception as e:
                 logger.debug("Failed to fetch chapters using alternate method", e)
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         return Chapter(
             id=id,
-            title=tag.text.strip(),
+            title=tag.text,
             url=self.absolute_url(tag["href"]),
         )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one("div.reading-content")

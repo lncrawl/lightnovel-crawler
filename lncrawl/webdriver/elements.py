@@ -2,13 +2,12 @@ import logging
 from enum import Enum
 from typing import List
 
-from bs4 import Tag
 from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement as _WebElement
+from selenium.webdriver.support import expected_conditions as EC
 
-from ..core.soup import SoupMaker
+from ..core.soup import PageSoup
 from . import scripts
 
 logger = logging.getLogger(__name__)
@@ -40,7 +39,6 @@ class By(str, Enum):
 class WebElement(_WebElement):
     def __init__(self, parent, id_):
         super().__init__(parent, id_)
-        self.__soup_maker = getattr(self._parent, "_soup_maker", SoupMaker())
 
     @property
     def parent(self) -> WebDriver:
@@ -48,32 +46,27 @@ class WebElement(_WebElement):
 
     @property
     def inner_html(self) -> str:
-        return self.get_attribute("innerHTML")
+        return self.get_attribute("innerHTML") or ""
 
     @property
     def outer_html(self) -> str:
-        return self.get_attribute("outerHTML")
+        return self.get_attribute("outerHTML") or ""
 
-    @property
-    def _soup_maker(self) -> SoupMaker:
-        return self.__soup_maker
-
-    def as_tag(self) -> Tag:
+    def as_tag(self) -> PageSoup:
         html = self.outer_html
         if not hasattr(self, "_tag") or self._html != html:
             self._html = html
-            self._tag = self._soup_maker.make_tag(html)
+            self._tag = PageSoup.create(html)
         return self._tag
 
     def find_all(self, selector: str, by: By = By.CSS_SELECTOR) -> List["WebElement"]:
-        if isinstance(by, By):
-            by = str(by)
-        return self.find_elements(by, selector)
+        return [
+            WebElement(self, el)
+            for el in self.find_elements(str(by), selector)
+        ]
 
     def find(self, selector: str, by: By = By.CSS_SELECTOR) -> "WebElement":
-        if isinstance(by, By):
-            by = str(by)
-        return self.find_element(by, selector)
+        return WebElement(self, self.find_element(str(by), selector))
 
     def remove(self):
         self.parent.execute_script(scripts.remove_element, self)
@@ -85,9 +78,7 @@ class WebElement(_WebElement):
 def _add_virtual_authenticator(chrome: WebDriver):
     try:
         from selenium.webdriver.common.virtual_authenticator import (
-            Transport,
-            VirtualAuthenticatorOptions,
-        )
+            Transport, VirtualAuthenticatorOptions)
 
         auth_options = VirtualAuthenticatorOptions()
         auth_options.transport = Transport.INTERNAL

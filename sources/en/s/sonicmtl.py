@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.templates.madara import MadaraTemplate
 
@@ -28,5 +28,5 @@ class SonicMTLCrawler(MadaraTemplate):
             }
         )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one(".reading-content .text-left")

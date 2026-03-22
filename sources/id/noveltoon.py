@@ -3,7 +3,7 @@ import logging
 import re
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://noveltoon.mobi/en/search?word=%s&source=&lock="
@@ -77,14 +77,14 @@ class NovelsRockCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = chap_id // 100 + 1
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.select_one(".episode-item-title").text.strip(),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(a["href"]),
+                    title=a.select_one(".episode-item-title").text.strip(),
+                )
             )
 
     def download_chapter_body(self, chapter):

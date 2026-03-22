@@ -1,5 +1,5 @@
 import logging
-from bs4 import Tag
+from lncrawl.core.soup import PageSoup
 from lncrawl.core.crawler import Crawler
 
 from lncrawl.models import Volume, Chapter
@@ -33,12 +33,12 @@ class Xnunu(Crawler):
 
         # some chapters have multiple pages, we want all the content
         # page links look like 123_2 123_3.html, etc.
-        def _has_next_page(next_url_tag: Tag) -> bool:
+        def _has_next_page(next_url_tag: PageSoup) -> bool:
             url = next_url_tag["href"]
             frag = url.split("/")[-1]
             return "_" in frag
 
-        def cleanup_page(page: Tag) -> Tag:
+        def cleanup_page(page: PageSoup) -> PageSoup:
             """
                 Get rid of repeating author name at the start of every page
                 Thus multiple times per chapter...
@@ -80,23 +80,23 @@ class Xnunu(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = container.select_one("img.thumbnail")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = container.select_one('p>a.btn-info')
-        if isinstance(possible_author, Tag):
+        if possible_author:
             self.novel_author = possible_author.text.strip()
         assert self.novel_author, "No novel author, required for cleanup"
         logger.info("Novel Author: %s", self.novel_author)
 
         possible_tag = soup.select_one('ol.breadcrumb > li:nth-child(2) > a')
-        if isinstance(possible_tag, Tag):
+        if possible_tag:
             self.novel_tags = [possible_tag.text.strip()]
         logger.info("Novel Tag: %s", self.novel_tags)
 
         possible_synopsis = container.select_one("#bookIntro")
-        if isinstance(possible_synopsis, Tag):
+        if possible_synopsis:
             self.novel_synopsis = possible_synopsis.text
         logger.info("Novel Synopsis: %s", self.novel_synopsis)
 

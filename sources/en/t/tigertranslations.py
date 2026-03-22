@@ -2,7 +2,6 @@
 import logging
 import re
 
-from bs4.element import Tag
 from lncrawl.core.crawler import Crawler
 from lncrawl.models import Volume, Chapter, SearchResult
 
@@ -21,7 +20,6 @@ class TigerTranslations(Crawler):
         content = soup.select_one("div.the-content")
 
         entry_title = soup.select_one("h1.entry-title")
-        assert isinstance(entry_title, Tag)  # this must be here, is part of normal site structure/framework
         self.novel_title = entry_title.text
         self.novel_author = "TigerTranslations"
 
@@ -42,7 +40,7 @@ class TigerTranslations(Crawler):
 
         for location in image_locations:
             possible_cover = soup.select_one(location)
-            if isinstance(possible_cover, Tag):
+            if possible_cover:
                 self.novel_cover = self.absolute_url(possible_cover["src"])
 
         logger.info("Novel cover: %s", self.novel_cover)

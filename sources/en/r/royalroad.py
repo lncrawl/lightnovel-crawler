@@ -2,7 +2,7 @@
 import re
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.royalroad.com/fictions/search?keyword=%s"
@@ -57,11 +57,7 @@ class RoyalRoadCrawler(Crawler):
         for a in soup.select("#chapters .chapter-row td:first-child a[href]"):
             chap_id = len(self.chapters) + 1
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

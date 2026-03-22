@@ -2,10 +2,9 @@
 
 import logging
 import re
-from typing import Generator, Optional
+from typing import Generator
 
-from bs4 import BeautifulSoup, Tag
-
+from lncrawl.core.soup import PageSoup
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
 from lncrawl.templates.browser.searchable import SearchableBrowserTemplate
@@ -33,7 +32,7 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
             ]
         )
 
-    def select_search_items_in_browser(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items_in_browser(self, query: str) -> Generator[PageSoup, None, None]:
         self.visit(f"{self.home_url}search")
         self.browser.wait("#inputContent")
         inp = self.browser.find("#inputContent")
@@ -46,7 +45,7 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
             return
         yield from base.as_tag().select(".novel-list .novel-item a")
 
-    def select_search_items(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
         soup = self.get_soup(f"{self.home_url}search")
         token_tag = soup.select_one(
             '#novelSearchForm input[name="__LNRequestVerifyToken"]'
@@ -66,35 +65,29 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         soup = self.make_soup(response.json()["resultview"])
         yield from soup.select(".novel-list .novel-item a")
 
-    def parse_search_item(self, tag: Tag) -> SearchResult:
-        title = tag.select_one(".novel-title")
-        assert title
-        info = [s.text.strip() for s in tag.select(".novel-stats")]
+    def parse_search_item(self, tag: PageSoup) -> SearchResult:
         return SearchResult(
             url=self.absolute_url(tag["href"]),
-            title=title.get_text(strip=True),
-            info=" | ".join(info),
+            title=tag.select_one(".novel-title").text,
+            info=" | ".join([s.text for s in tag.select(".novel-stats")]),
         )
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
-        tag = soup.select_one("article#novel .novel-title")
-        assert tag
-        return tag.text.strip()
+    def parse_title(self, soup: PageSoup) -> str:
+        return soup.select_one("article#novel .novel-title").text
 
     def parse_title_in_browser(self) -> str:
         self.browser.wait("article#novel")
         return self.parse_title(self.browser.soup)
 
-    def parse_cover(self, soup: BeautifulSoup):
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one("article#novel figure.cover > img")
-        if not tag:
-            return None
         if tag.has_attr("data-src"):
             return self.absolute_url(tag["data-src"])
         if tag.has_attr("src"):
             return self.absolute_url(tag["src"])
+        return ""
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         for a in soup.find_all("span", {"itemprop": "author"}):
             yield a.text.strip()
 
@@ -104,10 +97,10 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
         for a in soup.select(".tags a"):
             yield a.text.strip()
 
-    def parse_summary(self, soup: BeautifulSoup) -> str:
+    def parse_summary(self, soup: PageSoup) -> str:
         return self.cleaner.extract_contents(soup.select_one(".summary .content"))
 
-    def select_chapter_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
+    def select_chapter_tags(self, soup: PageSoup) -> Generator[PageSoup, None, None]:
         chapter_page = f"{self.novel_url.strip('/')}/chapters"
         soup = self.get_soup(chapter_page)
 
@@ -147,16 +140,14 @@ class NovelPubTemplate(SearchableBrowserTemplate, ChapterOnlyBrowserTemplate):
             except Exception:
                 break
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
-        assert tag
-        title = tag.get("title", tag.get_text())
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         return Chapter(
             id=id,
-            title=str(title).strip(),
             url=self.absolute_url(tag["href"]),
+            title=tag.get_attr("title") or tag.text,
         )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         self.browser.wait(".chapter-content")
         return soup.select_one(".chapter-content")
 

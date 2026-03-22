@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "http://wspadancewichita.com/search?keyword=%s"
@@ -65,14 +65,14 @@ class wspadancewichita(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(x["href"]),
-                    "title": x["title"] or ("Chapter %d" % chap_id),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=self.absolute_url(x["href"]),
+                    title=x["title"] or ("Chapter %d" % chap_id),
+                )
             )
 
     def download_chapter_body(self, chapter):

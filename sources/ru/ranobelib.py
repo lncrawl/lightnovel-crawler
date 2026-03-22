@@ -3,7 +3,7 @@ import logging
 import operator
 from urllib.parse import urlencode
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -92,11 +92,7 @@ class RanobeLibMeCrawler(Crawler):
             }
 
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "url": f"{self.api_url}/chapter?{urlencode(params, doseq=True)}",
-                    "title": chapter["name"] or (f"Глава {chap_num}"),
-                }
+                Chapter(id=chap_id, url=f'{self.api_url}/chapter?{urlencode(params, doseq=True)}', title=chapter['name'] or f'Глава {chap_num}')
             )
 
     def download_chapter_body(self, chapter):

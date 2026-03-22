@@ -2,8 +2,6 @@
 import logging
 from urllib.parse import quote
 
-from bs4 import ResultSet, Tag
-
 from lncrawl.core.crawler import Crawler
 from lncrawl.exceptions import LNException
 from lncrawl.models import Chapter, SearchResult
@@ -29,7 +27,7 @@ class Novel35Crawler(Crawler):
                 SearchResult(
                     title=a.text.strip(),
                     url=self.absolute_url(a["href"]),
-                    info=info.text.strip() if isinstance(info, Tag) else "",
+                    info=info.text.strip() if info else "",
                 )
             )
         return results
@@ -39,13 +37,13 @@ class Novel35Crawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         title_tag = soup.select_one("h1.title")
-        if not isinstance(title_tag, Tag):
+        if not title_tag:
             raise LNException("No title found")
 
         self.novel_title = title_tag.text.strip()
 
         image_tag = soup.select_one(".info-holder .book img")
-        if isinstance(image_tag, Tag):
+        if image_tag:
             self.novel_cover = self.absolute_url(image_tag["src"])
 
         logger.info("Novel cover: %s", self.novel_cover)
@@ -54,16 +52,16 @@ class Novel35Crawler(Crawler):
             [
                 a.text.strip()
                 for a in soup.select(".info-holder .info a[href^='/author/']")
-                if isinstance(a, Tag)
+                if a
             ]
         )
 
         logger.info("Novel author: %s", self.novel_author)
 
-        pagination_link = soup.select("#list-chapter ul.pagination a:not([rel])")
+        pagination_links = list(soup.select("#list-chapter ul.pagination a:not([rel])"))
         page_count = (
-            int(pagination_link[-1].get_text())
-            if isinstance(pagination_link, ResultSet)
+            int(pagination_links[-1].get_text())
+            if pagination_links
             else 1
         )
         logger.info("Chapter list pages: %d" % page_count)

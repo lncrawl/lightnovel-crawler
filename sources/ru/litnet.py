@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://booknet.com/en/search?q=%s"
@@ -82,15 +82,10 @@ class LitnetCrawler(Crawler):
             abs_url = self.last_soup_url.replace("/en/book/", "/en/reader/")
             chap_url = abs_url + ("?c=%s" % a.attrs["value"])
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": 1,
-                    "url": chap_url,
-                    "chapter_id": a.attrs["value"],
-                }
+                Chapter(id=chap_id, volume=1, url=chap_url, chapter_id=a.attrs['value'])
             )
 
-        self.volumes = [{"id": x} for x in volumes]
+        self.volumes = [Volume(id=x) for x in volumes]
 
     def download_chapter_body(self, chapter):
         data = self._get_chapter_page(chapter)

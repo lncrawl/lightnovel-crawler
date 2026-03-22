@@ -3,7 +3,7 @@ import logging
 import json
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ class FenriRealm(Crawler):
             vol_id = 1 + len(self.chapters) // 100
 
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
             slug = chapter.get("slug", "")
             name = chapter.get("name", "")
@@ -95,12 +95,12 @@ class FenriRealm(Crawler):
             chapter_url = f"{self.home_url.rstrip('/')}/series/{novel_slug}/{slug}"
 
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": chapter_title,
-                    "url": chapter_url,
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=chapter_title,
+                    url=chapter_url,
+                )
             )
 
     def download_chapter_body(self, chapter):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -41,15 +41,10 @@ class NovelvCrawler(Crawler):
             volumes.add(volume_id)
 
             self.chapters.append(
-                {
-                    "id": chapter_id,
-                    "title": a.text.strip(),
-                    "url": possible_url,
-                    "volume": volume_id,
-                }
+                Chapter(id=chapter_id, title=a.text.strip(), url=possible_url, volume=volume_id)
             )
 
-        self.volumes = [{"id": x, "title": ""} for x in list(volumes)]
+        self.volumes = [Volume(id=x, title="") for x in list(volumes)]
 
     def download_chapter_body(self, chapter):
         chapter["title"] = self.clean_text(chapter["title"])

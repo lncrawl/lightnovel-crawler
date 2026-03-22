@@ -3,7 +3,7 @@ import re
 import unicodedata
 from typing import Any, List, Optional
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.models import Chapter, SearchResult
 from lncrawl.templates.soup.chapter_only import ChapterOnlySoupTemplate
@@ -60,36 +60,34 @@ class FreeWebNovelCrawler(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         soup = self.post_soup(f"{self.home_url}search/", data=data)
         yield from soup.select(".col-content .con .txt h3 a")
 
-    def parse_search_item(self, tag: Tag) -> SearchResult:
+    def parse_search_item(self, tag: PageSoup) -> SearchResult:
         return SearchResult(
             title=tag.text.strip(),
             url=self.absolute_url(tag["href"]),
         )
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one(".m-desc h1.tit")
-        assert isinstance(tag, Tag)
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one(".m-imgtxt img")
-        assert isinstance(tag, Tag)
         if tag.has_attr("data-src"):
             return self.absolute_url(tag["data-src"])
         if tag.has_attr("src"):
             return self.absolute_url(tag["src"])
         return ''
 
-    def parse_authors(self, soup: BeautifulSoup):
+    def parse_authors(self, soup: PageSoup):
         for a in soup.select(".m-imgtxt a[href*='/authors/']"):
             yield a.text.strip()
 
-    def select_chapter_tags(self, soup: BeautifulSoup):
+    def select_chapter_tags(self, soup: PageSoup):
         chapters = soup.select("#idData")
         for chapter in chapters:
             yield from chapter.select("li > a")
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         return Chapter(
             id=id,
             url=self.absolute_url(tag["href"]),
@@ -99,7 +97,7 @@ class FreeWebNovelCrawler(SearchableSoupTemplate, ChapterOnlySoupTemplate):
     def normalize_text(self, text: str) -> str:
         return unicodedata.normalize("NFKC", text)
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         body_tag = soup.select_one(".m-read")
         if not body_tag:
             return None
@@ -121,7 +119,7 @@ class FreeWebNovelCrawler(SearchableSoupTemplate, ChapterOnlySoupTemplate):
         selectors = list(filter(None, set(selectors)))
 
         normalized_body = self.normalize_text(str(body_tag))
-        normalized_soup = BeautifulSoup(normalized_body, "html.parser")
+        normalized_soup = PageSoup.create(normalized_body, parser="html.parser")
         for promo_selector in selectors:
             random_self_promo = normalized_soup.select(promo_selector)
             for tag in random_self_promo:

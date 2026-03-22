@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4.element import Tag
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -32,17 +32,16 @@ class WorldnovelonlineCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         possible_title = soup.select_one(".section-novel .breadcrumb-item.active")
-        assert isinstance(possible_title, Tag)
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one('.section-novel img[alt^="Thumbnail"]')
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = soup.select_one('a[href*="/authorr/"]')
-        if isinstance(possible_author, Tag):
+        if possible_author:
             self.novel_author = possible_author.text.strip()
         logger.info("Novel author: %s", self.novel_author)
 
@@ -50,7 +49,6 @@ class WorldnovelonlineCrawler(Crawler):
         # book_id = path.split('/')[2]
         # book_id = soup.select_one('span.js-add-bookmark')['data-novel']
         book_id = soup.select_one("body")
-        assert isinstance(book_id, Tag)
         book_id = book_id["attr"]
         logger.info("Bookid = %s" % book_id)
 
@@ -70,14 +68,14 @@ class WorldnovelonlineCrawler(Crawler):
             chap_id = 1 + len(self.chapters)
             vol_id = 1 + len(self.chapters) // 100
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": item["permalink"],
-                    "title": item["post_title"],
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=item["permalink"],
+                    title=item["post_title"],
+                )
             )
 
     def download_chapter_body(self, chapter):
@@ -94,7 +92,6 @@ class WorldnovelonlineCrawler(Crawler):
                 ]
             )
         )
-        assert isinstance(contents, Tag)
 
         for div in contents.select("div.code-block"):
             div.extract()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -44,15 +44,10 @@ class FullnovelLiveCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(x["href"]),
-                    "title": x.text.strip() or ("Chapter %d" % chap_id),
-                }
+                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(x['href']), title=x.text.strip() or 'Chapter %d' % chap_id)
             )
 
-        self.volumes = [{"id": x} for x in vols]
+        self.volumes = [Volume(id=x) for x in vols]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

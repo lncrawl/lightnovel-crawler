@@ -3,9 +3,10 @@
 import logging
 import urllib.parse
 
-from bs4 import Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class NovelGoCrawler(Crawler):
         #    url.replace('url(', '').replace(')', ''))
 
         thumbnail = soup.find("div", {"class": "novel-thumbnail"})
-        if isinstance(thumbnail, Tag):
+        if thumbnail:
             thumbnail_src = (
                 str(thumbnail["data-bg"]).replace("url(", "").replace(")", "")
             )
@@ -51,7 +52,7 @@ class NovelGoCrawler(Crawler):
         #    'https://novelgo.id/wp-admin/admin-ajax.php?action=LoadChapter&post=%s' % book_id).content
         # chapter_list = js = self.scraper.post(
         #    'https://novelgo.id/wp-json/noveils/v1/chapters?paged=1&perpage=10000&category=%s' % book_id).content
-        # soup_chapter = BeautifulSoup(chapter_list, 'lxml')
+        # soup_chapter = PageSoup(chapter_list, 'lxml')
 
         # chapters = soup_chapter.select('ul li a')
 
@@ -81,14 +82,14 @@ class NovelGoCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": chapter["permalink"],
-                    "title": chapter["post_title"] or ("Chapter %d" % chap_id),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    url=chapter["permalink"],
+                    title=chapter["post_title"] or ("Chapter %d" % chap_id),
+                )
             )
 
     def download_chapter_body(self, chapter):

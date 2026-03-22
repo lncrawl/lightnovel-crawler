@@ -2,7 +2,7 @@
 import logging
 import re
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.novels.pl/?search=%s"
@@ -95,15 +95,10 @@ class NovelsPlCrawler(Crawler):
                 vol_id = 1 + chap_id // 100
                 volumes.add(vol_id)
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "title": tr.select_one("a").text,
-                        "url": self.absolute_url(tr.select_one("a")["href"]),
-                    }
+                    Chapter(id=chap_id, volume=vol_id, title=tr.select_one('a').text, url=self.absolute_url(tr.select_one('a')['href']))
                 )
 
-        self.volumes = [{"id": x} for x in volumes]
+        self.volumes = [Volume(id=x) for x in volumes]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

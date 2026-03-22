@@ -1,6 +1,6 @@
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -73,31 +73,31 @@ class Lnmtlfr(Crawler):
             self.volumes = []
             for vol in reversed(list_vol):
                 vol_id = len(self.volumes) + 1
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
 
                 list_chap = vol.find_all("li")
                 for chap in reversed(list_chap):
                     chap_id = len(self.chapters) + 1
                     self.chapters.append(
-                        {
-                            "id": chap_id,
-                            "volume": vol_id,
-                            "title": chap.find("a").text,
-                            "url": self.absolute_url(chap.find("a").get("href")),
-                        }
+                        Chapter(
+                            id=chap_id,
+                            volume=vol_id,
+                            title=chap.find("a").text,
+                            url=self.absolute_url(chap.find("a").get("href")),
+                        )
                     )
         else:
-            self.volumes = [{"id": 1}]
+            self.volumes = [Volume(id=1)]
             list_chap = soup.find_all("li")
             for chap in reversed(list_chap):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": 1,
-                        "title": chap.find("a").text,
-                        "url": self.absolute_url(chap.find("a").get("href")),
-                    }
+                    Chapter(
+                        id=chap_id,
+                        volume=1,
+                        title=chap.find("a").text,
+                        url=self.absolute_url(chap.find("a").get("href")),
+                    )
                 )
 
     def download_chapter_body(self, chapter):

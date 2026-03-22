@@ -2,9 +2,8 @@
 import logging
 import re
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,7 @@ class RequieMtlsCrawler(Crawler):
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".thumbook .thumb img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = possible_image["src"]
         logger.info("Novel cover: %s", self.novel_cover)
 
@@ -37,14 +36,9 @@ class RequieMtlsCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.select_one(".epl-title").text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=a.select_one('.epl-title').text.strip(), url=self.absolute_url(a['href']))
             )
 
     font_ranges = {

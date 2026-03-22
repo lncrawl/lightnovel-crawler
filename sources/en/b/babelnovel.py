@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 from concurrent import futures
 from urllib.parse import quote, urlparse
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -24,15 +23,19 @@ class BabelNovelCrawler(Crawler):
     def initialize(self):
         self.home_url = 'https://babelnovel.com/'
 
-    def login(self, email, password):
+    def login(self, username_or_email, password_or_token):
         logger.info('Visiting %s', self.home_url)
-        data = self.post_json(login_url, data=json.dumps({
-            'loginType': 'web',
-            'password': password,
-            'userName': email,
-        }), headers={
-            'Content-Type': 'application/json;charset=UTF-8',
-        })
+        data = self.post_json(
+            login_url,
+            data={
+                'loginType': 'web',
+                'userName': username_or_email,
+                'password': password_or_token,
+            },
+            headers={
+                'Content-Type': 'application/json;charset=UTF-8',
+            },
+        )
 
         self.token = data['data']['loginResult']['token']
         self.set_header('token', self.token)
@@ -109,11 +112,15 @@ class BabelNovelCrawler(Crawler):
             temp_chapters[page] = future.result()
 
         for page in sorted(temp_chapters.keys()):
-            self.volumes.append({'id': page + 1})
+            self.volumes.append(Volume(id=page + 1))
             for chap in temp_chapters[page]:
-                chap['volume'] = page + 1
-                chap['id'] = 1 + len(self.chapters)
-                self.chapters.append(chap)
+                self.chapters.append(Chapter(
+                    volume=page + 1,
+                    id=1 + len(self.chapters),
+                    title=chap['title'],
+                    url=chap['url'],
+                    json_url=chap['json_url'],
+                ))
 
     def parse_chapter_item(self, list_url):
         logger.debug('Visiting %s', list_url)

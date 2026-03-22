@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 search_url = "https://wbnovel.com/?s=%s&post_type=wp-manga&author=&artist=&release="
@@ -75,12 +75,7 @@ class WBNovelCrawler(Crawler):
                     }
                 )
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(a["href"]),
-                    "title": a.text.strip() or ("Chapter %d" % chap_id),
-                }
+                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(a['href']), title=a.text.strip() or 'Chapter %d' % chap_id)
             )
 
     def download_chapter_body(self, chapter):

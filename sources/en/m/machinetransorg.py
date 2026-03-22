@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import quote
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +54,14 @@ class MachineTransOrg(Crawler):
             ch_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": ch_id,
-                    "volume": vol_id,
-                    "title": ch_title,
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(
+                    id=ch_id,
+                    volume=vol_id,
+                    title=ch_title,
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
         logger.debug(

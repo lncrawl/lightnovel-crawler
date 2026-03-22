@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ class animesama(Crawler):
             self.all_content.append([x[1] for x in url_lists])
 
         self.volumes = [
-            {"id": i, "title": title} for i, title in enumerate(mangas.keys())
+            Volume(id=i, title=title) for i, title in enumerate(mangas.keys())
         ]
         for vol_id, vol in enumerate(self.all_content):
             for chap_number in range(1, len(vol) + 1):
@@ -124,11 +124,7 @@ class animesama(Crawler):
 
                 # There are no individual chapter url. Everything is on the same page and chapter are generated client side
                 self.chapters.append(
-                    {
-                        "id": 1 + len(self.chapters),
-                        "volume": vol_id,
-                        "title": chap_title,
-                    }
+                    Chapter(id=1 + len(self.chapters), volume=vol_id, title=chap_title)
                 )
 
     def download_chapter_body(self, chapter):

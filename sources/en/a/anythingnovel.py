@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -27,24 +27,27 @@ class AnythingNovelCrawler(Crawler):
             volume_id = 1 + (chapter_id - 1) // 100
             volumes.add(volume_id)
             self.chapters.append(
-                {
-                    "id": chapter_id,
-                    "volume": volume_id,
-                    "title": title,
-                    "url": a["href"],
-                }
+                Chapter(
+                    id=chapter_id,
+                    volume=volume_id,
+                    title=title,
+                    url=a['href'],
+                )
             )
 
         self.chapters.sort(key=lambda x: x["id"])
-        self.volumes = [{"id": x, "title": ""} for x in volumes]
+        self.volumes = [Volume(id=x) for x in volumes]
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
         content = soup.select_one("div#content")
         self.cleaner.clean_contents(content)
-        body = content.select("p")
-        body = [str(p) for p in body if self.should_take(p)]
-        return "<p>" + "</p><p>".join(body) + "</p>"
+        paragraphs = [
+            str(p)
+            for p in content.select("p")
+            if p.text and p.text.lower() != "advertisement"
+        ]
+        return "<p>" + "</p><p>".join(paragraphs) + "</p>"
 
     def should_take(self, p):
         txt = p.text.strip().lower()

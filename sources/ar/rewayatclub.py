@@ -2,10 +2,11 @@
 import logging
 import math
 
-import execjs
-from bs4.element import Tag
+import execjs  # type: ignore
 
 from lncrawl.core.crawler import Crawler
+from lncrawl.core.soup import PageSoup
+from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -58,18 +59,11 @@ class RewayatClubCrawler(Crawler):
         for f in futures:
             data = f.result()
             for item in data["results"]:
-                chap_id = 1 + len(self.chapters)
-                vol_id = 1 + len(self.chapters) // 100
-                if len(self.chapters) % 100 == 0:
-                    self.volumes.append({"id": vol_id})
-                self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "title": item["title"],
-                        "url": chapter_body_url % (novel_slug, item["number"]),
-                    }
-                )
+                self.chapters.append(Chapter(
+                    id=len(self.chapters) + 1,
+                    title=item["title"],
+                    url=chapter_body_url % (novel_slug, item["number"]),
+                ))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
@@ -83,13 +77,11 @@ class RewayatClubCrawler(Crawler):
         body = self.make_soup(html).find("body")
         return self.cleaner.extract_contents(body)
 
-    def extract_nuxt_data(self, soup) -> dict:
+    def extract_nuxt_data(self, soup: PageSoup) -> dict:
         script = soup.find(
-            lambda tag: isinstance(tag, Tag)
-            and tag.name == "script"
-            and tag.text.startswith("window.__NUXT__")
+            name="script",
+            string=lambda s: s.startswith("window.__NUXT__")
         )
-        assert isinstance(script, Tag)
         script_content = script.text.replace('window.__NUXT__=', '')[:-1]
 
         data = execjs.eval(script_content)

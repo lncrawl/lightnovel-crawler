@@ -3,7 +3,7 @@
 import logging
 from typing import Generator, Optional
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.models import Chapter
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
@@ -29,36 +29,34 @@ class SnowyCodexCrawler(ChapterOnlyBrowserTemplate):
             }
         )
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         tag = soup.select_one(".entry-content h2")
-        assert isinstance(tag, Tag)
         return tag.text.strip()
 
-    def parse_cover(self, soup: BeautifulSoup) -> str:
+    def parse_cover(self, soup: PageSoup) -> str:
         tag = soup.select_one(".entry-content img")
-        assert isinstance(tag, Tag)
         if tag.has_attr("data-src"):
             return self.absolute_url(tag["data-src"])
         elif tag.has_attr("src"):
             return self.absolute_url(tag["src"])
         return ''
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         tag = soup.find("strong", string="Author:")  # type:ignore
-        if isinstance(tag, Tag):
+        if tag:
             next = tag.find_next_sibling()
             if next:
                 yield next.get_text(strip=True)
 
-    def select_chapter_tags(self, soup: BeautifulSoup):
+    def select_chapter_tags(self, soup: PageSoup):
         yield from soup.select(".entry-content a[href*='/chapter']")
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Chapter:
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Chapter:
         return Chapter(
             id=id,
             title=tag.text.strip(),
             url=self.absolute_url(tag["href"]),
         )
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         return soup.select_one(".entry-content")

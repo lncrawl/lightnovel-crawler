@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
+
 import requests
-from lncrawl.core.crawler import Crawler
+
+from lncrawl.core.crawler import Chapter, Crawler, SearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -23,22 +25,16 @@ class FenrirScans(Crawler):
             "ts_ac_query": query,
         }
         response = requests.post(self.search_url, data=data)
-        novels = []
         try:
-            results = response.json().get("series", [])[0].get("all", [])
-        except Exception:
-            return novels
-        for item in results:
-            title = item.get("post_title")
-            url = item.get("post_link")
-            if title and url:
-                novels.append(
-                    {
-                        "title": title,
-                        "url": self.absolute_url(url),
-                    }
+            return [
+                SearchResult(
+                    title=item["post_title"],
+                    url=self.absolute_url(item["post_link"]),
                 )
-        return novels
+                for item in response.json().get("series", [])[0].get("all", [])
+            ]
+        except Exception:
+            return []
 
     def read_novel_info(self):
         """
@@ -74,27 +70,16 @@ class FenrirScans(Crawler):
         chapter_links = list(reversed(chapter_links))
         for idx, a in enumerate(chapter_links, 1):
             chap_url = self.absolute_url(a["href"])
-            chap_title = a.find("span", {"class": "chapternum"})
-            if chap_title:
-                chap_title = chap_title.text.strip()
-            else:
-                chap_title = a.text.strip()
+            chap_title = (a.find("span", {"class": "chapternum"}) or a).text
             self.chapters.append(
-                {
-                    "id": idx,
-                    "volume": 1,
-                    "url": chap_url,
-                    "title": chap_title,
-                }
+                Chapter(
+                    id=idx,
+                    url=chap_url,
+                    title=chap_title,
+                )
             )
 
     def download_chapter_body(self, chapter):
-        """
-        Downloads the body of a single chapter.
-        """
         soup = self.get_soup(chapter["url"])
         content = soup.find("div", {"id": "readerarea"})
-        if not content:
-            logger.error("No content found for chapter: %s", chapter["url"])
-            return None
         return self.cleaner.extract_contents(content)

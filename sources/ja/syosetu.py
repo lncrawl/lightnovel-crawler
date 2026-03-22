@@ -2,6 +2,7 @@
 import logging
 from urllib.parse import quote_plus
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 from concurrent.futures import ThreadPoolExecutor
 from bs4 import element
 
@@ -37,7 +38,6 @@ class SyosetuCrawler(Crawler):
         return results
 
     def read_novel_info(self):
-        self.init_parser('lxml')
         soup = self.get_soup(self.novel_url)
 
         self.novel_title = soup.select_one(".p-novel__title").text.strip()
@@ -63,7 +63,7 @@ class SyosetuCrawler(Crawler):
 
         volume_id = 0
         chapter_id = 0
-        self.volumes.append({'id': 0})
+        self.volumes.append(Volume(id=0))
         for soup in soups:
             for tag in soup.select_one(".p-eplist"):
 
@@ -73,23 +73,22 @@ class SyosetuCrawler(Crawler):
                 if 'p-eplist__chapter-title' in tag.attrs.get('class', ''):
                     # Part/volume (there might be none)
                     volume_id += 1
-                    self.volumes.append({
-                        'id': volume_id,
-                        'title': tag.text.strip(),
-                    })
+                    self.volumes.append(Volume(
+                        id=volume_id,
+                        title=tag.text.strip(),
+                    ))
                 elif tag.select('a')[0]:
                     # Chapter
                     tag = tag.select('a')[0]
                     chapter_id += 1
-                    self.chapters.append({
-                        "id": chapter_id,
-                        "volume": volume_id,
-                        "title": tag.text.strip(),
-                        "url": self.absolute_url(tag["href"]),
-                    })
+                    self.chapters.append(Chapter(
+                        id=chapter_id,
+                        volume=volume_id,
+                        title=tag.text.strip(),
+                        url=self.absolute_url(tag["href"]),
+                    ))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
         contents = soup.select_one(".p-novel__body")
-        contents = self.cleaner.extract_contents(contents)
-        return contents
+        return self.cleaner.extract_contents(contents)

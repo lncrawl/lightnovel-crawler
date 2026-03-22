@@ -1,8 +1,7 @@
 import logging
 from typing import Generator, Optional, Union
 
-from bs4 import Tag
-
+from ...core.soup import PageSoup
 from ...exceptions import FallbackToBrowser, LNException
 from ...models import Chapter, Volume
 from ..soup.general import GeneralSoupTemplate
@@ -129,6 +128,6 @@ class GeneralBrowserTemplate(BasicBrowserTemplate, GeneralSoupTemplate):
         """Open the Chapter URL in the browser"""
         self.visit(chapter.url)
 
-    def select_chapter_body_in_browser(self) -> Optional[Tag]:
+    def select_chapter_body_in_browser(self) -> PageSoup:
         """Select the tag containing the chapter text in the browser"""
         return self.select_chapter_body(self.browser.soup)

@@ -4,7 +4,7 @@ import re
 from time import time
 from urllib.parse import urlencode, urlparse
 
-from bs4 import BeautifulSoup
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.exceptions import FallbackToBrowser
 from lncrawl.models import Chapter, SearchResult
@@ -124,7 +124,7 @@ class WebnovelCrawler(BasicBrowserTemplate):
         self.browser.wait(".j_catalog_list")
         self.parse_chapter_catalog(self.browser.soup)
 
-    def parse_chapter_catalog(self, soup: BeautifulSoup) -> None:
+    def parse_chapter_catalog(self, soup: PageSoup) -> None:
         for div in soup.select(".j_catalog_list .volume-item"):
             possible_title = div.find("h4")
             vol = Volume(

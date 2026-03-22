@@ -1,6 +1,7 @@
 import json
 import logging
 
+from selenium.webdriver.remote.remote_connection import RemoteConnection
 from selenium.webdriver.remote.webdriver import WebDriver
 
 logger = logging.getLogger(__name__)
@@ -146,6 +147,8 @@ __all__ = ["_override_get"]
 
 def __send_cdp(driver: WebDriver, cmd: str, params: dict = {}):
     resource = f"/session/{driver.session_id}/chromium/send_command_and_get_result"
+    if not isinstance(driver.command_executor, RemoteConnection):
+        raise Exception("driver.command_executor is not a RemoteConnection")
     url = f"{driver.command_executor._client_config.remote_server_addr}{resource}"
     body = json.dumps({"cmd": cmd, "params": params})
     driver.command_executor._request("POST", url, body)
@@ -181,4 +184,4 @@ def _override_get(driver: WebDriver):
         )
         get_original(*args, **kwargs)
 
-    driver.get = get_wrapped
+    setattr(driver, "get", get_wrapped)

@@ -6,7 +6,6 @@ import re
 from typing import Callable, Generator, Optional
 from urllib.parse import quote_plus, urlencode
 
-from bs4 import Tag
 
 from lncrawl.exceptions import FallbackToBrowser, LNException
 from lncrawl.models import Chapter, SearchResult
@@ -52,7 +51,7 @@ class NoveLightCrawler(BasicBrowserTemplate):
         yield from [
             SearchResult(title=a.text.strip(), url=self.absolute_url(a["href"]))
             for a in soup.select(".manga-grid-list a.item")
-            if isinstance(a, Tag)
+            if a
         ]
 
     def search_novel_in_soup(self, query) -> Generator[SearchResult, None, None]:
@@ -82,18 +81,18 @@ class NoveLightCrawler(BasicBrowserTemplate):
 
     def _read_novel_info(self, soup, json_get: Callable):
         title_tag = soup.select_one("header.header-manga h1")
-        if not isinstance(title_tag, Tag):
+        if not title_tag:
             raise LNException("No title found")
         self.novel_title = title_tag.get_text().strip()
         logger.info("Novel title: %s", self.novel_title)
 
         novel_cover = soup.select_one("div.second-information div.poster img")
-        if isinstance(novel_cover, Tag):
+        if novel_cover:
             self.novel_cover = self.absolute_url(novel_cover["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         novel_synopsis = soup.select_one("div#information section.text-info")
-        if isinstance(novel_synopsis, Tag):
+        if novel_synopsis:
             self.novel_synopsis = self.cleaner.extract_contents(novel_synopsis)
 
         novel_tags = soup.select(
@@ -103,7 +102,7 @@ class NoveLightCrawler(BasicBrowserTemplate):
             self.novel_tags.append(tag.get_text().strip())
 
         novel_author = soup.select_one(".mini-info a[href^='/character/'] div.info")
-        if isinstance(novel_author, Tag) and novel_author.get_text():
+        if novel_author and novel_author.get_text():
             self.novel_author = novel_author.get_text().strip()
         logger.info("Novel author: %s", self.novel_author)
 

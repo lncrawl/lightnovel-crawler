@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class Eight88NovelCrawler(Crawler):
         except Exception:
             pass
 
-        self.volumes = [{"id": 1}]
+        self.volumes = [Volume(id=1)]
         self.chapters = []
 
         chapter_count = 1
@@ -59,12 +59,7 @@ class Eight88NovelCrawler(Crawler):
                     continue
 
                 self.chapters.append(
-                    {
-                        "title": self.cleaner.clean_text(chap.text),
-                        "url": chap.get("href").strip(),
-                        "volume": 1,
-                        "id": chapter_count,
-                    }
+                    Chapter(title=self.cleaner.clean_text(chap.text), url=chap.get('href').strip(), volume=1, id=chapter_count)
                 )
                 chapter_count += 1
 

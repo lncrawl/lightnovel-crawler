@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 search_url = (
@@ -79,22 +79,13 @@ class LightNovelBastion(Crawler):
                 for a in reversed(li.select("ul.sub-chap li.wp-manga-chapter a")):
                     chap_id = len(self.chapters) + 1
                     self.chapters.append(
-                        {
-                            "id": chap_id,
-                            "volume": vol_id,
-                            "title": a.text.strip(),
-                            "url": self.absolute_url(a["href"]),
-                        }
+                        Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
                     )
         else:
             logger.debug("Has no volume definitions")
             for a in reversed(soup.select(".wp-manga-chapter a")):
                 self.chapters.append(
-                    {
-                        "id": len(self.chapters) + 1,
-                        "title": a.text.strip(),
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(id=len(self.chapters) + 1, title=a.text.strip(), url=self.absolute_url(a['href']))
                 )
 
     def download_chapter_body(self, chapter):

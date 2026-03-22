@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 
 logger = logging.getLogger(__name__)
@@ -31,25 +32,15 @@ class Soxc(Crawler):
         for chapter in soup.select(".novel_list dd a"):
             url = self.absolute_url(chapter["href"])
             chap_id = len(self.chapters) + 1
-            if len(self.chapters) % 100 == 0:
-                vol_id = len(self.chapters) // 100 + 1
-                self.volumes.append({"id": vol_id})
 
-            self.chapters.append(
-                {
-                    "id": chap_id,
-                    "url": url,
-                    "volume": vol_id,
-                }
-            )
+            self.chapters.append(Chapter(id=chap_id, url=url))
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
         title = soup.select_one(".read_title h1").text.strip()
         chapter["title"] = title
 
-        content = soup.select(".content")
-        content = "\n".join(str(p) for p in content)
+        content = "\n".join(str(p) for p in soup.select(".content"))
         content = content.replace(self.novel_url, "")
         content = content.replace("soxscc", "mtlrealm.com ")
         return content

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4 import Tag
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
+from lncrawl.models import Volume
 import urllib.parse
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class EngNovel(Crawler):
         # "background:url(https://engnovel.com/wp-content/uploads/2019/07/lord-of-the-mysteries.jpeg) center no-repeat;background-size:cover"
         # >
         possible_image = soup.select_one("div.wallpaper")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(
                 possible_image["style"].split("url(")[-1].split(")")[0]
             )
@@ -108,14 +108,9 @@ class EngNovel(Crawler):
                 chap_id = len(self.chapters) + 1
                 vol_id = len(self.chapters) // 100 + 1
                 if len(self.chapters) % 100 == 0:
-                    self.volumes.append({"id": vol_id})
+                    self.volumes.append(Volume(id=vol_id))
                 self.chapters.append(
-                    {
-                        "id": chap_id,
-                        "volume": vol_id,
-                        "title": a["title"],
-                        "url": self.absolute_url(a["href"]),
-                    }
+                    Chapter(id=chap_id, volume=vol_id, title=a['title'], url=self.absolute_url(a['href']))
                 )
 
     def download_chapter_body(self, chapter):

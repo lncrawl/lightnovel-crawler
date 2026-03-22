@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import Tag
-
 from lncrawl.core.crawler import Crawler
 from lncrawl.models import Chapter, Volume
 from sources.zh.uukanshu_sj import UukanshuOnlineSJ
@@ -20,7 +18,7 @@ class UukanshuOnline(Crawler):
 
     def initialize(self):
         # the default lxml parser cannot handle the huge gbk encoded sites (fails after 4.3k chapters)
-        self.init_parser("html.parser")
+        self.parser = "html.parser"
 
     def read_novel_info(self) -> None:
         # the encoding for tw is utf-8, for www. is gbk -> otherwise output is messed up with wrong symbols.
@@ -50,8 +48,6 @@ class UukanshuOnline(Crawler):
             ::-1
         ]:  # reverse order as it's newest to oldest
             # convince typehint that we're looking at Tags & also make sure we skip random text within the ul if any
-            if not isinstance(chapter, Tag):
-                continue
             # find chapters
             if chapter.has_attr("class") and "volume" in chapter["class"]:
                 self.volumes.append(

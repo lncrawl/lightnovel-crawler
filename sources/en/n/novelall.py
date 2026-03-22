@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.novelall.com/search/?name=%s"
@@ -32,12 +31,11 @@ class NovelAllCrawler(Crawler):
         soup = self.get_soup(self.novel_url + "?waring=1")
 
         possible_title = soup.select_one(".manga-detail h1")
-        assert isinstance(possible_title, Tag), "No novel title"
         self.novel_title = possible_title.text
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".manga-detail img")
-        if isinstance(possible_image, Tag):
+        if possible_image:
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
@@ -60,14 +58,9 @@ class NovelAllCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if len(self.volumes) < vol_id:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "url": self.absolute_url(x["href"]),
-                    "title": x["title"] or ("Chapter %d" % chap_id),
-                }
+                Chapter(id=chap_id, volume=vol_id, url=self.absolute_url(x['href']), title=x['title'] or 'Chapter %d' % chap_id)
             )
 
     def download_chapter_body(self, chapter):

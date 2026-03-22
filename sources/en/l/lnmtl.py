@@ -4,9 +4,9 @@ import re
 from concurrent import futures
 
 import execjs
-from bs4 import BeautifulSoup
+from lncrawl.core.soup import PageSoup
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class LNMTLCrawler(Crawler):
             ),
         )
         # Check if logged in successfully
-        soup = BeautifulSoup(response.content, "lxml")
+        soup = PageSoup.create(response.content, parser="lxml")
         if soup.select_one('a[href="%s"]' % logout_url):
             print("Logged in")
         else:
@@ -109,10 +109,10 @@ class LNMTLCrawler(Crawler):
 
         for volume in self.volumes:
             for chapter in possible_chapters[volume["id"]]:
-                chap = chapter.copy()
+                chap = dict(chapter)
                 chap["id"] = len(self.chapters) + 1
                 chap["volume"] = volume["id"]
-                self.chapters.append(chap)
+                self.chapters.append(Chapter(**chap))
 
     def download_chapters_per_volume(self, volume, page=1):
         url = self.absolute_url(

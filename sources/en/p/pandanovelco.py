@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Generator, Optional
 
-from bs4 import BeautifulSoup, Tag
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.templates.novelpub import NovelPubTemplate
 
@@ -13,7 +13,7 @@ class PandaNovelCo(NovelPubTemplate):
 
     # We override because we do not have a request token like other novel pub
     # (without that wrong error is raised and browser search isn't triggered)
-    def select_search_items(self, query: str) -> Generator[Tag, None, None]:
+    def select_search_items(self, query: str) -> Generator[PageSoup, None, None]:
         self.submit_form(
             f"{self.home_url}lnsearchlive",
             data={"inputContent": query},
@@ -37,6 +37,6 @@ class PandaNovelCo(NovelPubTemplate):
                 next_link = False
 
     # .chapter-content -> #content
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         self.browser.wait("#content")
         return soup.select_one("#content")

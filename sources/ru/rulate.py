@@ -2,6 +2,7 @@
 import logging
 
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ class RulateCrawler(Crawler):
 
         chap_id = 0
         vol_id = 1
-        self.volumes.append({"id": vol_id})
+        self.volumes.append(Volume(id=vol_id))
         if chapters:
             for row in chapters.find_all("tr"):
                 if not row.has_attr("class"):
@@ -79,7 +80,7 @@ class RulateCrawler(Crawler):
                     else:
                         self.volumes.pop()
 
-                    self.volumes.append({"id": vol_id, "title": row.text})
+                    self.volumes.append(Volume(id=vol_id, title=row.text))
                     continue
 
                 if row.find("span", {"class": "disabled"}):
@@ -89,12 +90,12 @@ class RulateCrawler(Crawler):
                 if possible_chapter_ref:
                     chap_id = chap_id + 1
                     self.chapters.append(
-                        {
-                            "id": chap_id,
-                            "volume": vol_id,
-                            "url": self.absolute_url(possible_chapter_ref["href"]),
-                            "title": possible_chapter_ref.text,
-                        }
+                        Chapter(
+                            id=chap_id,
+                            volume=vol_id,
+                            url=self.absolute_url(possible_chapter_ref["href"]),
+                            title=possible_chapter_ref.text,
+                        )
                     )
 
     def download_chapter_body(self, chapter):

@@ -2,8 +2,7 @@ import logging
 from abc import abstractmethod
 from typing import Generator, Optional, Union
 
-from bs4 import BeautifulSoup, Tag
-
+from ...core.soup import PageSoup
 from ...exceptions import LNException
 from ...models import Chapter, Volume
 from .._base import CrawlerTemplate
@@ -47,34 +46,34 @@ class GeneralSoupTemplate(CrawlerTemplate):
             elif isinstance(item, Volume):
                 self.volumes.append(item)
 
-    def get_novel_soup(self) -> BeautifulSoup:
+    def get_novel_soup(self) -> PageSoup:
         return self.get_soup(self.novel_url)
 
     @abstractmethod
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         """Parse and return the novel title"""
         raise NotImplementedError()
 
     @abstractmethod
-    def parse_cover(self, soup: BeautifulSoup) -> Optional[str]:
+    def parse_cover(self, soup: PageSoup) -> Optional[str]:
         """Parse and return the novel cover image"""
         return None
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         """Parse and return the novel authors"""
         yield from []
 
-    def parse_genres(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_genres(self, soup: PageSoup) -> Generator[str, None, None]:
         """Parse and return the novel categories"""
         yield from []
 
-    def parse_summary(self, soup: BeautifulSoup) -> Optional[str]:
+    def parse_summary(self, soup: PageSoup) -> Optional[str]:
         """Parse and return the novel summary or synopsis"""
         return None
 
     @abstractmethod
     def parse_chapter_list(
-        self, soup: BeautifulSoup
+        self, soup: PageSoup
     ) -> Generator[Union[Chapter, Volume], None, None]:
         """Parse and set the volumes and chapters"""
         raise NotImplementedError()
@@ -87,10 +86,10 @@ class GeneralSoupTemplate(CrawlerTemplate):
         return self.parse_chapter_body(body)
 
     @abstractmethod
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         """Select the tag containing the chapter text"""
         raise NotImplementedError()
 
-    def parse_chapter_body(self, tag: Tag) -> str:
+    def parse_chapter_body(self, tag: PageSoup) -> str:
         """Extract the clean HTML content from the tag containing the chapter text"""
         return self.cleaner.extract_contents(tag)

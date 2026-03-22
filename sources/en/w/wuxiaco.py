@@ -2,7 +2,7 @@
 import logging
 from urllib.parse import quote
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +59,7 @@ class WuxiaCoCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             possible_name = a.select_one(".chapter-name")
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "url": self.absolute_url(a["href"]),
-                    "title": possible_name.text if possible_name else "",
-                }
+                Chapter(id=chap_id, url=self.absolute_url(a['href']), title=possible_name.text if possible_name else '')
             )
 
     def download_chapter_body(self, chapter):

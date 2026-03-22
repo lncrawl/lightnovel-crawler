@@ -2,6 +2,7 @@
 import logging
 
 from lncrawl.core.crawler import Crawler
+from lncrawl.models import Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ class CeuNovelCrawler(Crawler):
 
         logger.info('Novel author: %s', self.novel_author)
 
+        vol_id = 1
         prev_vol_id = None
         has_volumes = False
 
@@ -44,21 +46,21 @@ class CeuNovelCrawler(Crawler):
                     vol_id = int(title_data.split()[1])
                     if prev_vol_id != vol_id:
                         prev_vol_id = vol_id
-                        self.volumes.append({'id': vol_id})
+                        self.volumes.append(Volume(id=vol_id))
                     break
 
             if not has_volumes:
                 vol_id = 1 + len(self.chapters) // 100
                 if chap_id % 100 == 1:
-                    self.volumes.append({'id': vol_id})
+                    self.volumes.append(Volume(id=vol_id))
 
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": title,
-                    "url": self.absolute_url(a['href']),
-                }
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=title,
+                    url=self.absolute_url(a['href']),
+                )
             )
 
     def download_chapter_body(self, chapter):

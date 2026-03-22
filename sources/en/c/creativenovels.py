@@ -5,7 +5,7 @@ from urllib.parse import parse_qs, urlparse
 
 from bs4 import Tag
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Chapter, Crawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -88,14 +88,14 @@ class CreativeNovelsCrawler(Crawler):
             ch_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if vol_id > len(self.volumes):
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": ch_id,
-                    "volume": vol_id,
-                    "url": parts[0],
-                    "title": parts[1],
-                }
+                Chapter(
+                    id=ch_id,
+                    volume=vol_id,
+                    url=parts[0],
+                    title=parts[1],
+                )
             )
 
     def download_chapter_body(self, chapter):
@@ -115,26 +115,25 @@ class CreativeNovelsCrawler(Crawler):
         ]
 
         body = soup.select_one("article .entry-content")
-        assert isinstance(body, Tag)
-        for span in body.find_all("span"):
-            if len(span.parent.contents) <= 3:
+        if not body.tag:
+            return ""
+
+        for span in body.tag.find_all("span"):
+            if span.parent and len(span.parent.contents) <= 3:
                 if (span.parent.name in FORMATTING_TAGS) or (
                     span.next_sibling or span.previous_sibling
                 ):
-                    if span.next_sibling:
+                    if isinstance(span.next_sibling, Tag):
                         if span.next_sibling.name == FORMATTING_TAGS:
                             span.replace_with(span.text)
-                    elif span.previous_sibling:
+                    elif isinstance(span.previous_sibling, Tag):
                         if span.previous_sibling.name == FORMATTING_TAGS:
                             span.replace_with(span.text)
                     # If its parent is a formatting tag: Just remove the span tag
                     span.replace_with(span.text)
-                else:
-                    # Else: change it into a paragraph
-                    span.name = "p"
-                    span.attrs = {}
-            else:
-                span.name = "p"
-                span.attrs = {}
+                    continue
+            # Else: change it into a paragraph
+            span.name = "p"
+            span.attrs = {}
 
         return self.cleaner.extract_contents(body)

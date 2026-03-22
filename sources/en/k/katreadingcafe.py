@@ -3,7 +3,8 @@ import logging
 import re
 from typing import Generator, List, Optional, Tuple
 
-from bs4 import BeautifulSoup, Comment, Tag
+from bs4 import Comment
+from lncrawl.core.soup import PageSoup
 
 from lncrawl.models import Chapter
 from lncrawl.templates.browser.chapter_only import ChapterOnlyBrowserTemplate
@@ -65,7 +66,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
             return self.base_url in href
         return any(url in href for url in self.base_url)
 
-    def parse_title(self, soup: BeautifulSoup) -> str:
+    def parse_title(self, soup: PageSoup) -> str:
         title = soup.select_one("h1.page-title, h1.entry-title")
         if title:
             text = title.text.strip()
@@ -75,7 +76,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
             return match.group(1).strip() if match else text
         return "Unknown Title"
 
-    def parse_cover(self, soup: BeautifulSoup) -> Optional[str]:
+    def parse_cover(self, soup: PageSoup) -> Optional[str]:
         selectors = [
             ".sertothumb img",
             "[itemprop='image'] img",
@@ -88,7 +89,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
                 return self.absolute_url(img["src"])
         return None
 
-    def parse_authors(self, soup: BeautifulSoup) -> Generator[str, None, None]:
+    def parse_authors(self, soup: PageSoup) -> Generator[str, None, None]:
         meta = soup.find("meta", {"name": "author"}) or soup.find(
             "meta", {"property": "article:author"}
         )
@@ -108,7 +109,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
                     yield match.group(1).strip()
                     return
 
-    def parse_description(self, soup: BeautifulSoup) -> Optional[str]:
+    def parse_description(self, soup: PageSoup) -> Optional[str]:
         paras = [
             p.text.strip()
             for p in soup.select(".entry-content p")[:3]
@@ -116,7 +117,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
         ]
         return "\n\n".join(paras) if paras else None
 
-    def select_chapter_tags(self, soup: BeautifulSoup) -> Generator[Tag, None, None]:
+    def select_chapter_tags(self, soup: PageSoup) -> Generator[PageSoup, None, None]:
         # Unified: pick first parser with results and yield in chronological order
         chapters = (
             self._parse_collapsible_volumes(soup)
@@ -126,12 +127,12 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
         for tag in chapters:
             yield tag
 
-    def _parse_collapsible_volumes(self, soup: BeautifulSoup) -> List[Tag]:
+    def _parse_collapsible_volumes(self, soup: PageSoup) -> List[PageSoup]:
         vols = soup.select(".ts-chl-collapsible")
         conts = soup.select(".ts-chl-collapsible-content")
         if not vols or not conts or len(vols) != len(conts):
             return []
-        chapters: List[Tag] = []
+        chapters: List[PageSoup] = []
         # Reverse volume order so oldest volume is processed first
         for vol_section, vol_content in zip(reversed(vols), reversed(conts)):
             vol_title = vol_section.text.strip()
@@ -144,7 +145,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
                     chapters.append(link)
         return chapters
 
-    def _parse_standard_list(self, soup: BeautifulSoup) -> List[Tag]:
+    def _parse_standard_list(self, soup: PageSoup) -> List[PageSoup]:
         ul = soup.select_one(".eplister ul")
         if not ul:
             return []
@@ -152,8 +153,8 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
         # Reverse to get oldest first if site lists newest first
         return list(reversed(links))
 
-    def _parse_fallback_links(self, soup: BeautifulSoup) -> List[Tag]:
-        links: List[Tag] = []
+    def _parse_fallback_links(self, soup: PageSoup) -> List[PageSoup]:
+        links: List[PageSoup] = []
         for a in soup.select(".entry-content a"):
             if not self._valid_chapter_link(a):
                 continue
@@ -163,27 +164,27 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
         links.sort(key=self._extract_chapter_number)
         return links
 
-    def _valid_chapter_link(self, link: Optional[Tag]) -> bool:
+    def _valid_chapter_link(self, link: PageSoup) -> bool:
         if not link or not link.get("href") or not self._has_base_url(link["href"]):
             return False
         if "🔒" in link.text:
             return False
         return True
 
-    def _extract_chapter_number(self, tag: Tag) -> float:
+    def _extract_chapter_number(self, tag: PageSoup) -> float:
         href = tag.get("href", "")
         match = re.search(r"chapter[^0-9]*(\d+)", href, re.IGNORECASE) or re.search(
             r"ch(?:apter)?\.?\s*(\d+)", tag.text, re.IGNORECASE
         )
         return float(match.group(1)) if match else float("inf")
 
-    def parse_chapter_item(self, tag: Tag, id: int) -> Optional[Chapter]:
+    def parse_chapter_item(self, tag: PageSoup, id: int) -> Optional[Chapter]:
         if "🔒" in tag.text:
             return None
         title, url = self._extract_chapter_info(tag)
         return Chapter(id=id, url=url, title=title)
 
-    def _extract_chapter_info(self, tag: Tag) -> Tuple[str, str]:
+    def _extract_chapter_info(self, tag: PageSoup) -> Tuple[str, str]:
         url = self.absolute_url(tag["href"])
         num_el = tag.select_one(".epl-num")
         title_el = tag.select_one(".epl-title")
@@ -203,7 +204,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
             title = f"{vol} {title}"
         return title, url
 
-    def select_chapter_body(self, soup: BeautifulSoup) -> Optional[Tag]:
+    def select_chapter_body(self, soup: PageSoup) -> PageSoup:
         content = soup.select_one(".epcontent.entry-content") or soup.select_one(
             ".entry-content"
         )
@@ -211,7 +212,7 @@ class KatReadingCafeCrawler(ChapterOnlyBrowserTemplate):
             self._clean_chapter_content(content)
         return content
 
-    def _clean_chapter_content(self, content: Tag):
+    def _clean_chapter_content(self, content: PageSoup):
         # Remove unwanted selectors
         for sel in [
             ".navimedia",

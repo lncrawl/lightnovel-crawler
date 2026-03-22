@@ -3,8 +3,7 @@ import logging
 import re
 from urllib.parse import quote
 
-from bs4.element import Tag
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +34,7 @@ class MtlReaderCrawler(Crawler):
         for div in soup.select(".property_item .proerty_text"):
             a = div.select_one("a")
             info = div.select_one("p.text-muted")
-            assert isinstance(a, Tag)
-            assert isinstance(info, Tag)
+            assert bool(info)
             results.append(
                 {
                     "title": a.text.strip(),
@@ -51,17 +49,16 @@ class MtlReaderCrawler(Crawler):
         soup = self.get_soup(self.novel_url)
 
         novel_title_elem = soup.select_one(".agent-title")
-        assert isinstance(novel_title_elem, Tag)
         self.novel_title = novel_title_elem.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
         novel_image_elem = soup.select_one('meta[property="og:image"]')
-        if isinstance(novel_image_elem, Tag):
+        if novel_image_elem:
             self.novel_cover = self.absolute_url(novel_image_elem["content"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         possible_author = soup.select_one(".agent-p-contact .fa.fa-user")
-        if isinstance(possible_author, Tag) and isinstance(possible_author.parent, Tag):
+        if possible_author and possible_author.parent:
             self.novel_author = possible_author.parent.text.strip()
             self.novel_author = re.sub(r"Author[: ]+", "", self.novel_author)
         logger.info("Novel author: %s", self.novel_author)
@@ -70,15 +67,10 @@ class MtlReaderCrawler(Crawler):
             chap_id = 1 + len(self.chapters)
             vol_id = 1 + len(self.chapters) // 100
             if len(self.chapters) % 100 == 0:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             chap_title = re.sub(r"^(\d+[\s:\-]+)", "", a.text.strip())
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": chap_title,
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=chap_title, url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

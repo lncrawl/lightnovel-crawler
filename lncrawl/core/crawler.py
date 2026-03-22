@@ -71,9 +71,6 @@ class Crawler(Scraper):
         # `url` - the link where to download the chapter
         self.chapters: List[Chapter] = []
 
-        self.init_parser(parser)
-        self.init_scraper()
-
     def close(self) -> None:
         # if hasattr(self, "volumes"):
         #     self.volumes.clear()
@@ -109,14 +106,6 @@ class Crawler(Scraper):
     # Utility methods that can be overriden
     # ------------------------------------------------------------------------- #
 
-    def index_of_chapter(self, url: str) -> int:
-        """Return the index of chapter by given url or 0"""
-        url = self.absolute_url(url)
-        for chapter in self.chapters:
-            if chapter.url.rstrip("/") == url:
-                return chapter.id
-        return 0
-
     def extract_chapter_images(self, chapter: Chapter) -> None:
         if ctx.config.crawler.ignore_images or not chapter.body:
             return
@@ -124,8 +113,8 @@ class Crawler(Scraper):
         chapter.setdefault('images', {})
         soup = self.make_soup(chapter.body)
         for img in soup.select("img[src]"):
-            src_url = img.get('src')
-            if not isinstance(src_url, str):
+            src_url = img.get_attr('src')
+            if not src_url:
                 continue
 
             full_url = self.absolute_url(src_url, page_url=chapter.url)
@@ -138,6 +127,4 @@ class Crawler(Scraper):
             chapter.images[image_id] = full_url
 
         if chapter.images:
-            body = soup.find("body")
-            assert body
-            chapter.body = body.decode_contents()
+            chapter.body = soup.body.inner_html

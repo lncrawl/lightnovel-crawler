@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-from bs4.element import Tag
 
 
-from lncrawl.core.crawler import Crawler
+from lncrawl.core.crawler import Crawler, Chapter, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.neosekaitranslations.com/?s=%s&post_type=wp-manga"
@@ -20,13 +19,13 @@ class NeoSekaiCrawler(Crawler):
         results = []
         for tab in soup.select(".c-tabs-item__content"):
             a = tab.select_one(".post-title h3 a")
-            if not isinstance(a, Tag):
+            if not a:
                 continue
             latest = tab.select_one(".latest-chap .chapter a")
-            if isinstance(latest, Tag):
+            if latest:
                 latest = latest.text.strip()
             status = tab.select_one(".mg_release .summary-content a")
-            if isinstance(status, Tag):
+            if status:
                 status = "Status: " + status.text.strip()
             results.append(
                 {
@@ -70,14 +69,9 @@ class NeoSekaiCrawler(Crawler):
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:
-                self.volumes.append({"id": vol_id})
+                self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                {
-                    "id": chap_id,
-                    "volume": vol_id,
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                }
+                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a['href']))
             )
 
     def download_chapter_body(self, chapter):

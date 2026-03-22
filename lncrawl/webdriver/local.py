@@ -1,17 +1,17 @@
 # https://cloudbytes.dev/snippets/run-selenium-and-chrome-on-wsl2
 # https://github.com/ultrafunkamsterdam/undetected-chromedriver
 
+import json
 import logging
 import os
 from typing import Optional
 
-from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.webdriver import WebDriver as Chrome
 from selenium.webdriver.remote.remote_connection import LOGGER
+from selenium.webdriver.remote.webdriver import WebDriver
 
-from ..core.soup import SoupMaker
-from ..utils.platforms import Screen, Platform
+from ..utils.platforms import Platform, Screen
 from .elements import WebElement
 from .job_queue import _acquire_queue, _release_queue
 from .scripts import _override_get
@@ -24,7 +24,6 @@ def create_local(
     timeout: Optional[float] = None,
     headless: bool = False,
     user_data_dir: Optional[str] = None,
-    soup_maker: Optional[SoupMaker] = None,
     **kwargs,
 ) -> WebDriver:
     """
@@ -75,6 +74,20 @@ def create_local(
     options.add_experimental_option("useAutomationExtension", False)
     options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
 
+    # Configure user data dir
+    if user_data_dir and os.access(user_data_dir, mode=os.F_OK):
+        try:
+            options.add_argument(f"--user-data-dir={user_data_dir}")
+            prefs_path = os.path.join(user_data_dir, "Default", "Preferences")
+            with open(prefs_path, encoding="latin1", mode="r+") as fp:
+                cfg = json.load(fp)
+                cfg["profile"]["exit_type"] = None
+                fp.seek(0, 0)
+                json.dump(cfg, fp)
+                logger.debug("Cleared exit_type flag")
+        except Exception as e:
+            logger.debug("Could not clear any bad exit_type flag | %s", e)
+
     # Logging configs
     if is_debug:
         LOGGER.setLevel(logging.WARN)
@@ -93,13 +106,8 @@ def create_local(
     logger.info("Created chrome instance > %s", chrome.session_id)
     chrome.set_window_position(0, 0)
 
-    if not soup_maker:
-        soup_maker = SoupMaker()
-    setattr(chrome, "_soup_maker", soup_maker)
     setattr(chrome, "_web_element_cls", WebElement)
-
-    # _add_virtual_authenticator(chrome)
     _override_get(chrome)
-
     _release_queue(chrome)
+
     return chrome
