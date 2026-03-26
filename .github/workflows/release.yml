@@ -215,6 +215,7 @@ jobs:
       - name: 📤 PyPI Publish
         uses: pypa/gh-action-pypi-publish@release/v1
         env:
+          verbose: true
           print-hash: true
           password: ${{ secrets.PYPI_API_TOKEN }}
 
