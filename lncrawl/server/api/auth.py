@@ -117,7 +117,7 @@ def verify_otp(
 def generate_my_token(
     user: User = Security(ensure_user),
 ) -> TokenResponse:
-    token = ctx.users.generate_user_token(user)
+    token = ctx.users.get_signup_token(user)
     return TokenResponse(token=token)
 
 

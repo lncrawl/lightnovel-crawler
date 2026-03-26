@@ -64,6 +64,7 @@ dependencies = [
   "websocket-client>=1.8.0",
   "zstd>=1.5.7.0",
   "pyyaml>=6.0.3",
+  "pywebview>=6.1",
 ]
 description = "Download lightnovels from various online sources and generate output in different formats, e.g. epub, mobi, json, text, docx, pdf, html etc."
 dynamic = ["version"]

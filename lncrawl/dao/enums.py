@@ -4,6 +4,7 @@ from enum import Enum, IntEnum
 class UserRole(str, Enum):
     USER = "user"
     ADMIN = "admin"
+    LOCAL = "local"
 
 
 class UserTier(IntEnum):

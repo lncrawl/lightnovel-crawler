@@ -1,7 +1,7 @@
 .PHONY: all version clean setup install upgrade add-dep add-dev rm-dep rm-dev build-wheel build-exe build start watch lint pull remove-tag push-tag push-tag-force docker-build docker-up docker-down docker-logs
 all: version install
 
-VERSION := $(strip $(file < lncrawl/VERSION))
+VERSION := $(shell python -c "print(open('lncrawl/VERSION').read().strip())")
 
 # Use uv from PATH, or from default install location after make setup
 ifeq ($(OS),Windows_NT)

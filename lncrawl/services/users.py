@@ -80,11 +80,14 @@ class UserService:
         self,
         user: User,
         expiry_minutes: Optional[int] = None,
-        **payload,
+        scopes: Optional[List[Any]] = None,
     ) -> str:
         payload = {
             "sub": user.id,
-            "scopes": [user.role, user.tier],
+            "scopes": list(set(scopes or []) | {
+                user.role,
+                user.tier,
+            }),
         }
         return self.encode_token(payload, expiry_minutes)
 
@@ -298,7 +301,7 @@ class UserService:
         link = f"{base_url}/reset-password?token={token}"
         ctx.mail.send_reset_password_link(email, link)
 
-    def generate_user_token(self, user: User) -> str:
+    def get_signup_token(self, user: User) -> str:
         day = 24 * 3600 * 1000
         now = current_timestamp()
         with ctx.db.session() as sess:
