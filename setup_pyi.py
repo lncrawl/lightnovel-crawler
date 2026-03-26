@@ -32,6 +32,7 @@ BUILD_DIR = SPEC_DIR / "build"
 def build_command():
     command = [
         str(ROOT / "lncrawl" / "__main__.py"),
+        "--noconsole",
         "--onefile",
         "--clean",
         "--noconfirm",
