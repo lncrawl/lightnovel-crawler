@@ -80,6 +80,7 @@ dev = [
   "flake8>=7.1.0",
   "isort>=5.13.0",
   "lxml-stubs>=0.5.0",
+  "pre-commit>=4.3.0",
   "pyinstaller>=6.0.0",
   "setuptools>=75.3.0",
   "tk-tools>=0.16.0",
