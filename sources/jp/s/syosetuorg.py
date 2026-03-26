@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 from urllib.parse import quote_plus
-from bs4 import BeautifulSoup
+
+from lncrawl.core.soup import PageSoup
 from lncrawl.templates.browser.basic import BasicBrowserTemplate
 
 logger = logging.getLogger(__name__)
@@ -20,35 +21,26 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
         results = []
         for tab in soup.select(".searchkekka_box"):
             a = tab.select_one(".novel_h a")
-            latest = (
-                tab.select_one(".left").get_text(separator=" ").strip()
-            )  # e.g.: 連載中 (全604部分)
-            votes = tab.select_one(
-                ".attention"
-            ).text.strip()  # e.g.: "総合ポイント： 625,717 pt"
-            results.append(
-                {
-                    "title": a.text.strip(),
-                    "url": self.absolute_url(a["href"]),
-                    "info": "%s | %s" % (latest, votes),
-                }
-            )
+            latest = tab.select_one(".left").text
+            votes = tab.select_one(".attention").text
+            results.append({
+                "title": a.text.strip(),
+                "url": self.absolute_url(a["href"]),
+                "info": "%s | %s" % (latest, votes),
+            })
         return results
 
     def read_novel_info_in_soup(self):
-        """Read novel info using regular scraper"""
         self.init_parser('lxml')
         soup = self.get_soup(self.novel_url)
         self._parse_novel_info(soup)
 
     def read_novel_info_in_browser(self):
-        """Read novel info using browser"""
         self.visit(self.novel_url)
         soup = self.browser.soup
         self._parse_novel_info(soup)
 
-    def _parse_novel_info(self, soup: BeautifulSoup):
-        """Common logic for parsing novel info"""
+    def _parse_novel_info(self, soup: PageSoup):
         title_tag = soup.select_one("span[itemprop='name']")
         if title_tag:
             self.novel_title = title_tag.text.strip()
@@ -94,14 +86,12 @@ class SyosetuOrgCrawler(BasicBrowserTemplate):
                         })
 
     def download_chapter_body_in_soup(self, chapter):
-        """Download chapter content using regular scraper"""
         soup = self.get_soup(chapter["url"])
         contents = soup.select_one("#honbun")
         contents = self.cleaner.extract_contents(contents)
         return contents
 
     def download_chapter_body_in_browser(self, chapter):
-        """Download chapter content using browser"""
         self.visit(chapter["url"])
         soup = self.browser.soup
         contents = soup.select_one("#honbun")
