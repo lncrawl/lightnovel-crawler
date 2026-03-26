@@ -8,11 +8,11 @@ from io import BytesIO
 from typing import Any, Dict, MutableMapping, Optional, Tuple, Union
 from urllib.parse import ParseResult, urlparse
 
-from cloudscraper import create_scraper
 from PIL import Image, UnidentifiedImageError
 from requests import Response
 from requests.structures import CaseInsensitiveDict
 
+from ..cloudscraper import create_scraper
 from ..context import ctx
 from .soup import PageSoup
 from .taskman import TaskManager

@@ -52,7 +52,6 @@ def gather_data_files():
     file_map = {
         ROOT / "lncrawl": "lncrawl",
         ROOT / "sources": "sources",
-        SITE_PACKAGES / "cloudscraper": "cloudscraper",
         SITE_PACKAGES / "wcwidth" / "version.json": "wcwidth",
         SITE_PACKAGES / "text_unidecode" / "data.bin": "text_unidecode",
     }

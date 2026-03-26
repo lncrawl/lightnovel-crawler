@@ -21,4 +21,4 @@ exclude =
     Lightnovels,
     sqlite.db,
     lncrawl-web,
-    lncrawl/migrations/versions
+    lncrawl/cloudscraper

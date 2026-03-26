@@ -3,12 +3,13 @@ import traceback
 from typing import Any, Optional
 from urllib.error import URLError
 
-from cloudscraper.exceptions import AbortedException, CloudflareException
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from PIL import UnidentifiedImageError
 from requests.exceptions import RequestException
 from urllib3.exceptions import HTTPError
+
+from .cloudscraper.exceptions import AbortedException, CloudflareException
 
 __all__ = [
     "LNException",
