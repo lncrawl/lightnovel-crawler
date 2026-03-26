@@ -21,7 +21,7 @@ def server(
             reload=True,
             port=port,
             host=host,
-            log_level=ctx.logger.level,
+            log_level=ctx.logger.level or "error",
         )
     else:
         from ..server.app import app as server
@@ -30,5 +30,5 @@ def server(
             server,
             port=port,
             host=host,
-            log_level=ctx.logger.level,
+            log_level=ctx.logger.level or "error",
         )

@@ -82,12 +82,12 @@ class UserService:
         expiry_minutes: Optional[int] = None,
         scopes: Optional[List[Any]] = None,
     ) -> str:
+        token_scopes = set(scopes or [])
+        token_scopes.add(user.role)
+        token_scopes.add(user.tier)
         payload = {
             "sub": user.id,
-            "scopes": list(set(scopes or []) | {
-                user.role,
-                user.tier,
-            }),
+            "scopes": list(token_scopes),
         }
         return self.encode_token(payload, expiry_minutes)
 

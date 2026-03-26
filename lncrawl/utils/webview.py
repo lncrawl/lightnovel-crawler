@@ -46,8 +46,8 @@ def start_webview() -> None:
     webview.create_window(
         "Lightnovel Crawler",
         f"http://{host}:{port}/?authToken={token}",
-        maximized=True,
-        width=1200,
-        height=850,
+        # maximized=True,
+        width=1280,
+        height=800,
     )
     webview.start()
