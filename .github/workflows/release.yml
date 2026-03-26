@@ -167,7 +167,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   publish-package:
-    name: GitHub Release (Linux), links & PyPI
+    name: PyPI Publish
     needs: [build-docker, build-windows, build-mac, build-linux]
     runs-on: ubuntu-latest
     permissions:
