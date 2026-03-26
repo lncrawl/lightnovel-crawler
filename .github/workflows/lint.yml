@@ -1,8 +1,13 @@
 name: Lint & Test
 
 on:
-  workflow_call: {}
   workflow_dispatch: {}
+  workflow_call:
+    inputs:
+      run_crawl_test:
+        description: Run live crawl integration test (release and other callers)
+        type: boolean
+        default: false
   push:
     branches:
       - master
@@ -68,5 +73,5 @@ jobs:
         run: lncrawl -ll sources list
 
       - name: 🧪 Test Crawl
-        if: ${{ github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' || inputs.run_crawl_test == true }}
         run: lncrawl -ll crawl 'https://novelfull.com/the-kings-avatar-for-the-glory.html' --first 2 --format epub --noin

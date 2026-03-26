@@ -7,16 +7,23 @@ on:
       - "v*"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   validate:
     uses: ./.github/workflows/lint.yml
+    with:
+      run_crawl_test: true
+    permissions:
+      contents: read
 
   build-docker:
     needs: validate
     uses: ./.github/workflows/build-docker.yml
+    permissions:
+      contents: read
+      packages: write
 
   build-windows:
     name: Build & Publish (Windows)
@@ -159,13 +166,32 @@ jobs:
           artifactErrorsFailBuild: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🔗 Update Download Links
-        env:
-          SHLINK_API_KEY: ${{ secrets.SHLINK_API_KEY }}
-        run: sh ./scripts/bitanon.sh
+  publish-package:
+    name: GitHub Release (Linux), links & PyPI
+    needs: [build-docker, build-windows, build-mac, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # PyPI Trusted Publishing (OIDC) via gh-action-pypi-publish
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: 📥 Download Linux build artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: lncrawl-linux
+          path: .
 
       - name: 📤 PyPI Publish
         uses: pypa/gh-action-pypi-publish@release/v1
         env:
           print-hash: true
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: 🔗 Update Download Links
+        env:
+          SHLINK_API_KEY: ${{ secrets.SHLINK_API_KEY }}
+        run: sh ./scripts/bitanon.sh
