@@ -55,8 +55,11 @@ jobs:
       - name: 🏗️ Build Executable
         env:
           PYTHONIOENCODING: utf-8
+          UV_PROJECT_ENVIRONMENT: .venv
         run: |
-          .\scripts\build.bat
+          uv sync --extra dev
+          uv run python -m build -w
+          uv run python setup_pyi.py
           .\dist\lncrawl.exe -ll sources list
 
       - name: 📦 Upload Artifact
@@ -99,8 +102,13 @@ jobs:
           enable-cache: true
 
       - name: 🏗️ Build Executable
+        env:
+          PYTHONIOENCODING: utf-8
+          UV_PROJECT_ENVIRONMENT: .venv
         run: |
-          sh ./scripts/build.sh
+          uv sync --extra dev
+          uv run python -m build -w
+          uv run python setup_pyi.py
           mv ./dist/lncrawl ./dist/lncrawl-mac
           ./dist/lncrawl-mac -ll sources list
 
@@ -144,8 +152,13 @@ jobs:
           enable-cache: true
 
       - name: 🏗️ Build Executable
+        env:
+          PYTHONIOENCODING: utf-8
+          UV_PROJECT_ENVIRONMENT: .venv
         run: |
-          sh ./scripts/build.sh
+          uv sync --extra dev
+          uv run python -m build -w
+          uv run python setup_pyi.py
           mv ./dist/lncrawl ./dist/lncrawl-linux
           ./dist/lncrawl-linux -ll sources list
 
@@ -178,12 +191,26 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          submodules: recursive
 
-      - name: 📥 Download Linux build artifacts
-        uses: actions/download-artifact@v7
+      - name: 🔄 Update submodules
+        run: |
+          git submodule sync
+          git submodule update --init --remote --merge
+
+      - name: 🐍 Install uv & Python
+        uses: astral-sh/setup-uv@v7
         with:
-          name: lncrawl-linux
-          path: .
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: 🏗️ Build Executable
+        env:
+          PYTHONIOENCODING: utf-8
+          UV_PROJECT_ENVIRONMENT: .venv
+        run: |
+          uv sync --extra dev
+          uv run python -m build -w
 
       - name: 📤 PyPI Publish
         uses: pypa/gh-action-pypi-publish@release/v1
