@@ -12,9 +12,13 @@ from ..dao.enums import UserRole
 logger = logging.getLogger(__name__)
 
 
-def start_webview() -> None:
+def start() -> None:
     host = "127.0.0.1"
-    port = 8080
+
+    # Find an available port
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((host, 0))
+        port = s.getsockname()[1]
 
     t = threading.Thread(
         target=server,
@@ -26,17 +30,6 @@ def start_webview() -> None:
         name="server",
     )
     t.start()
-
-    deadline = time.monotonic() + 30.0
-    while time.monotonic() < deadline:
-        try:
-            with socket.create_connection((host, port), timeout=0.5):
-                break
-        except OSError:
-            time.sleep(0.05)
-    else:
-        logger.error(f"Server failed to start on {host}:{port}")
-        raise SystemExit(1)
 
     token = ctx.users.generate_token(
         user=ctx.users.get_admin(),

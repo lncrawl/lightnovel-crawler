@@ -80,6 +80,6 @@ def main(
 
     # start server if no subcommand is invoked
     if not context.invoked_subcommand:
-        from .utils.webview import start_webview
+        from .server.webview import start
 
-        start_webview()
+        start()
