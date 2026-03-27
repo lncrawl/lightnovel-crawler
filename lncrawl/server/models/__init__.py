@@ -1,3 +1,4 @@
+from .config import ConfigProperty, ConfigSection, ConfigUpdateRequest
 from .crawler import LoginData
 from .feedback import FeedbackCreateRequest, FeedbackRespondRequest, FeedbackUpdateRequest
 from .job import FetchChaptersRequest, FetchImagesRequest, FetchNovelRequest, FetchVolumesRequest, MakeArtifactsRequest
@@ -20,6 +21,10 @@ from .user import (
 )
 
 __all__ = [
+    # app config
+    "ConfigProperty",
+    "ConfigSection",
+    "ConfigUpdateRequest",
     # sources
     "AppInfo",
     "CrawlerInfo",

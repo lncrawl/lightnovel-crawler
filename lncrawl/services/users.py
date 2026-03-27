@@ -32,8 +32,8 @@ class UserService:
         return self._passlib.verify(plain, hashed)
 
     def setup_admin(self) -> None:
-        email = ctx.config.db.admin_email
-        password = ctx.config.db.admin_password
+        email = ctx.config.app.admin_email
+        password = ctx.config.app.admin_password
         with ctx.db.session() as sess:
             user = sess.exec(sa.select(User).where(User.email == email).limit(1)).first()
             if not user:

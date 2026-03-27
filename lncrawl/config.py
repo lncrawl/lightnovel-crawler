@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -7,7 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Type, TypeVar, Union, cast
+from typing import Annotated, Any, Callable, Dict, Optional, Type, TypeVar, Union, cast
 
 import dotenv
 import typer
@@ -26,6 +28,13 @@ APP_DIR = Path(
     )
 ).absolute()
 DEFAULT_CONFIG_FILE = APP_DIR / "config.json"
+
+
+class Sensitive:
+    """Use with ``typing.Annotated`` on config property return types.
+
+    Properties marked this way are listed in the admin API with ``sensitive=True``.
+    """
 
 
 # ------------------------------------------------------------------ #
@@ -116,22 +125,27 @@ class Config(object):
 
     @cached_property
     def app(self):
+        """Application Settings."""
         return AppConfig(self)
 
     @cached_property
     def db(self):
+        """Database Settings."""
         return DatabaseConfig(self)
 
     @cached_property
     def crawler(self):
+        """Crawler Settings."""
         return CrawlerConfig(self)
 
     @cached_property
     def server(self):
+        """Server Settings."""
         return ServerConfig(self)
 
     @cached_property
     def mail(self):
+        """Mail Settings."""
         return MailConfig(self)
 
     # -------------------------------------------------------------- #
@@ -239,12 +253,42 @@ class AppConfig(_Section):
         return APP_DIR
 
     @property
-    def openai_key(self) -> str:
+    def openai_key(self) -> Annotated[str, Sensitive]:
+        """OpenAI API Key.
+
+        Your key for OpenAI or compatible APIs. Leave empty if you do not use those features.
+        """
         return self._get("openai_api_key", "")
 
     @openai_key.setter
     def openai_key(self, v: str) -> None:
         self._set("openai_api_key", v)
+
+    @property
+    def admin_email(self) -> str:
+        """Admin Email.
+
+        Sign-in email for the built-in administrator account (for example in the web interface).
+        The default is `"admin"`.
+        """
+        return self._get("admin_email", "admin")
+
+    @admin_email.setter
+    def admin_email(self, v: str) -> None:
+        self._set("admin_email", v)
+
+    @property
+    def admin_password(self) -> Annotated[str, Sensitive]:
+        """Admin Password.
+
+        Password for the built-in administrator. Defaults to `"admin"`; choose a strong password
+        on any shared or public setup.
+        """
+        return self._get("admin_password", "admin")
+
+    @admin_password.setter
+    def admin_password(self, v: str) -> None:
+        self._set("admin_password", v)
 
 
 # ------------------------------------------------------------------ #
@@ -259,15 +303,16 @@ class DatabaseConfig(_Section):
         return env_url or sqlite_url
 
     @property
-    def url(self) -> str:
-        """
-        Database URL.
+    def url(self) -> Annotated[str, Sensitive]:
+        """Database URL.
 
-        Example:
-        - postgresql+psycopg://pguser:pgpass@postgres:5432/lncrawl
-        - mysql+pymysql://user:password@mysql:3306/lncrawl
-        - sqlite:////home/user/sqlite.db
-        - sqlite:///sqlite.db
+        Where the app stores its data. If you omit this, it looks for a standard database
+        environment variable first, then uses a small file-based database in your app data folder.
+
+        Examples:
+        - `sqlite:////full/path/to/sqlite.db`
+        - `postgresql+psycopg://pguser:pgpass@postgres:5432/lncrawl` 
+        - `mysql+pymysql://user:password@mysql:3306/lncrawl`
         """
         return self._get("url", self.__url)
 
@@ -277,7 +322,11 @@ class DatabaseConfig(_Section):
 
     @property
     def pool_size(self) -> int:
-        """Number of connections to maintain in the pool"""
+        """Connection Pool Size.
+
+        How many database connections the app keeps ready at once. Higher can help under load.
+        Default is `10`.
+        """
         return self._get("pool_size", 10)
 
     @pool_size.setter
@@ -286,7 +335,11 @@ class DatabaseConfig(_Section):
 
     @property
     def pool_timeout(self) -> int:
-        """Seconds to wait before giving up on getting a connection"""
+        """Pool Connection Timeout.
+
+        How many seconds to wait for a free database connection before giving up.
+        Default is `30`.
+        """
         return self._get("pool_timeout", 30)
 
     @pool_timeout.setter
@@ -295,7 +348,11 @@ class DatabaseConfig(_Section):
 
     @property
     def pool_recycle(self) -> int:
-        """Recycle connections after this many seconds (prevents stale connections)"""
+        """Pool Recycle Interval.
+
+        After this many seconds, an old connection is replaced with a fresh one so dropped or idle
+        links do not cause errors. Default is one hour (`3600`).
+        """
         return self._get("pool_recycle", 3600)
 
     @pool_recycle.setter
@@ -304,30 +361,15 @@ class DatabaseConfig(_Section):
 
     @property
     def connect_timeout(self) -> int:
-        """Timeout for database connection in seconds"""
+        """Database Connect Timeout.
+
+        How long to wait when first connecting to the database, in seconds. Default is `10`.
+        """
         return self._get("connect_timeout", 10)
 
     @connect_timeout.setter
     def connect_timeout(self, v: int) -> None:
         self._set("connect_timeout", v)
-
-    @property
-    def admin_email(self) -> str:
-        """Admin email"""
-        return self._get("admin_email", "admin")
-
-    @admin_email.setter
-    def admin_email(self, v: str) -> None:
-        self._set("admin_email", v)
-
-    @property
-    def admin_password(self) -> str:
-        """Admin password"""
-        return self._get("admin_password", "admin")
-
-    @admin_password.setter
-    def admin_password(self, v: str) -> None:
-        self._set("admin_password", v)
 
 
 # ------------------------------------------------------------------ #
@@ -358,6 +400,11 @@ class CrawlerConfig(_Section):
 
     @property
     def can_use_browser(self) -> bool:
+        """Browser Crawling.
+
+        Allow crawlers to drive a real browser for sites that need JavaScript. Turn off if you want
+        to avoid browser automation entirely. On by default.
+        """
         return self._get("can_use_browser", True)
 
     @can_use_browser.setter
@@ -366,6 +413,11 @@ class CrawlerConfig(_Section):
 
     @property
     def selenium_grid(self) -> str:
+        """Selenium Grid URL.
+
+        Address of your Selenium Grid or remote browser hub, if you run browsers on another machine.
+        You can set this here or leave it blank and define it in the environment instead.
+        """
         return self._get("selenium_grid", os.getenv("SELENIUM_GRID", ""))
 
     @selenium_grid.setter
@@ -374,10 +426,20 @@ class CrawlerConfig(_Section):
 
     @property
     def index_file_download_url(self) -> str:
+        """Sources Index Download URL.
+
+        Where the app downloads the official list of site sources from. This is built in and does
+        not appear in your settings file.
+        """
         return "https://raw.githubusercontent.com/lncrawl/lightnovel-crawler/dev/sources/_index.zip"
 
     @property
     def ignore_images(self) -> bool:
+        """Ignore Images When Crawling.
+
+        Skip pictures and other images while downloading chapters to save space and time. Off by
+        default.
+        """
         return self._get("ignore_images", False)
 
     @ignore_images.setter
@@ -386,7 +448,10 @@ class CrawlerConfig(_Section):
 
     @property
     def runner_concurrency(self) -> int:
-        """Scheduler concurrency"""
+        """Runner Concurrency.
+
+        How many crawl jobs may run at the same time. Default is `5`.
+        """
         return self._get("runner_concurrency", 5)
 
     @runner_concurrency.setter
@@ -395,7 +460,11 @@ class CrawlerConfig(_Section):
 
     @property
     def runner_cooldown(self) -> int:
-        """Crawler job cooldown in seconds"""
+        """Runner Cooldown.
+
+        Short pause in seconds between scheduler checks so the system is not constantly busy.
+        Default is `1`.
+        """
         return self._get("runner_cooldown", 1)
 
     @runner_cooldown.setter
@@ -403,8 +472,27 @@ class CrawlerConfig(_Section):
         self._set("runner_cooldown", v)
 
     @property
+    def disk_size_limit(self) -> int:
+        """Disk Size Limit.
+
+        Cap on how much disk space downloaded novels may use, measured in bytes. Zero means no limit. 
+        Default is `0`.
+        """
+        mb = self._get("disk_size_limit_mb", 0)
+        return mb * 1024 * 1024
+
+    @disk_size_limit.setter
+    def disk_size_limit(self, bytes_val: int) -> None:
+        mb = None if bytes_val is None else bytes_val // (1024 * 1024)
+        self._set("disk_size_limit_mb", mb)
+
+    @property
     def scrubber_cooldown(self) -> int:
-        """Scrubber job cooldown in seconds"""
+        """Scrubber Cooldown.
+
+        Minimum time in seconds between background cleanup passes. Default is half an hour
+        (`1800` seconds).
+        """
         return self._get("cleaner_cooldown", 30 * 60)
 
     @scrubber_cooldown.setter
@@ -413,23 +501,16 @@ class CrawlerConfig(_Section):
 
     @property
     def runner_reset_interval(self) -> int:
-        """Scheduler restart interval in seconds"""
+        """Runner Reset Interval.
+
+        How often the crawl scheduler fully restarts itself, in seconds, to stay healthy. Default
+        is four hours (`14400`).
+        """
         return self._get("runner_reset_interval", 4 * 3600)
 
     @runner_reset_interval.setter
     def runner_reset_interval(self, v: int) -> None:
         self._set("runner_reset_interval", v)
-
-    @property
-    def disk_size_limit(self) -> int:
-        """Maximum disk size limit of crawled data in bytes"""
-        mb = self._get("disk_size_limit_mb", 0)
-        return mb * 1024 * 1024
-
-    @disk_size_limit.setter
-    def disk_size_limit(self, bytes_val: int) -> None:
-        mb = None if bytes_val is None else bytes_val // (1024 * 1024)
-        self._set("disk_size_limit_mb", mb)
 
 
 # ------------------------------------------------------------------ #
@@ -440,6 +521,12 @@ class ServerConfig(_Section):
 
     @property
     def base_url(self) -> str:
+        """Server Base URL.
+
+        The address users and other services should use to reach the app (no trailing slash).
+        Important for correct links and sign-in redirects. Local default is
+        `http://localhost:8080`.
+        """
         return self._get("base_url", "http://localhost:8080").strip("/")
 
     @base_url.setter
@@ -447,7 +534,13 @@ class ServerConfig(_Section):
         self._set("base_url", v)
 
     @property
-    def token_secret(self) -> str:
+    def token_secret(self) -> Annotated[str, Sensitive]:
+        """JWT Token Secret.
+
+        Private value used to sign login sessions. If you do not set one, the app generates and
+        remembers a random value for you; set it yourself if several servers must agree on the
+        same secret.
+        """
         return self._get("token_secret", lambda: str(uuid.uuid4()))
 
     @token_secret.setter
@@ -456,6 +549,11 @@ class ServerConfig(_Section):
 
     @property
     def token_algo(self) -> str:
+        """JWT Signing Algorithm.
+
+        Cryptographic method used to sign session tokens. The usual default `HS256` is fine for
+        most deployments.
+        """
         return self._get("token_algorithm", "HS256")
 
     @token_algo.setter
@@ -464,6 +562,10 @@ class ServerConfig(_Section):
 
     @property
     def token_expiry(self) -> int:
+        """JWT Token Expiry.
+
+        How long a sign-in stays valid, in minutes. Default is one week (`10080` minutes).
+        """
         return self._get("token_expiry_minutes", lambda: 7 * 24 * 60)
 
     @token_expiry.setter
@@ -479,6 +581,11 @@ class MailConfig(_Section):
 
     @property
     def smtp_server(self) -> str:
+        """SMTP Server.
+
+        Host name or IP of the machine that sends your email. `localhost` is common when testing
+        with a local mail catcher.
+        """
         return self._get("smtp_server", "localhost")
 
     @smtp_server.setter
@@ -487,6 +594,11 @@ class MailConfig(_Section):
 
     @property
     def smtp_port(self) -> int:
+        """SMTP Port.
+
+        Network port for mail submission. `1025` matches many simple local test setups; production
+        often uses `587` or `465`.
+        """
         return self._get("smtp_port", 1025)
 
     @smtp_port.setter
@@ -495,6 +607,11 @@ class MailConfig(_Section):
 
     @property
     def smtp_username(self) -> str:
+        """SMTP Username.
+
+        Login name for your mail provider, if it requires authentication. Leave empty when the
+        server does not ask for a user.
+        """
         return self._get("smtp_username", "")
 
     @smtp_username.setter
@@ -502,7 +619,12 @@ class MailConfig(_Section):
         self._set("smtp_username", v)
 
     @property
-    def smtp_password(self) -> str:
+    def smtp_password(self) -> Annotated[str, Sensitive]:
+        """SMTP Password.
+
+        Password that goes with the mail login, when your provider needs one. Leave empty if not
+        required.
+        """
         return self._get("smtp_password", "")
 
     @smtp_password.setter
@@ -511,6 +633,11 @@ class MailConfig(_Section):
 
     @property
     def smtp_sender(self) -> str:
+        """SMTP Sender Address.
+
+        The From address recipients see, for example `no-reply@example.com`. Some providers
+        require this to match an allowed sender.
+        """
         return self._get("smtp_sender", "")
 
     @smtp_sender.setter

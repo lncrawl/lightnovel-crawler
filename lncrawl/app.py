@@ -13,10 +13,8 @@ from .commands.search import app as search
 from .commands.server import app as server
 from .commands.sources import app as sources
 from .commands.version import app as version
-from .context import AppContext
+from .context import ctx
 
-# My application context
-ctx = AppContext()
 logger = logging.getLogger(__name__)
 
 # Define typer

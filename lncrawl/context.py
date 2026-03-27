@@ -3,17 +3,21 @@ from functools import cached_property
 from pathlib import Path
 from typing import Optional, Union
 
-_cache: Optional["AppContext"] = None
-
 logger = logging.getLogger(__name__)
 
 
-class AppContext:
+class __AppContext__:
     @cached_property
     def config(self):
         from .config import Config
 
         return Config()
+
+    @cached_property
+    def admin(self):
+        from .services.admin import AdminService
+
+        return AdminService()
 
     @cached_property
     def logger(self):
@@ -141,18 +145,15 @@ class AppContext:
 
         return JobScheduler()
 
-    def __new__(cls):
-        global _cache
-        if _cache is None:
-            _cache = super().__new__(cls)
-        return _cache
+    # ------------------------------------------------------------
+    # Context management
+    # ------------------------------------------------------------
 
     def __init__(self) -> None:
         self.__ready = False
 
     def destroy(self):
-        global _cache
-        _cache = None
+        self.__ready = False
         self.db.close()
         self.mail.close()
         self.sources.close()
@@ -175,4 +176,4 @@ class AppContext:
         self.sources.load(sync_remote_index)
 
 
-ctx: AppContext = AppContext()
+ctx = __AppContext__()
