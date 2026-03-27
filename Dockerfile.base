@@ -1,29 +1,8 @@
-# Stage 1: download and strip Calibre
-FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim AS calibre
 
-RUN apt-get update -yq && \
-    apt-get install -yq --no-install-recommends \
-    wget \
-    libegl1 \
-    libopengl0 \
-    libfontconfig \
-    libxcb-cursor0 \
-    xdg-utils \
-    xz-utils \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh \
-    | sh /dev/stdin install_dir=/opt/calibre isolated=y
-
-# Only ebook-convert is used at runtime; strip everything else
-RUN rm -rf /opt/calibre/resources/content-server \
-    /opt/calibre/resources/mathjax \
-    && find /opt/calibre/resources/localization -name '*.mo' ! -name 'en*' -delete 2>/dev/null; \
-    find /opt/calibre -name '*.so' -exec strip --strip-unneeded {} + 2>/dev/null; \
-    true
-
-# Stage 2: base runtime image
-FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim
+#------------------------------------------------
+# Common modules
+#------------------------------------------------
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim AS common
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -44,6 +23,42 @@ RUN apt-get update -yq && \
     libfontconfig \
     libxkbcommon0 \
     && rm -rf /var/lib/apt/lists/*
+
+#------------------------------------------------
+# Install Calibre
+#------------------------------------------------
+FROM common AS calibre
+
+RUN apt-get update -yq && \
+    apt-get install -yq --no-install-recommends \
+    wget \
+    libxcb-cursor0 \
+    xdg-utils \
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget -nv -O- https://download.calibre-ebook.com/linux-installer.sh \
+    | sh /dev/stdin install_dir=/opt/calibre isolated=y
+
+# Only ebook-convert is used at runtime; strip everything else
+RUN rm -rf /opt/calibre/resources/content-server \
+    /opt/calibre/resources/mathjax \
+    && find /opt/calibre/resources/localization -name '*.mo' ! -name 'en*' -delete 2>/dev/null; \
+    find /opt/calibre -name '*.so' -exec strip --strip-unneeded {} + 2>/dev/null; \
+    true
+
+#------------------------------------------------
+# Base runtime image
+#------------------------------------------------
+FROM common
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    QTWEBENGINE_DISABLE_SANDBOX=1 \
+    QT_QPA_PLATFORM=offscreen \
+    QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu --disable-software-rasterizer"
 
 COPY --from=calibre /opt/calibre /opt/calibre
 RUN ln -s /opt/calibre/calibre/ebook-convert /usr/local/bin/ebook-convert
