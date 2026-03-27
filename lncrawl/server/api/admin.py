@@ -14,6 +14,11 @@ async def update() -> int:
     return ctx.admin.update_sources()
 
 
+@router.post("/soft-restart", summary="Reload application context and restart the scheduler")
+def soft_restart() -> None:
+    ctx.admin.soft_restart()
+
+
 @router.get("/runner/status", summary="Get runner status")
 def status() -> bool:
     return bool(ctx.scheduler.running)
