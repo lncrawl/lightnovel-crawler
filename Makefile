@@ -40,9 +40,9 @@ upgrade: setup
 	$(UV) sync --upgrade --extra dev
 
 lint:
+	$(UV) run flake8 --config .flake8 -v --count --show-source --statistics
 	$(UV) run black --check .
 	$(UV) run isort --check .
-	$(UV) run flake8 --config .flake8 -v --count --show-source --statistics
 
 start:
 	$(UV) run python -m lncrawl -ll server

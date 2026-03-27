@@ -16,6 +16,7 @@ def _unwrap_return_type(annotation: Any) -> Any:
     is_union = origin is Union
     if sys.version_info >= (3, 10):
         from types import UnionType
+
         is_union = is_union or origin is UnionType
     if is_union:
         args = [a for a in get_args(annotation) if a is not type(None)]
@@ -87,9 +88,9 @@ def _get_masked_value(value: Any) -> Any:
     if not str_value:
         return ""
     mask = "********"
-    l = min(4, len(str_value) // 8)
-    if l > 0:
-        return str_value[:l] + mask + str_value[-l:]
+    cl = min(4, len(str_value) // 8)
+    if cl > 0:
+        return str_value[:cl] + mask + str_value[-cl:]
     return mask
 
 

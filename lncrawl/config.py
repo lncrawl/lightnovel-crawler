@@ -311,7 +311,7 @@ class DatabaseConfig(_Section):
 
         Examples:
         - `sqlite:////full/path/to/sqlite.db`
-        - `postgresql+psycopg://pguser:pgpass@postgres:5432/lncrawl` 
+        - `postgresql+psycopg://pguser:pgpass@postgres:5432/lncrawl`
         - `mysql+pymysql://user:password@mysql:3306/lncrawl`
         """
         return self._get("url", self.__url)
@@ -475,7 +475,7 @@ class CrawlerConfig(_Section):
     def disk_size_limit(self) -> int:
         """Disk Size Limit.
 
-        Cap on how much disk space downloaded novels may use, measured in bytes. Zero means no limit. 
+        Cap on how much disk space downloaded novels may use, measured in bytes. Zero means no limit.
         Default is `0`.
         """
         mb = self._get("disk_size_limit_mb", 0)
