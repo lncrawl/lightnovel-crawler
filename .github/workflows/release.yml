@@ -35,13 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           submodules: recursive
-
-      - name: 🔄 Update submodules
-        run: |
-          git submodule sync
-          git submodule update --init --remote --merge
 
       - name: 🧰 Install OpenSSL
         run: choco install -y --no-progress openssl
@@ -87,13 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           submodules: recursive
-
-      - name: 🔄 Update submodules
-        run: |
-          git submodule sync
-          git submodule update --init --remote --merge
 
       - name: 🐍 Install uv & Python
         uses: astral-sh/setup-uv@v7
@@ -137,13 +125,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           submodules: recursive
-
-      - name: 🔄 Update submodules
-        run: |
-          git submodule sync
-          git submodule update --init --remote --merge
 
       - name: 🐍 Install uv & Python
         uses: astral-sh/setup-uv@v7
@@ -190,13 +172,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           submodules: recursive
-
-      - name: 🔄 Update submodules
-        run: |
-          git submodule sync
-          git submodule update --init --remote --merge
 
       - name: 🐍 Install uv & Python
         uses: astral-sh/setup-uv@v7
