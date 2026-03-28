@@ -12,7 +12,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/lncrawl/lightnovel-crawler)
 [![Build and Publish](https://github.com/lncrawl/lightnovel-crawler/actions/workflows/release.yml/badge.svg)](https://github.com/lncrawl/lightnovel-crawler/actions/workflows/release.yml)
 
-**Lightnovel Crawler** (command name: `lncrawl`) downloads **web novels and similar fiction** from many online reading sites and saves them as **e-book** so you can read offline on a phone, tablet, or e-reader.
+**Lightnovel Crawler** downloads _web novels and similar fiction_ from many online reading sites and saves them as **e-book** so you can read offline on a phone, tablet, or e-reader.
 
 ### What you can do with it
 
@@ -22,188 +22,108 @@
 
 ### Use it responsibly
 
-Sites publish fiction under their own **terms and copyright**. This tool is meant for **personal, lawful** use, for example keeping a backup of material you already have access to, where the licence allows it. **Do not** use it to redistribute or sell someone else's work. You are responsible for how you use Lightnovel Crawler.
-
----
-
-## Quick start
-
-<a href="https://github.com/lncrawl/lightnovel-crawler"><img src="res/lncrawl-icon.png" width="128px" align="right"/></a>
-
-1. **Install** the app using [one of the methods below](#installation). On Windows, the simplest option is often the `**.exe` download.
-2. Open a terminal (Command Prompt or PowerShell on Windows), then start the web interface:
-
-```bash
- lncrawl server
-```
-
-1. In your browser, open **[http://localhost:8080](http://localhost:8080)** (use another port if you started the server with `-p`, for example `lncrawl server -p 8080`).
-2. Sign in with the default account `**admin`** / `**admin`**, then **change the password in settings if anyone else can reach your computer.
-
-If `lncrawl` is not found, try `python -m lncrawl` or `python3 -m lncrawl` instead (see [PIP installation](#pip-windows-mac-and-linux)).
-
-## Calibre (optional)
-
-If you only need **EPUB**, plain **text**, or **JSON** output, you can skip this section.
-
-To create **PDF**, **MOBI**, **DOCX**, and several other formats, install **[Calibre](https://calibre-ebook.com/download)**. Lightnovel Crawler calls Calibre's tools in the background when you pick those formats.
-
-**macOS:** before running `lncrawl`, add Calibre to your path (adjust if you did not install to Applications):
-
-```bash
-export PATH="$PATH:/Applications/calibre.app/Contents/MacOS"
-```
-
----
+Sites publish fiction under their own _terms and copyright_. This tool is meant for **personal** use only, for example keeping a backup of material you already have access to, where the licence allows it. **Do not** use it to redistribute or sell someone else's work. You are responsible for how you use Lightnovel Crawler.
 
 ## Installation
 
 Pick **one** approach. You do not need to do all of them.
 
-### ⏬ Standalone download
+### ⏬ Standalone
 
-| Platform | Download                                              | Note                                                                              |
-| -------- | ----------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Windows  | [lncrawl.exe](https://go.bitanon.dev/lncrawl-windows) | SmartScreen may warn about an unknown app; use "More info" and then "Run anyway". |
-| Linux    | [lncrawl](https://go.bitanon.dev/lncrawl-linux)       | **pip** is often easier for updates.                                              |
-| macOS    | [lncrawl](https://go.bitanon.dev/lncrawl-mac)         | **pip** is often easier for updates.                                              |
+| Platform | Link                                                  | Note                                       |
+| -------- | ----------------------------------------------------- | ------------------------------------------ |
+| Windows  | [lncrawl.exe](https://go.bitanon.dev/lncrawl-windows) | SmartScreen may warn about an unknown app. |
+| Linux    | [lncrawl](https://go.bitanon.dev/lncrawl-linux)       | **pip** is often easier for updates.       |
+| macOS    | [lncrawl](https://go.bitanon.dev/lncrawl-mac)         | **pip** is often easier for updates.       |
 
 _To get older versions visit the [Releases page](https://github.com/lncrawl/lightnovel-crawler/releases)_
 
+Check that it works:
+
+- Double click and run the downloaded file. _It may take some time to show the first screen depending on your machine._
+
+[![Tutorial](res/screenshots/tutorial.png)](res/screenshots/tutorial.png)
+
 ### 📦 PIP
 
-1. Install **Python 3.9+** with **pip** enabled ([installation](https://pip.pypa.io/en/latest/installation/)).
-2. In a terminal:
+> PyPI package: [**lightnovel-crawler** ![version](https://img.shields.io/pypi/v/lightnovel-crawler.svg?logo=python)](https://pypi.org/project/lightnovel-crawler)
 
-```bash
- pip install -U lightnovel-crawler
-```
+- From PyPI repository.
 
-On some systems use `python3 -m pip`, `pip3`, or `python -m pip`. 3. Check that it works:
-
-```bash
- lncrawl -h
-```
-
-If that fails, try `python3 -m lncrawl -h` (your Python install may not expose `lncrawl` on the PATH).
-
-Package page: [lightnovel-crawler on PyPI](https://pypi.org/project/lightnovel-crawler).
-
-### 📦 PIP (directly from GitHub)
-
-- **Stable branch (`master`):**
   ```bash
-  pip install -U git+https://github.com/lncrawl/lightnovel-crawler.git#egg=lightnovel-crawler
+  pip install -U lightnovel-crawler
   ```
-- **Development branch (`dev`):** may include fixes or breaking changes.
+
+  _If it fails, you can try: `python3 -m pip`, `pip3`, or `python -m pip`._
+
+- You can also install directly from GitHub.
+  - **Stable branch (`master`):**
+
+    ```bash
+    pip install -U git+https://github.com/lncrawl/lightnovel-crawler.git#egg=lightnovel-crawler
+    ```
+
+  - **Development branch (`dev`):** may include fixes or breaking changes.
+
+    ```bash
+    pip install -U https://github.com/lncrawl/lightnovel-crawler/tarball/refs/heads/dev#egg=lightnovel-crawler
+    ```
+
+- Check that it works:
+
   ```bash
-  pip install -U https://github.com/lncrawl/lightnovel-crawler/tarball/refs/heads/dev#egg=lightnovel-crawler
+  lncrawl -h
   ```
+
+  _If `lncrawl` is not found, try `python3 -m lncrawl`, or `python -m lncrawl`._
+
+[![Terminal](res/screenshots/terminal.png)](res/screenshots/terminal.png)
 
 ### 🐳 Docker
 
+You need to have [Docker](https://www.docker.com/get-started/) installed.
+
 ```bash
-mkdir -p ~/.lncrawl
+mkdir -p lncrawl-data
 docker pull ghcr.io/lncrawl/lightnovel-crawler
-docker run -v ~/.lncrawl:/data --rm -it --name lncrawl ghcr.io/lncrawl/lightnovel-crawler
+docker run -v ./lncrawl-data:/data -it -p 8080:8080 --name lncrawl-server ghcr.io/lncrawl/lightnovel-crawler -ll server
 ```
 
-Optional alias (example with port **8080** for the web UI):
+Check that it works:
+
+- Visit **[http://localhost:8080](http://localhost:8080)** in your browser.
+- You can sign in with the default account: `admin` / `admin`.
+
+[![Login](res/screenshots/login.png)](res/screenshots/login.png)
+
+## Calibre (optional)
+
+> If you only need **epub**, **text**, or **json** outputs, you can skip this section.
+
+To create **PDF**, **MOBI**, **DOCX**, and other formats, install **[Calibre](https://calibre-ebook.com/download)**. Lightnovel Crawler calls Calibre's tools in the background when you pick those formats.
+
+After installation, locate location of the `ebook-convert` in the Calibre installation directory, and add the folder to your Path variables. e.g.:
 
 ```bash
-alias docker-lncrawl='docker run -v ~/.lncrawl:/data --rm -it -p 8080:8080 --name lncrawl ghcr.io/lncrawl/lightnovel-crawler'
-docker-lncrawl server
+export PATH="$PATH:/Applications/calibre.app/Contents/MacOS"
 ```
-
-### 💻 Running from this repository (developers)
-
-```bash
-git clone https://github.com/lncrawl/lightnovel-crawler
-git submodule update --force --init --recursive --remote
-cd lightnovel-crawler
-```
-
-Install [uv](https://docs.astral.sh/uv/), then:
-
-```bash
-uv sync --extra dev
-uv run python -m lncrawl
-```
-
-Or use **Make**: `make install`, then `make start` (server) or `make watch` (auto-reload).
-
-Docker from source: `make docker-build`; see [.github/docs/DOCKER.md](.github/docs/DOCKER.md). Compose: `make docker-up`.
-
----
 
 ## Using the app
 
-### Web interface (recommended for most people)
+### Web Interface
 
-After `lncrawl server`, use the browser to search sources, add novels, and download. The UI walks you through choosing chapters and formats.
+Just run the executable or type `lncrawl` in your terminal and you're ready to go! Browse, download, and enjoy your novels all in one place, no command line required.
 
-Default login: `**admin`** / `**admin`. Change this if the server is reachable beyond your own machine.
+[![Crawlers](res/screenshots/crawlers.png)](res/screenshots/crawlers.png)
+[![Requests](res/screenshots/requests.png)](res/screenshots/requests.png)
+[![Novels](res/screenshots/novels.png)](res/screenshots/novels.png)
+[![Reader](res/screenshots/reader.png)](res/screenshots/reader.png)
+[![Libraries](res/screenshots/libraries.png)](res/screenshots/libraries.png)
+[![Settings](res/screenshots/settings.png)](res/screenshots/settings.png)
 
-### Command line (short examples)
+### Command Line
 
-Download a few chapters from a novel's **main info page** URL:
-
-```bash
-lncrawl crawl "https://example-novel-site.com/novel/my-story" --first 3 -f epub
-```
-
-Common flags (see [Command-line reference](#command-line-reference) for the full list):
-
-- `--all`: all chapters
-- `--first N` / `--last N`: first or last N chapters
-- `-f` / `--format`: output type (`epub`, `txt`, `pdf`, and others)
-- `--noin`: non-interactive mode
-
-Verbose logging: `-l` (warnings), `-ll` (info), `-lll` (debug).
-
----
-
-## Get help
-
-Questions and tips: [GitHub Discussions](https://github.com/lncrawl/lightnovel-crawler/discussions).
-
-## Contributing and development
-
-Want to help with code, sources, or docs?
-
-- [CONTRIBUTING.md](CONTRIBUTING.md) (setup and guidelines)
-- [DeepWiki](https://deepwiki.com/lncrawl/lightnovel-crawler) (AI-assisted project overview)
-- [.github/docs/ARCHITECTURE.md](.github/docs/ARCHITECTURE.md) (architecture and CI notes)
-- [.github/docs/CREATING_CRAWLERS.md](.github/docs/CREATING_CRAWLERS.md) (add or fix a source)
-- [.github/docs/DOCKER.md](.github/docs/DOCKER.md) (Docker details)
-- [.github/FORKING.md](.github/FORKING.md) (CI on forks)
-
-**Quick dev commands:**
-
-```bash
-git clone https://github.com/lncrawl/lightnovel-crawler.git
-cd lightnovel-crawler
-make
-make start
-```
-
-Open the `Makefile` in the repo root, or see [AGENTS.md](AGENTS.md), for targets such as `lint`, `build-wheel`, `docker-build`, and dependency helpers (`make add-dep`, etc.).
-
-### Adding a new source
-
-Copy one example such as `[sources/_examples/_01_general_soup.py](sources/_examples/_01_general_soup.py)` into the right `sources/{lang}/` folder and implement the required parsers. Full guide: [.github/docs/CREATING_CRAWLERS.md](.github/docs/CREATING_CRAWLERS.md).
-
-Optional: scaffold with the CLI (uses ChatGPT when configured):
-
-```bash
-lncrawl sources create
-```
-
-## Command-line Reference
-
-If you only use the **web interface** (`lncrawl server`), you can treat this section as optional reference.
-
-### Available options
+Check the available options in the terminal:
 
 <!-- auto generated command line output -->
 
@@ -234,45 +154,84 @@ Usage: lncrawl [OPTIONS] COMMAND [ARGS]...
 
 <!-- auto generated command line output -->
 
+Download a few chapters from a novel's **main info page** URL:
+
+```bash
+lncrawl -ll crawl "https://example.com/novel/1234" -f epub --first 10
+```
+
+## Development and Contributions
+
+Want to help with code, sources, or docs?
+
+- [DeepWiki](https://deepwiki.com/lncrawl/lightnovel-crawler) (AI-assisted project overview)
+- [.github/docs/ARCHITECTURE.md](.github/docs/ARCHITECTURE.md) (architecture and CI notes)
+- [.github/docs/CREATING_CRAWLERS.md](.github/docs/CREATING_CRAWLERS.md) (add or fix a source)
+- [.github/docs/DOCKER.md](.github/docs/DOCKER.md) (Docker details)
+- [.github/FORKING.md](.github/FORKING.md) (CI on forks)
+
+### Quick Setup
+
+```bash
+git clone https://github.com/lncrawl/lightnovel-crawler.git
+cd lightnovel-crawler
+make
+make start
+```
+
 ### Makefile Reference
 
+```bash
+# Setup and Install using virtual environment:
+make setup            # Sync submodules, install uv if needed
+make install          # Install Python dependencies (uv sync)
+
+# Run development servers
+make start            # Backend server only
+make watch            # Backend with auto-reload
+make lint             # Run Python linter (flake8)
+make add-source       # Guided CLI to add a new source
+
+# Build
+make build            # Full build (wheel + exe)
+make build-wheel      # Python wheel only
+make build-exe        # PyInstaller executable
+
+# Dependencies (uv)
+make add-dep PKG      # Add runtime dependency
+make add-dev PKG      # Add dev dependency
+make rm-dep PKG       # Remove runtime dependency
+make rm-dev PKG       # Remove dev dependency
+
+# Docker Commands
+make docker-build     # Build the base and application image
+make docker-base      # Build the base image only
+make docker-up        # Start stack (compose)
+make docker-down      # Stop stack
+make docker-logs      # Stream container logs
+
+# Others
+make version          # Show current version
+make clean            # Remove .venv, build, dist
+make pull             # Git pull + submodule update
+
+# Run from source directly
+uv run python -m lncrawl
 ```
-Lightnovel Crawler Build System
 
-Setup & Install:
-  make setup        Sync submodules, install uv if needed
-  make install      Install Python dependencies (uv sync)
+### Adding New Source
 
-Development:
-  make start        Start backend server
-  make watch        Start backend server with auto-reload
-  make lint         Run Python linter (flake8)
+_Recommended_: Scaffold with the CLI (optionally, it can use AI for generation):
 
-Build:
-  make build        Full build (version, install, wheel, exe)
-  make build-wheel  Build Python wheel only
-  make build-exe    Build PyInstaller executable
-
-Dependencies (uv):
-  make add-dep PKG   Add runtime dependency
-  make add-dev PKG   Add dev dependency
-  make rm-dep PKG    Remove runtime dependency
-  make rm-dev PKG    Remove dev dependency
-
-Docker:
-  make docker-base   Build base image (Calibre + deps)
-  make docker-build  Build base then application image
-  make docker-up     Start stack (compose)
-  make docker-down   Stop stack
-  make docker-logs   Stream container logs
-
-Other:
-  make version      Show current version
-  make clean        Remove .venv, build, dist
-  make pull         Git pull + submodule update
+```bash
+make add-source
 ```
 
-## Supported Output Formats
+_Manually_: Copy one example such as `[sources/_examples/_01_general_soup.py](sources/_examples/_01_general_soup.py)` into the right `sources/{lang}/` folder and implement the required methods.
+
+_Full guide_: [.github/docs/CREATING_CRAWLERS.md](.github/docs/CREATING_CRAWLERS.md).
+
+## Supported Formats
 
 Lightnovel Crawler can export your downloaded novels in a variety of formats to suit your preferred reading device or software:
 
@@ -300,6 +259,11 @@ You can select your preferred format when downloading. _EPUB_, _text_, and _JSON
 ## Supported sources
 
 > Request new one by [creating a new issue](https://github.com/lncrawl/lightnovel-crawler/issues/new/choose).
+
+<p align="center">
+  <img src="res/screenshots/crawlers.png" alt="Sources and crawlers in the web UI" width="800"/>
+</p>
+<p align="center"><em>Enable or browse sources (crawlers) from the web app.</em></p>
 
 <!-- auto generated supported sources list -->
 
@@ -2730,3 +2694,7 @@ We are supporting 361 sources and 391 crawlers.
 </table>
 
 <!-- auto generated rejected sources list -->
+
+## Get help
+
+Questions and tips: [GitHub Discussions](https://github.com/lncrawl/lightnovel-crawler/discussions).

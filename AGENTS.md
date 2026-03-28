@@ -5,34 +5,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Development Commands
 
 ```bash
-# Setup virtual environment and Install Python dependencies
-make install
+# Setup and Install using virtual environment:
+make setup            # Sync submodules, install uv if needed
+make install          # Install Python dependencies (uv sync)
 
 # Run development servers
-make start         # Backend server only
-make watch         # Backend with auto-reload
+make start            # Backend server only
+make watch            # Backend with auto-reload
+make lint             # Run Python linter (flake8)
+make add-source       # Guided CLI to add a new source
 
 # Build
-make build         # Full build (web + wheel + exe)
-make build-wheel   # Python wheel only
-make build-exe     # PyInstaller executable
-
-# Linting
-make lint          # Both Python and web
-make lint-py       # Python (flake8)
-make lint-web      # Web frontend (eslint)
+make build            # Full build (wheel + exe)
+make build-wheel      # Python wheel only
+make build-exe        # PyInstaller executable
 
 # Dependencies (uv)
-make add-dep httpx          # Add runtime dependency
-make add-dev black          # Add dev dependency
-make rm-dep httpx           # Remove runtime dependency
-make rm-dev black           # Remove dev dependency
+make add-dep PKG      # Add runtime dependency
+make add-dev PKG      # Add dev dependency
+make rm-dep PKG       # Remove runtime dependency
+make rm-dev PKG       # Remove dev dependency
 
 # Docker Commands
-make docker-build       # Build application Docker image
-make docker-up          # Start containers in background
-make docker-down        # Stop containers
-make docker-logs
+make docker-build     # Build the base and application image
+make docker-base      # Build the base image only
+make docker-up        # Start stack (compose)
+make docker-down      # Stop stack
+make docker-logs      # Stream container logs
+
+# Others
+make version          # Show current version
+make clean            # Remove .venv, build, dist
+make pull             # Git pull + submodule update
 
 # Run from source directly
 uv run python -m lncrawl
