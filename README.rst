@@ -36,7 +36,6 @@ If ``lncrawl`` is not on your PATH, use ``python -m lncrawl`` or ``python3 -m ln
 Documentation and help
 ----------------------
 
-* `Full README (GitHub) <https://github.com/lncrawl/lightnovel-crawler/blob/master/README.md>`_ — supported sources list, CLI reference, development setup, etc.
-* `Contributing <https://github.com/lncrawl/lightnovel-crawler/blob/master/CONTRIBUTING.md>`_
+* `Full README (GitHub) <https://github.com/lncrawl/lightnovel-crawler>`_ - installation, CLI reference, development setup, supported sources list etc.
 * `Issue tracker <https://github.com/lncrawl/lightnovel-crawler/issues>`_
 * `GitHub Discussions <https://github.com/lncrawl/lightnovel-crawler/discussions>`_
