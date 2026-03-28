@@ -26,9 +26,9 @@ Sites publish fiction under their own **terms and copyright**. This tool is mean
 
 ---
 
-<a href="https://github.com/lncrawl/lightnovel-crawler"><img src="res/lncrawl-icon.png" width="128px" align="right"/></a>
-
 ## Quick start
+
+<a href="https://github.com/lncrawl/lightnovel-crawler"><img src="res/lncrawl-icon.png" width="128px" align="right"/></a>
 
 1. **Install** the app using [one of the methods below](#installation). On Windows, the simplest option is often the `**.exe` download.
 2. Open a terminal (Command Prompt or PowerShell on Windows), then start the web interface:
