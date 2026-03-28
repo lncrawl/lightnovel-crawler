@@ -236,28 +236,29 @@ _Full guide_: [.github/docs/CREATING_CRAWLERS.md](.github/docs/CREATING_CRAWLERS
 
 ## Supported Formats
 
-Lightnovel Crawler can export your downloaded novels in a variety of formats to suit your preferred reading device or software:
+Natively supported formats:
 
-| Format      | Description                 | Use Case / App          |
-| ----------- | --------------------------- | ----------------------- |
-| 📚 **EPUB** | Standard eBook format       | Most eReaders, apps     |
-| 📄 **PDF**  | Portable Document Format    | Universal, print-ready  |
-| 📃 **TXT**  | Plain text file             | Any text editor, simple |
-| 🗂️ **JSON** | Structured chapter data     | Parsing/scripts/devs    |
-| 🔲 **MOBI** | Kindle eBook (legacy)       | Older Kindle devices    |
-| 🔳 **AZW3** | Kindle eBook (modern)       | Current Kindles         |
-| 📝 **DOCX** | Microsoft Word document     | MS Word, LibreOffice    |
-| 📑 **RTF**  | Rich Text Format            | WordPad, others         |
-| 📔 **FB2**  | FictionBook eBook format    | FB2 readers             |
-| 📕 **LIT**  | Microsoft Reader (obsolete) | Old MS Reader           |
-| 📗 **LRF**  | Sony eBook format           | Sony Readers            |
-| 🗄️ **PDB**  | PalmDoc/Plucker (legacy)    | PalmOS, old devices     |
-| 📘 **RB**   | RocketBook/REB1100          | Legacy readers          |
-| 📙 **TCR**  | Psion eBook format          | Psion readers           |
+| Format      | Description             | Use Case / App          |
+| ----------- | ----------------------- | ----------------------- |
+| 📚 **EPUB** | Standard eBook format   | Most eReaders, apps     |
+| 📃 **TXT**  | Plain text file         | Any text editor, simple |
+| 🗂️ **JSON** | Structured chapter data | Parsing/scripts/devs    |
 
-> Not all output types are available in portable builds—**Calibre** is required for `pdf`, `mobi`, `azw3`, `docx`, and some others.
+Supported if Calibre’s `ebook-convert` tool is available:
 
-You can select your preferred format when downloading. _EPUB_, _text_, and _JSON_ are supported natively; the others are powered by Calibre’s e-book conversion tools.
+| Format      | Description                 | Use Case / App         |
+| ----------- | --------------------------- | ---------------------- |
+| 📄 **PDF**  | Portable Document Format    | Universal, print-ready |
+| 🔲 **MOBI** | Kindle eBook (legacy)       | Older Kindle devices   |
+| 🔳 **AZW3** | Kindle eBook (modern)       | Current Kindles        |
+| 📝 **DOCX** | Microsoft Word document     | MS Word, LibreOffice   |
+| 📑 **RTF**  | Rich Text Format            | WordPad, others        |
+| 📔 **FB2**  | FictionBook eBook format    | FB2 readers            |
+| 📕 **LIT**  | Microsoft Reader (obsolete) | Old MS Reader          |
+| 📗 **LRF**  | Sony eBook format           | Sony Readers           |
+| 🗄️ **PDB**  | PalmDoc/Plucker (legacy)    | PalmOS, old devices    |
+| 📘 **RB**   | RocketBook/REB1100          | Legacy readers         |
+| 📙 **TCR**  | Psion eBook format          | Psion readers          |
 
 ## Supported sources
 
