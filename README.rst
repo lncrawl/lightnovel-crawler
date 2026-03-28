@@ -1,6 +1,34 @@
+====================
 Lightnovel Crawler
------------------------
+====================
 
-Download lightnovels from various online sources and generate output in different formats, e.g. epub, mobi, json, html, text, docx, pdf etc.
+.. image:: https://img.shields.io/pypi/v/lightnovel-crawler.svg?logo=python
+   :target: https://pypi.org/project/lightnovel-crawler/
+   :alt: PyPI version
 
-Visit https://github.com/lncrawl/lightnovel-crawler for more details.
+.. image:: https://img.shields.io/pypi/pyversions/lightnovel-crawler.svg
+   :target: https://pypi.org/project/lightnovel-crawler/
+   :alt: Python versions
+
+.. image:: https://img.shields.io/badge/license-GPLv3-blue.svg
+   :target: https://github.com/lncrawl/lightnovel-crawler/blob/master/LICENSE
+   :alt: License GPLv3
+
+**Lightnovel Crawler** (command: ``lncrawl``) downloads *web novels and similar fiction* from many online reading sites and saves them as **e-books** (EPUB and other formats).
+
+Installation
+------------
+
+.. code-block:: bash
+
+   pip install -U lightnovel-crawler
+
+If ``lncrawl`` is not on your PATH, use ``python -m lncrawl`` or ``python3 -m lncrawl``.
+
+Documentation and help
+----------------------
+
+* `Full README (GitHub) <https://github.com/lncrawl/lightnovel-crawler/blob/master/README.md>`_ — supported sources list, CLI reference, development setup, etc.
+* `Contributing <https://github.com/lncrawl/lightnovel-crawler/blob/master/CONTRIBUTING.md>`_
+* `Issue tracker <https://github.com/lncrawl/lightnovel-crawler/issues>`_
+* `GitHub Discussions <https://github.com/lncrawl/lightnovel-crawler/discussions>`_

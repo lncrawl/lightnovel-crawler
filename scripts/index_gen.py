@@ -310,8 +310,6 @@ supported += f"We are supporting {len(INDEX_DATA['supported'])} sources and {len
 for ln_code, links in sorted(grouped_supported.items(), key=lambda x: x[0]):
     assert isinstance(links, dict)
     language = language_codes.get(ln_code, "Unknown")
-    if language == "Unknown":
-        language = "Multiple Languages"
     supported += "\n\n"
     supported += f'### `{ln_code or "~"}` {language}'
     supported += "\n\n"
