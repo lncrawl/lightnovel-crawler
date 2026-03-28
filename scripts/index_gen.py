@@ -12,7 +12,7 @@ import re
 import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Event
 from typing import Any, Dict, List
@@ -47,8 +47,6 @@ README_FILE = WORKDIR / "README.md"
 SUPPORTED_SOURCE_LIST_QUE = "<!-- auto generated supported sources list -->"
 REJECTED_SOURCE_LIST_QUE = "<!-- auto generated rejected sources list -->"
 HELP_RESULT_QUE = "<!-- auto generated command line output -->"
-
-DATE_FORMAT = "%d %B %Y %I:%M:%S %p"
 
 REPO_OWNER = "lncrawl"
 REPO_NAME = "lightnovel-crawler"
@@ -312,6 +310,8 @@ supported += f"We are supporting {len(INDEX_DATA['supported'])} sources and {len
 for ln_code, links in sorted(grouped_supported.items(), key=lambda x: x[0]):
     assert isinstance(links, dict)
     language = language_codes.get(ln_code, "Unknown")
+    if language == "Unknown":
+        language = "Multiple Languages"
     supported += "\n\n"
     supported += f'### `{ln_code or "~"}` {language}'
     supported += "\n\n"
@@ -326,7 +326,13 @@ for ln_code, links in sorted(grouped_supported.items(), key=lambda x: x[0]):
     for url, crawler_id in sorted(links.items(), key=lambda x: x[0]):
         info = INDEX_DATA["crawlers"][crawler_id]
         source_url = f"{REPO_URL}/blob/{REPO_BRANCH}/{info['file_path']}"
-        last_update = datetime.fromtimestamp(info["version"]).strftime(DATE_FORMAT)
+        last_update = (
+            datetime.fromtimestamp(info["version"])
+            .astimezone(timezone.utc)
+            .strftime(
+                "%d %B %Y %I:%M:%S %p (UTC+0)",
+            )
+        )
 
         supported += "<tr>"
 
@@ -381,8 +387,10 @@ logger.info("Generated rejected sources list.")
 
 before, help_text, after = readme_text.split(HELP_RESULT_QUE)
 
-os.chdir(WORKDIR)
-output = subprocess.check_output([sys.executable, "lncrawl", "-h"]).decode("utf-8")
+output = subprocess.check_output(
+    [sys.executable, "lncrawl", "-h"],
+    cwd=WORKDIR,
+).decode("utf-8")
 output = re.sub(r"\x1b\[[0-9;\r]*m", "", output.strip())
 
 help_text = "\n"
