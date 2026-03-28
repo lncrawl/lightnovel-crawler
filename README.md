@@ -10,6 +10,7 @@
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://github.com/lncrawl/lightnovel-crawler/blob/master/LICENSE)
 <br>
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/lncrawl/lightnovel-crawler)
+[![Lint](https://github.com/lncrawl/lightnovel-crawler/actions/workflows/lint.yml/badge.svg)](https://github.com/lncrawl/lightnovel-crawler/actions/workflows/lint.yml)
 [![Build and Publish](https://github.com/lncrawl/lightnovel-crawler/actions/workflows/release.yml/badge.svg)](https://github.com/lncrawl/lightnovel-crawler/actions/workflows/release.yml)
 
 **Lightnovel Crawler** downloads _web novels and similar fiction_ from many online reading sites and saves them as **e-book** so you can read offline on a phone, tablet, or e-reader.
@@ -25,6 +26,8 @@
 Sites publish fiction under their own _terms and copyright_. This tool is meant for **personal** use only, for example keeping a backup of material you already have access to, where the licence allows it. **Do not** use it to redistribute or sell someone else's work. You are responsible for how you use Lightnovel Crawler.
 
 ## Installation
+
+<a href="https://github.com/lncrawl/lightnovel-crawler"><img src="res/lncrawl-icon.png" width="128px" align="right"/></a>
 
 Pick **one** approach. You do not need to do all of them.
 
