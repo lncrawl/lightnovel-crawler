@@ -26,7 +26,7 @@ endif
 
 setup:
 	@git submodule sync
-	@git submodule update --init --remote --merge
+	@git submodule update --force --init --recursive --remote
 ifeq ($(OS),Windows_NT)
 	@$(UV) --version || powershell -NoProfile -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 else
@@ -99,10 +99,10 @@ docker-build: docker-base
 	docker build -t lncrawl --build-arg BASE_IMAGE=lncrawl-base .
 
 docker-up:
-	docker compose -f scripts/local-compose.yml up -d
+	docker compose up -d
 
 docker-down:
-	docker compose -f scripts/local-compose.yml down
+	docker compose down
 
 docker-logs:
-	docker compose -f scripts/local-compose.yml logs -f
+	docker compose logs -f

@@ -1,29 +1,4 @@
 services:
-  # chrome:
-  #   image: selenium/standalone-chrome:latest
-  #   shm_size: 6gb
-  #   restart: unless-stopped
-  #   ports:
-  #     - "7900:7900"
-  #   environment:
-  #     SE_VNC_VIEW_ONLY: "1"
-  #     SE_EVENT_BUS_PUBLISH_PORT: "4442"
-  #     SE_EVENT_BUS_SUBSCRIBE_PORT: "4443"
-  #     SE_NODE_MAX_SESSIONS: "4"
-  #     SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
-  #     SE_NO_VNC_PORT: "7900"
-  #     SE_SCREEN_WIDTH: "1920"
-  #     SE_SCREEN_HEIGHT: "1080"
-  #     SE_NODE_GRID_URL: "false"
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '1.50'
-  #         memory: 2G
-  #       reservations:
-  #         cpus: '1.00'
-  #         memory: 1G
-
   postgres:
     image: postgres:alpine
     environment:
@@ -46,11 +21,9 @@ services:
     image: ghcr.io/lncrawl/lightnovel-crawler:latest
     ports:
       - "23457:8080"
-    command: -ll server
+    command: -ll server -p 8080
     environment:
-      - PYTHONUNBUFFERED=1
       - LNCRAWL_DATA_PATH=/data
-      # - SELENIUM_GRID=http://chrome:4444
       - DATABASE_URL=postgresql+psycopg://pguser:pgpass@postgres:5432/lncrawl
     volumes:
       - ./appdata:/data

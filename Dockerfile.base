@@ -52,13 +52,5 @@ RUN rm -rf /opt/calibre/resources/content-server \
 #------------------------------------------------
 FROM common
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    QTWEBENGINE_DISABLE_SANDBOX=1 \
-    QT_QPA_PLATFORM=offscreen \
-    QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu --disable-software-rasterizer"
-
 COPY --from=calibre /opt/calibre /opt/calibre
 RUN ln -s /opt/calibre/calibre/ebook-convert /usr/local/bin/ebook-convert

@@ -1,16 +1,6 @@
 name: lncrawl
 
 services:
-  chrome:
-    image: selenium/standalone-chrome:latest
-    shm_size: 6gb
-    restart: unless-stopped
-    ports:
-      - "7900:7900"
-      - "4444:4444"
-    environment:
-      - SE_VNC_PASSWORD=secret
-
   postgres:
     image: postgres:alpine
     restart: unless-stopped
@@ -28,17 +18,13 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
-    command: -ll server
+    command: -ll server -p 8080
     environment:
-      - PYTHONUNBUFFERED=1
       - LNCRAWL_DATA_PATH=/data
-      - SELENIUM_GRID=http://chrome:4444
       - DATABASE_URL=postgresql+psycopg://pguser:pgpass@postgres:5432/lncrawl
     volumes:
-      - /dev/shm:/dev/shm
       - appdata:/data
     depends_on:
-      - chrome
       - postgres
     extra_hosts:
       - "host.docker.internal:host-gateway"
