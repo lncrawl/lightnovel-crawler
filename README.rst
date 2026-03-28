@@ -19,9 +19,17 @@ Lightnovel Crawler
 Installation
 ------------
 
+To install the latest release from PyPI:
+
 .. code-block:: bash
 
    pip install -U lightnovel-crawler
+
+To check available commands and options:
+
+.. code-block:: bash
+
+   lncrawl --help
 
 If ``lncrawl`` is not on your PATH, use ``python -m lncrawl`` or ``python3 -m lncrawl``.
 
