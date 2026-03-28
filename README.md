@@ -261,12 +261,7 @@ You can select your preferred format when downloading. _EPUB_, _text_, and _JSON
 
 ## Supported sources
 
-> Request new one by [creating a new issue](https://github.com/lncrawl/lightnovel-crawler/issues/new/choose).
-
-<p align="center">
-  <img src="res/screenshots/crawlers.png" alt="Sources and crawlers in the web UI" width="800"/>
-</p>
-<p align="center"><em>Enable or browse sources (crawlers) from the web app.</em></p>
+To request for a new source not included in the following list, please [create an issue](https://github.com/lncrawl/lightnovel-crawler/issues/new/choose).
 
 <!-- auto generated supported sources list -->
 
