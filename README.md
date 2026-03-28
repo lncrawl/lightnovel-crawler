@@ -12,8 +12,6 @@
 
 **Lightnovel Crawler** (command name: `lncrawl`) downloads **web novels and similar fiction** from many online reading sites and saves them as **e-book** so you can read offline on a phone, tablet, or e-reader.
 
-You do **not** need to be a programmer to use it. The easiest path is to install the app, start the **built-in website** on your computer, and follow the prompts in the browser.
-
 ### What you can do with it
 
 - Save a story you follow into a **single EPUB** (or another format) instead of hundreds of separate web pages.
@@ -44,7 +42,7 @@ If `lncrawl` is not found, try `python -m lncrawl` or `python3 -m lncrawl` inste
 
 ## Calibre (optional)
 
-If you only need **EPUB**, plain **text**, **JSON**, or **web** output, you can skip this section.
+If you only need **EPUB**, plain **text**, or **JSON** output, you can skip this section.
 
 To create **PDF**, **MOBI**, **DOCX**, and several other formats, install **[Calibre](https://calibre-ebook.com/download)**. Lightnovel Crawler calls Calibre's tools in the background when you pick those formats.
 
@@ -206,10 +204,11 @@ If you only use the **web interface** (`lncrawl server`), you can treat this sec
 ### Available options
 
 <!-- auto generated command line output -->
+
 ```text
 $ lncrawl -h
-Usage: lncrawl [OPTIONS] COMMAND [ARGS]...                                     
-                                                                                
+Usage: lncrawl [OPTIONS] COMMAND [ARGS]...
+
 ╭─ Options ────────────────────────────────────────────────────────────────────╮
 │ --verbose             -l            Log levels: -l = warn, -ll = info, -lll  │
 │                                     = debug                                  │
@@ -230,6 +229,7 @@ Usage: lncrawl [OPTIONS] COMMAND [ARGS]...
 │ server   Run web server.                                                     │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
+
 <!-- auto generated command line output -->
 
 ### Makefile Reference
@@ -410,7 +410,6 @@ We are supporting 361 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `ar` Arabic
 
 <table>
@@ -437,7 +436,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `en` English
 
@@ -1776,7 +1774,6 @@ We are supporting 361 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `es` Spanish; Castilian
 
 <table>
@@ -1808,7 +1805,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `fr` French
 
@@ -1846,7 +1842,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `id` Indonesian
 
@@ -1945,7 +1940,6 @@ We are supporting 361 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `ja` Japanese
 
 <table>
@@ -1967,7 +1961,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `pt` Portuguese
 
@@ -2000,7 +1993,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `ru` Russian
 
@@ -2074,7 +2066,6 @@ We are supporting 361 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `tr` Turkish
 
 <table>
@@ -2091,7 +2082,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `vi` Vietnamese
 
@@ -2119,7 +2109,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `zh` Chinese
 

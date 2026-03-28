@@ -22,6 +22,7 @@ SLOT_TIMEOUT_IN_SECOND = {
 ENABLED_FORMATS = {
     UserTier.BASIC: set(
         [
+            OutputFormat.json,
             OutputFormat.epub,
         ]
     ),

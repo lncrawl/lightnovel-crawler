@@ -39,3 +39,11 @@ def ensure_admin(
     if user.role != UserRole.ADMIN:
         raise ServerErrors.forbidden
     return user
+
+
+def ensure_local(
+    user: User = Security(ensure_user, scopes=[UserRole.LOCAL]),
+) -> User:
+    if user.role != UserRole.ADMIN:
+        raise ServerErrors.forbidden
+    return user
