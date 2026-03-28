@@ -39,7 +39,7 @@ def list_artifacts(
 def get_enabled_formats(
     user: User = Security(ensure_user),
 ) -> List[OutputFormat]:
-    return list(ENABLED_FORMATS[user.tier])
+    return sorted(list(ENABLED_FORMATS[user.tier]))
 
 
 @router.get(
