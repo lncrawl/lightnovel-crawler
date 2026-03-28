@@ -21,6 +21,7 @@ def server(
             reload=True,
             port=port,
             host=host,
+            access_log=ctx.logger.is_debug,
             log_level=ctx.logger.level or "error",
         )
     else:
@@ -30,5 +31,6 @@ def server(
             server,
             port=port,
             host=host,
+            access_log=ctx.logger.is_debug,
             log_level=ctx.logger.level or "error",
         )

@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 
 from ..assets.version import get_version
 from ..context import ctx
-from ..exceptions import attach_exception_handlers
+from ..exceptions import get_exception_handlers
 from .api import router as api
 from .middleware.staticfiles import CustomStaticFiles, StaticFilesGuard
 
@@ -28,10 +28,22 @@ app = FastAPI(
     title="Lightnovel Crawler",
     description="Download novels from online sources and generate e-books",
     lifespan=lifespan,
+    exception_handlers=get_exception_handlers(),
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    terms_of_service="https://raw.githubusercontent.com/lncrawl/lncrawl-web/refs/heads/artifacts/TERMS_OF_SERVICE.html",
+    contact={
+        "email": "lncrawl@pm.me",
+        "name": "Lightnovel Crawler",
+        "url": "https://github.com/lncrawl/lightnovel-crawler",
+    },
+    license_info={
+        "name": "License: GPLv3",
+        "url": "https://raw.githubusercontent.com/lncrawl/lightnovel-crawler/dev/LICENSE",
+    },
 )
 
-# Add exception handlers
-attach_exception_handlers(app)
 
 # Add middleares
 app.add_middleware(

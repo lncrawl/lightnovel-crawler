@@ -3,7 +3,7 @@ import traceback
 from typing import Any, Optional
 from urllib.error import URLError
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from PIL import UnidentifiedImageError
 from requests.exceptions import RequestException
@@ -19,7 +19,7 @@ __all__ = [
     "RetryErrorGroup",
     "ScraperErrorGroup",
     "FallbackToBrowser",
-    "attach_exception_handlers",
+    "get_exception_handlers",
 ]
 
 
@@ -87,30 +87,6 @@ class ServerError(HTTPException, LNException):
         )
 
 
-def attach_exception_handlers(app: FastAPI):
-    def server_error_handler(req: Request, err: ServerError):
-        return err.to_response()
-
-    def http_exception_handler(req: Request, err: HTTPException):
-        logging.error(repr(err), exc_info=True)
-        return JSONResponse(
-            status_code=err.status_code,
-            content={"error": err.detail},
-            headers=err.headers,
-        )
-
-    def general_exception_handler(req: Request, err: Exception):
-        logging.error(repr(err), exc_info=True)
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Internal Server Error"},
-        )
-
-    app.exception_handler(ServerError)(server_error_handler)
-    app.exception_handler(HTTPException)(http_exception_handler)
-    app.exception_handler(Exception)(general_exception_handler)
-
-
 class ServerErrors:
     forbidden = ServerError(403, "Forbidden")
     not_found = ServerError(404, "Not Found")
@@ -166,3 +142,29 @@ class ServerErrors:
     host_rejected = ServerError(500, "The requested domain is rejected")
     source_not_loaded = ServerError(500, "Sources are not loaded")
     no_crawler = ServerError(500, "No crawler found for the domain")
+
+
+def get_exception_handlers():
+    def server_error_handler(req: Request, err: ServerError):
+        return err.to_response()
+
+    def http_exception_handler(req: Request, err: HTTPException):
+        logging.error(repr(err), exc_info=True)
+        return JSONResponse(
+            status_code=err.status_code,
+            content={"error": err.detail},
+            headers=err.headers,
+        )
+
+    def general_exception_handler(req: Request, err: Exception):
+        logging.error(repr(err), exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Internal Server Error"},
+        )
+
+    return {
+        ServerError: server_error_handler,
+        HTTPException: http_exception_handler,
+        Exception: general_exception_handler,
+    }
