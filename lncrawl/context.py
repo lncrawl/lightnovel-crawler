@@ -128,6 +128,12 @@ class __AppContext__:
         return FeedbackService()
 
     @cached_property
+    def announcements(self):
+        from .services.announcements import AnnouncementService
+
+        return AnnouncementService()
+
+    @cached_property
     def crawler(self):
         from .services.crawler import CrawlerService
 

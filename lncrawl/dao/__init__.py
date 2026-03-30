@@ -3,6 +3,7 @@ from typing import List, Type
 from sqlalchemy import Table
 from sqlmodel import SQLModel
 
+from .announcement import Announcement
 from .artifact import Artifact
 from .chapter import Chapter
 from .chapter_image import ChapterImage
@@ -32,6 +33,7 @@ models: List[Type[SQLModel]] = [
     Job,
     Secret,
     Feedback,
+    Announcement,
 ]
 
 tables: List[Table] = [getattr(model, "__table__") for model in models if hasattr(model, "__table__")]

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Security
 
 from ..security import ensure_admin, ensure_user
 from .admin import router as admin
+from .announcements import router as announcement
 from .artifacts import router as artifact
 from .auth import router as auth
 from .chapters import router as chapter
@@ -97,6 +98,13 @@ router.include_router(
     metadata,
     prefix="/meta",
     tags=["Metadata"],
+)
+
+router.include_router(
+    announcement,
+    prefix="/announcement",
+    tags=["Announcements"],
+    dependencies=[Security(ensure_user)],
 )
 
 router.include_router(

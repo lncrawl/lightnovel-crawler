@@ -1,3 +1,4 @@
+from .announcement import AnnouncementCreateRequest, AnnouncementUpdateRequest
 from .config import ConfigProperty, ConfigSection, ConfigUpdateRequest
 from .crawler import LoginData
 from .feedback import FeedbackCreateRequest, FeedbackRespondRequest, FeedbackUpdateRequest
@@ -21,6 +22,9 @@ from .user import (
 )
 
 __all__ = [
+    # announcement
+    "AnnouncementCreateRequest",
+    "AnnouncementUpdateRequest",
     # app config
     "ConfigProperty",
     "ConfigSection",
