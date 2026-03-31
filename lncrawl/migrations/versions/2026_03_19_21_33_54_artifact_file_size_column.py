@@ -46,7 +46,10 @@ def upgrade() -> None:
             ),
         )
         for row in conn.execute(
-            sa.text("SELECT id, novel_id, job_id, user_id, format, file_name " "FROM artifacts")
+            sa.text("""
+                SELECT id, novel_id, job_id, user_id, format, file_name
+                FROM artifacts
+            """)
         ).all()
     ]
     if not tasks:

@@ -69,7 +69,7 @@ class ReadLightNovelCrawler(Crawler):
         )
         self.cleaner.bad_css.update(
             [
-                ".trinity-player-iframe-wrapper" ".hidden",
+                ".trinity-player-iframe-wrapper.hidden",
                 ".ads-title",
                 "p.hid",
                 "a[href*=remove-ads]",

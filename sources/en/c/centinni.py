@@ -15,7 +15,7 @@ class Centinni(Crawler):
     def initialize(self) -> None:
         self.cleaner.bad_tags.update(
             [
-                "a" "h3",
+                "ah3",
             ]
         )
         self.cleaner.bad_text_regex.update(

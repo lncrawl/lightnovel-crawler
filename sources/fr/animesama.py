@@ -107,7 +107,6 @@ class animesama(Crawler):
         self.volumes = [Volume(id=i, title=title) for i, title in enumerate(mangas.keys())]
         for vol_id, vol in enumerate(self.all_content):
             for chap_number in range(1, len(vol) + 1):
-
                 # For exemple for demon slayer we have a volume named "Scans" (default name) for the main story
                 # and a volume named "Spin-off Rengoku"
                 # We want to write the volume name only if it is not the default one

@@ -25,7 +25,7 @@ These workflows run automatically on pushes and pull requests:
 
 | Workflow             | File          | Description                                   |
 | -------------------- | ------------- | --------------------------------------------- |
-| Lint & Test (Python) | `lint-py.yml` | Runs flake8, builds wheel, tests installation |
+| Lint & Test (Python) | `lint.yml` | Runs ruff, builds wheel, tests installation |
 
 The web frontend lives in the `lncrawl/server/web` submodule ([lncrawl-web](https://github.com/lncrawl/lncrawl-web)); its CI is in that repository.
 

@@ -66,7 +66,7 @@ def _deserialize(val: Any, typ: Type[T]) -> T:
     if typ in (list, tuple, set):
         seq = json.loads(val) if isinstance(val, str) else val
         return cast(T, typ(seq))  # type: ignore
-    if typ == dict:
+    if typ is dict:
         return cast(T, json.loads(val) if isinstance(val, str) else val)
     return cast(T, val)
 

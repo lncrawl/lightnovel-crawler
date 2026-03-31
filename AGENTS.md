@@ -12,7 +12,7 @@ make install          # Install Python dependencies (uv sync)
 # Run development servers
 make start            # Backend server only
 make watch            # Backend with auto-reload
-make lint             # Run Python linter (flake8)
+make lint             # Run Python linter (ruff)
 make add-source       # Guided CLI to add a new source
 
 # Build

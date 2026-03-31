@@ -70,13 +70,11 @@ requires-python = ">=3.9.0"
 
 [project.optional-dependencies]
 dev = [
-  "black>=24.8.0",
   "build>=1.2.0",
-  "flake8>=7.1.0",
-  "isort>=5.13.0",
   "lxml-stubs>=0.5.0",
   "pre-commit>=4.3.0",
   "pyinstaller>=6.0.0",
+  "ruff>=0.9.0",
   "setuptools>=75.3.0",
   "tk-tools>=0.16.0",
   "types-colorama>=0.4.0",
@@ -118,27 +116,24 @@ sources = ["**/*", "!**/*.py", "!**/__pycache__/*"]
 [tool.setuptools.exclude-package-data]
 "*" = ["__pycache__/*", "**/__pycache__/*"]
 
-[tool.black]
-extend-exclude = '''/
-   \.github
-  | \.venv*
-  | venv*
-  | __pycache__
-  | build
-  | dist
-  | res
-  | logs
-  | Lightnovels
-  | sqlite\.db
-  | lncrawl-web
-  | lncrawl/cloudscraper
-'''
+[tool.ruff]
+extend-exclude = [
+  ".github",
+  "res",
+  "logs",
+  "Lightnovels",
+  "lncrawl-web",
+  "lncrawl/cloudscraper",
+]
 line-length = 120
-target-version = ["py39"]
+target-version = "py39"
 
-[tool.isort]
-extend_skip = ["lncrawl-web", "lncrawl/cloudscraper"]
-known_first_party = ["lncrawl"]
-line_length = 120
-profile = "black"
-skip_gitignore = true
+[tool.ruff.lint]
+extend-select = ["I"]
+ignore = ["E203", "E265", "E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["lncrawl"]
+
+[tool.ruff.format]
+quote-style = "double"

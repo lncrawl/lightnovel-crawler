@@ -36,7 +36,7 @@ class WuxiaCityCrawler(Crawler):
         return [
             {
                 "title": e[0].a.h4.text,
-                "url": f'{self.home_url.strip("/")}{e[0].a.get("href")}',
+                "url": f"{self.home_url.strip('/')}{e[0].a.get('href')}",
                 "info": f"{e[1]} | Score: {e[2]}",
             }
             for e in entries
@@ -57,7 +57,7 @@ class WuxiaCityCrawler(Crawler):
                 Chapter(
                     id=int(chapter.find("span", class_="chapter-num").text),
                     volume=vol_id,
-                    url=f'{self.home_url.strip("/")}{chapter.a.get("href")}',
+                    url=f"{self.home_url.strip('/')}{chapter.a.get('href')}",
                     title=chapter.a.p.text,
                     hash=chapter.a.get("href").split("/")[-1],
                 )

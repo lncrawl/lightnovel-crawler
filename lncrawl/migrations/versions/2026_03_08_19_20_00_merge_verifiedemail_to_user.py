@@ -32,7 +32,12 @@ def upgrade() -> None:
 
     conn = op.get_bind()
     value = 1 if dialect == "sqlite" else True
-    conn.execute(sa.text(f"UPDATE users SET is_verified = {value} " "WHERE email IN (SELECT email FROM verifiedemail)"))
+    conn.execute(
+        sa.text(f"""
+            UPDATE users SET is_verified = {value}
+            WHERE email IN (SELECT email FROM verifiedemail)
+        """)
+    )
 
     op.drop_table("verifiedemail")
 

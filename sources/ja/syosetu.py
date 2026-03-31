@@ -64,7 +64,6 @@ class SyosetuCrawler(Crawler):
         self.volumes.append(Volume(id=0))
         for soup in soups:
             for tag in soup.select_one(".p-eplist"):
-
                 if type(tag) is element.NavigableString:
                     continue
 

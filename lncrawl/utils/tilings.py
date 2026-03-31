@@ -56,7 +56,6 @@ def generate_unit_triangles(image_width: int, image_height: int) -> PointGenerat
 
     for x in range(-1, image_width):
         for y in range(int(image_height / h)):
-
             # Add a horizontal offset on odd numbered rows
             x_ = x if (y % 2 == 0) else x + 0.5
 
@@ -99,7 +98,6 @@ def generate_unit_hexagons(image_width: int, image_height: int) -> PointGenerato
 
     for x in range(-1, image_width, 3):
         for y in range(-1, int(image_height / h) + 1):
-
             # Add the horizontal offset on every other row
             x_ = x if (y % 2 == 0) else x + 1.5
 

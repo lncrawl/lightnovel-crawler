@@ -275,7 +275,7 @@ class Sources:
         if disable_logger:
             module = getattr(constructor, "__module_obj__")
             setattr(module, "print", lambda *a, **k: None)
-            setattr(module, "logger", type("", (), {"__getattr__": lambda *n: (lambda *a, **k: None)})())
+            setattr(module, "logger", type("", (), {"__getattr__": lambda *n: lambda *a, **k: None})())
 
         # create instance
         crawler = constructor(workers, parser)

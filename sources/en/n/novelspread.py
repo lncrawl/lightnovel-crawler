@@ -25,7 +25,7 @@ class NovelSpreadCrawler(Crawler):
             m = hashlib.md5()
             m.update(r.encode())
             r = m.hexdigest()
-        url = "https://www.novelspread.com/image/" "%sx%s/%s/%s/%s/%s" % (
+        url = "https://www.novelspread.com/image/%sx%s/%s/%s/%s/%s" % (
             a,
             b,
             d,

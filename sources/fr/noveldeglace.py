@@ -42,7 +42,6 @@ class NovelDeGlace(Crawler):
         rows = tabs.find_all("div", class_="su-row")
 
         for row in rows:
-
             img = row.find("img")
             if img:
                 self.novel_cover = img["src"]

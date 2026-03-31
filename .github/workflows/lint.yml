@@ -17,7 +17,6 @@ on:
       - "sources/**/*.py"
       - "pyproject.toml"
       - "uv.lock"
-      - ".flake8"
       - ".github/workflows/lint.yml"
   pull_request:
     branches:
@@ -27,7 +26,6 @@ on:
       - "sources/**/*.py"
       - "pyproject.toml"
       - "uv.lock"
-      - ".flake8"
       - ".github/workflows/lint.yml"
 
 concurrency:
@@ -61,9 +59,8 @@ jobs:
 
       - name: 🧹 Lint Code
         run: |
-          uv run flake8 --config .flake8 -v --count --show-source --statistics
-          uv run black --check .
-          uv run isort --check .
+          uv run ruff check .
+          uv run ruff format --check .
 
       - name: 🏗️ Build Wheel
         run: uv run python -m build --wheel --no-isolation

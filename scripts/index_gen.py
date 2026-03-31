@@ -311,7 +311,7 @@ for ln_code, links in sorted(grouped_supported.items(), key=lambda x: x[0]):
     assert isinstance(links, dict)
     language = language_codes.get(ln_code, "Unknown")
     supported += "\n\n"
-    supported += f'### `{ln_code or "~"}` {language}'
+    supported += f"### `{ln_code or '~'}` {language}"
     supported += "\n\n"
     supported += "<table>\n<tbody>\n"
     supported += "<tr>"

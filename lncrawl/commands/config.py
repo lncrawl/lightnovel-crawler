@@ -37,7 +37,7 @@ def view_config(
             for key in sorted(data[section].keys()):
                 value = data[section][key]
                 value_type = type(value).__name__
-                print(f"  [cyan]{key}[/cyan]" f": [dim]{value_type}[/dim] =", json.dumps(value))
+                print(f"  [cyan]{key}[/cyan]: [dim]{value_type}[/dim] =", json.dumps(value))
             print()
 
 
@@ -77,7 +77,7 @@ def get_config(
     value = ctx.config.get(section, key)
     value_type = type(value).__name__
     print(
-        f"[green]{section}[/green].[cyan]{key}[/cyan]" f": [dim]{value_type}[/dim] =",
+        f"[green]{section}[/green].[cyan]{key}[/cyan]: [dim]{value_type}[/dim] =",
         value,
     )
 

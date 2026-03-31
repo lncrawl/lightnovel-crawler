@@ -68,7 +68,6 @@ class NYXTranslation(Crawler):
         c_next = chapters_start.next_sibling
         chap = ""
         while c_next:
-
             # there are some aria-hidden spacing divs within the chapter list
             # also skip text-emtpy elements
             if (c_next.name == "div" and c_next.has_attr("aria-hidden")) or not c_next.text:

@@ -20,7 +20,7 @@ class Fu_kCom_ademao(Crawler):
         self.cleaner.bad_css.update(
             [
                 "#ad",
-                "#bookmark" "#div-gpt-ad-comrademaocom35917",
+                "#bookmark#div-gpt-ad-comrademaocom35917",
                 "#div-gpt-ad-comrademaocom35918",
             ]
         )

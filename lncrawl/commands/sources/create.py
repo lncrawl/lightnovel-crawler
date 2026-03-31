@@ -85,7 +85,7 @@ def create_one(
     # check file path
     file_path = _build_path(locale, file_name)
     if file_path.is_file() and not overwrite and (non_interactive or not _prompt_replace(str(file_path))):
-        print("[red]A file already exists for " f"[b]{host}[/b]:[/red] [cyan]{file_path}[/cyan]")
+        print(f"[red]A file already exists for [b]{host}[/b]:[/red] [cyan]{file_path}[/cyan]")
         return
 
     # ensure capabilities
@@ -122,7 +122,7 @@ def create_one(
     # save content
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(content, encoding="utf-8")
-    print("[green]Created crawler for " f"[b]{host}[/b]:[/green] [cyan]{file_path}[/cyan]")
+    print(f"[green]Created crawler for [b]{host}[/b]:[/green] [cyan]{file_path}[/cyan]")
 
 
 def _build_path(locale: str, file_name: str):

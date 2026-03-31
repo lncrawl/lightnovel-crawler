@@ -78,7 +78,7 @@ class JobRunner:
         return ctx.users.get(self.job.user_id)
 
     def process(self) -> bool:
-        message = f"[cyan]{self.job.status.name}[/cyan]" f" [b]{self.job.id}[/b]" f" | {self.job.job_title}"
+        message = f"[cyan]{self.job.status.name}[/cyan] [b]{self.job.id}[/b] | {self.job.job_title}"
         if not self.job.parent_job_id:
             logger.info(message)
         else:

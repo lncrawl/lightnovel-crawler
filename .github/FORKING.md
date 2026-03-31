@@ -25,8 +25,8 @@ These workflows run automatically on pushes and pull requests:
 
 | Workflow             | File           | Description                                   |
 | -------------------- | -------------- | --------------------------------------------- |
-| Lint & Test (Python) | `lint-py.yml`  | Runs flake8, builds wheel, tests installation |
-| Lint & Test (Web)    | `lint-web.yml` | Runs eslint, builds frontend                  |
+| Lint & Test (Python) | `lint.yml`  | Runs ruff, builds wheel, tests installation |
+
 
 ### Build and Publish (`release.yml`)
 

@@ -18,9 +18,7 @@ class CrescentMoonCrawler(Crawler):
         self.novel_title = soup.find("h1", {"class": "entry-title"}).text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(
-            soup.select_one("div.entry-content p a")["href"]
-        )
+        self.novel_cover = self.absolute_url(soup.select_one("div.entry-content p a")["href"])
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = soup.select("div.entry-content p")[2].text.strip()

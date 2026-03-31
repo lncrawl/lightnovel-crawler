@@ -55,7 +55,7 @@ class CustomStaticFiles(StaticFiles):
                 ascii_fallback = filename.encode("ascii", "replace").decode("ascii")
                 utf8_encoded = quote(filename, safe="", encoding="utf-8")
                 resp.headers["content-disposition"] = (
-                    f'attachment; filename="{ascii_fallback}"; ' f"filename*=UTF-8''{utf8_encoded}"
+                    f"attachment; filename=\"{ascii_fallback}\"; filename*=UTF-8''{utf8_encoded}"
                 )
 
                 if path.endswith(".epub"):

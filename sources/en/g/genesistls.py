@@ -46,7 +46,6 @@ class GenesisTlsCrawler(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         for ep_list_item in soup.select("article.hentry .eplister ul li"):
-
             # Check whether the chapter is paid and skip if true
             paid_chapter = ep_list_item.select_one("div.epl-price").text != "Free"
             if paid_chapter:

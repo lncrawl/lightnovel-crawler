@@ -89,7 +89,7 @@ class Browser:
                 if not isinstance(raw_store, dict):
                     continue
                 self._driver.execute_script(
-                    "arguments.forEach(function(item) {" f"  window.{name}.setItem(item[0], item[1]);" "});",
+                    f"arguments.forEach(function(item) {{  window.{name}.setItem(item[0], item[1]);}});",
                     *raw_store.items(),
                 )
             logger.debug("Storage applied: %s", self.browser_storage)
