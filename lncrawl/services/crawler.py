@@ -111,6 +111,9 @@ class CrawlerService:
         if can_close:
             crawler.close()
 
+        logger.debug(
+            f"Fetched novel: {novel.title}] - {novel.chapter_count} chapters | {novel.volume_count} volumes | {novel.url}"
+        )
         return novel
 
     def fetch_chapter(
@@ -122,6 +125,7 @@ class CrawlerService:
         refresh: bool = False,
     ) -> Chapter:
         chapter = ctx.chapters.get(chapter_id)
+        novel = ctx.novels.get(chapter.novel_id)
         url = HttpUrl(chapter.url)
         if not url.host:
             raise ServerErrors.invalid_url
@@ -129,8 +133,7 @@ class CrawlerService:
         # get crawler
         can_close = False
         if crawler is None:
-            novel_url = ctx.novels.get(chapter.novel_id).url
-            crawler = self.get_crawler(user_id, novel_url)
+            crawler = self.get_crawler(user_id, novel.url)
             can_close = True
         crawler_version = getattr(crawler, "version")
         crawler.scraper.signal = signal
@@ -141,6 +144,7 @@ class CrawlerService:
             and chapter.is_available
             and chapter.extra.get("crawler_version") == crawler_version
         ):
+            logger.debug(f"Skipped: {novel.title}] - Chapter {chapter.serial}")
             return chapter
 
         # get chapter content
@@ -172,6 +176,7 @@ class CrawlerService:
         if can_close:
             crawler.close()
 
+        logger.debug(f"Downloaded chapter: {novel.title}] - Chapter {chapter.serial}")
         return chapter
 
     def fetch_image(
@@ -183,6 +188,7 @@ class CrawlerService:
         refresh: bool = False,
     ) -> ChapterImage:
         image = ctx.images.get(image_id)
+        novel = ctx.novels.get(image.novel_id)
         url = HttpUrl(image.url)
         if not url.host:
             raise ServerErrors.invalid_url
@@ -190,8 +196,7 @@ class CrawlerService:
         # get crawler
         can_close = False
         if crawler is None:
-            novel_url = ctx.novels.get(image.novel_id).url
-            crawler = self.get_crawler(user_id, novel_url)
+            crawler = self.get_crawler(user_id, novel.url)
             can_close = True
         crawler_version = getattr(crawler, "version")
         crawler.scraper.signal = signal
@@ -202,6 +207,7 @@ class CrawlerService:
             and image.is_available
             and image.extra.get("crawler_version") == crawler_version
         ):
+            logger.debug(f"Skipped: {novel.title}] - Image {image.id}")
             return image
 
         # download image
@@ -219,4 +225,5 @@ class CrawlerService:
         if can_close:
             crawler.close()
 
+        logger.debug(f"Downloaded image: {novel.title}] - Image {image.id}")
         return image
