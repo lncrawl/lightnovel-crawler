@@ -10,9 +10,7 @@ from rich import print
 from slugify import slugify
 
 from ..context import ctx
-from ..core.crawler import Crawler
-from ..core.taskman import TaskManager
-from ..models import CombinedSearchResult, SearchResult
+from ..core import CombinedSearchResult, Crawler, SearchResult, TaskManager
 
 app = typer.Typer(
     help="Search for novels across multiple sources.",
@@ -113,7 +111,9 @@ def _prompt_query() -> str:
     return questionary.text(
         qmark="🔍",
         message="Search query:",
-        validate=lambda x: True if x and len(x.strip()) >= 2 else "Search query must be at least 2 characters long",
+        validate=lambda x: (
+            True if x and len(x.strip()) >= 2 else "Search query must be at least 2 characters long"
+        ),
     ).unsafe_ask()
 
 
@@ -169,13 +169,12 @@ def _perform_search(
     results: List[CombinedSearchResult] = []
     for key, value in combined.items():
         value.sort(key=lambda x: x.url)
-        results.append(
-            CombinedSearchResult(
-                id=key,
-                title=value[0].title,
-                novels=value,
-            )
+        combined = CombinedSearchResult(
+            id=key,
+            title=value[0].title,
+            novels=value,
         )
+        results.append(combined)
 
     # Sort by relevance (number of sources, then similarity to query)
     results.sort(
@@ -194,7 +193,7 @@ def _search_job(constructor: Type[Crawler], query: str, signal: Event) -> List[S
     try:
         crawler = ctx.sources.init_crawler(constructor)
         crawler.scraper.signal = signal
-        results = crawler.search_novel(query)
+        results = crawler.search(query)
         results = [SearchResult(**item) for item in results]
         logger.info(f"[green]{url}[/green] Found {len(results)} results")
         crawler.close()
