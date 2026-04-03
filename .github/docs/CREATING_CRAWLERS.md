@@ -15,11 +15,11 @@ Once you add a crawler, users can download novels from that site through the app
 
 ## What you’ll need
 
-- **Python 3** and the project set up (clone the repo, run `make install`).
+- **Python 3** and the project set up (clone the repo, then `make install` or `uv sync --extra dev` after submodules are initialized).
 - **The novel site’s URL** you want to support.
 - **Basic familiarity with HTML** — you’ll use CSS selectors (e.g. `div.chapter-content`) to pick elements. No need to be an expert; you can copy from existing crawlers and tweak.
 
-> **New to the project?** Run `make install` from the repo root first. See the main README for setup.
+> **New to the project?** From the repo root run `make install` (or `uv sync --extra dev`). See the main README and root `Makefile` for setup.
 
 ---
 
@@ -260,12 +260,13 @@ html = self.cleaner.extract_contents(soup_element)
 
 ## Testing your crawler
 
-Run these from the **project root** (where the Makefile is).
+Run these from the **project root** (where `Makefile` and `pyproject.toml` live).
 
 1. **One-time setup** (if you haven’t already). This installs dependencies with [uv](https://docs.astral.sh/uv/):
 
    ```bash
    make install
+   # or: uv sync --extra dev
    ```
 
 2. **Run a quick download test.** Replace the URL with a real novel URL from your site. `--first 3` only downloads 3 chapters; `-f` overwrites existing output:

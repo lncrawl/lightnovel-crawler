@@ -1,17 +1,66 @@
-.PHONY: all version clean setup install upgrade add-dep add-dev rm-dep rm-dev build-wheel build-exe build add-source start watch lint pull remove-tag push-tag push-tag-force docker-build docker-up docker-down docker-logs
-all: version install
+# =============================================================================
+# Lightnovel Crawler — developer tasks (uv, git, docker)
+# =============================================================================
 
-VERSION := $(shell python -c "print(open('lncrawl/VERSION').read().strip())")
+.PHONY: all \
+	version submodule clean ensure-uv setup sync install upgrade \
+	major minor patch \
+	lint start watch add-source \
+	build-wheel build-exe build \
+	docker-base docker-build docker-up docker-down docker-logs \
+	remove-tag push-tag push-tag-force \
+	add-dep add-dev rm-dep rm-dev
 
-# Use uv from PATH, or from default install location after make setup
+# --- uv executable (PATH, else default install location) ---------------------
 ifeq ($(OS),Windows_NT)
-UV := $(shell powershell -NoProfile -Command "if (Get-Command uv -ErrorAction SilentlyContinue) { (Get-Command uv).Source } else { Join-Path $env:USERPROFILE '.local\bin\uv.exe' }")
+  UV := $(shell powershell -NoProfile -Command "if (Get-Command uv -ErrorAction SilentlyContinue) { (Get-Command uv).Source } else { Join-Path $$env:USERPROFILE '.local\bin\uv.exe' }")
 else
-UV := $(shell command -v uv 2>/dev/null || echo "$(HOME)/.local/bin/uv")
+  UV := $(shell command -v uv 2>/dev/null || echo "$(HOME)/.local/bin/uv")
 endif
+
+# Same flags everywhere so `add-dep` / `install` / `sync` match.
+UV_SYNC_FLAGS := --all-extras --all-groups
+
+# Package name for: make add-dep <pkg>  (second goal; see %-catchall below)
+ifneq ($(filter add-dep add-dev rm-dep rm-dev,$(MAKECMDGOALS)),)
+  PKG := $(word 2,$(MAKECMDGOALS))
+endif
+
+# current project version
+VERSION       := $(shell cat lncrawl/VERSION)
+
+# =============================================================================
+# Default
+# =============================================================================
+
+all: install
+
+# =============================================================================
+# Git — info, submodules, release tags
+# =============================================================================
 
 version:
 	@echo Lightnovel Crawler: $(VERSION)
+
+submodule:
+	@git submodule sync
+	@git submodule update --force --init --recursive --remote
+
+remove-tag:
+	git diff --exit-code HEAD
+	git push --delete origin "v$(VERSION)"
+	git tag -d "v$(VERSION)"
+
+push-tag:
+	git diff --exit-code HEAD
+	git tag "v$(VERSION)"
+	@git push --tags
+
+push-tag-force: remove-tag push-tag
+
+# =============================================================================
+# Cleanup
+# =============================================================================
 
 clean:
 ifeq ($(OS),Windows_NT)
@@ -24,20 +73,39 @@ else
 	@find . -depth -name '__pycache__' -type d -exec rm -rf '{}' \; 2>/dev/null || true
 endif
 
-setup:
-	@git submodule sync
-	@git submodule update --force --init --recursive --remote
+# =============================================================================
+# uv — bootstrap & version file (X.Y.Z)
+# =============================================================================
+
+ensure-uv:
 ifeq ($(OS),Windows_NT)
-	@$(UV) --version || powershell -NoProfile -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+	@$(UV) --version || powershell -NoProfile -ExecutionPolicy Bypass -c "irm https://astral.sh/uv/install.ps1 | iex"
 else
-	@$(UV) --version || (curl -LsSf https://astral.sh/uv/install.sh | sh)
+	@$(UV) --version || curl -LsSf https://astral.sh/uv/install.sh | sh
 endif
 
-install: setup
-	$(UV) sync --extra dev
+major: ensure-uv
+	@$(UV) run python ./scripts/bump.py major
+
+minor: ensure-uv
+	@$(UV) run python ./scripts/bump.py minor
+
+patch: ensure-uv
+	@$(UV) run python ./scripts/bump.py patch
+
+setup: submodule ensure-uv
+
+sync:
+	$(UV) sync $(UV_SYNC_FLAGS)
+
+install: setup sync
 
 upgrade: setup
-	$(UV) sync --upgrade --extra dev
+	$(UV) sync --upgrade $(UV_SYNC_FLAGS)
+
+# =============================================================================
+# Python — lint, server, scaffolding
+# =============================================================================
 
 lint:
 	$(UV) run ruff check .
@@ -50,7 +118,11 @@ watch:
 	$(UV) run python -m lncrawl -ll server --watch
 
 add-source:
-	$(UV) run python -m lncrawl -ll lncrawl sources create
+	$(UV) run python -m lncrawl -ll sources create
+
+# =============================================================================
+# Build — wheel, PyInstaller
+# =============================================================================
 
 build-wheel:
 	$(UV) run python -m build -w
@@ -60,39 +132,9 @@ build-exe:
 
 build: version install build-wheel build-exe
 
-add-dep: setup
-	$(UV) add $(word 2,$(MAKECMDGOALS))
-	$(UV) sync --extra dev
-
-add-dev: setup
-	$(UV) add --optional dev $(word 2,$(MAKECMDGOALS))
-	$(UV) sync --extra dev
-
-rm-dep: setup
-	$(UV) remove $(word 2,$(MAKECMDGOALS))
-	$(UV) sync --extra dev
-
-rm-dev: setup
-	$(UV) remove --optional dev $(word 2,$(MAKECMDGOALS))
-	$(UV) sync --extra dev
-
-pull:
-	git pull --rebase --autostash
-	git submodule update --remote --merge
-
-remove-tag:
-	git push --delete origin "v$(VERSION)"
-	git tag -d "v$(VERSION)"
-
-push-tag: pull
-	git tag "v$(VERSION)"
-	git push --tags
-
-push-tag-force: pull
-	git push --delete origin "v$(VERSION)"
-	git tag -d "v$(VERSION)"
-	git tag "v$(VERSION)"
-	git push --tags
+# =============================================================================
+# Docker
+# =============================================================================
 
 docker-base:
 	docker build -t lncrawl-base -f Dockerfile.base .
@@ -108,3 +150,31 @@ docker-down:
 
 docker-logs:
 	docker compose logs -f
+
+# =============================================================================
+# Dependencies — usage: make add-dep <package>
+# =============================================================================
+
+add-dep: setup
+	@test -n "$(PKG)" || (echo >&2 "Usage: make add-dep <package>"; exit 1)
+	$(UV) add $(PKG)
+	$(UV) sync $(UV_SYNC_FLAGS)
+
+add-dev: setup
+	@test -n "$(PKG)" || (echo >&2 "Usage: make add-dev <package>"; exit 1)
+	$(UV) add --optional dev $(PKG)
+	$(UV) sync $(UV_SYNC_FLAGS)
+
+rm-dep: setup
+	@test -n "$(PKG)" || (echo >&2 "Usage: make rm-dep <package>"; exit 1)
+	$(UV) remove $(PKG)
+	$(UV) sync $(UV_SYNC_FLAGS)
+
+rm-dev: setup
+	@test -n "$(PKG)" || (echo >&2 "Usage: make rm-dev <package>"; exit 1)
+	$(UV) remove --optional dev $(PKG)
+	$(UV) sync $(UV_SYNC_FLAGS)
+
+# Ignore the second word (package name) as a nested target
+%:
+	@:

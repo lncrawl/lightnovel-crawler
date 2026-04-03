@@ -32,14 +32,15 @@ docker run -it --rm \
 Run the web server with docker compose:
 
 ```bash
-# Using make (recommended)
+# Using Make (uses compose.yml in the repo root)
 make docker-up
 
-# Or directly
-docker compose -f scripts/local-compose.yml up -d
+# Or invoke Compose directly (pick the file you use locally)
+docker compose up -d
+# e.g. docker compose -f scripts/local-compose.yml up -d
 ```
 
-The server will be available at `http://localhost:23457`. To view logs: `make docker-logs`. To stop: `make docker-down`.
+The server will be available at `http://localhost:23457`. To view logs: `make docker-logs` or `docker compose logs -f`. To stop: `make docker-down` or `docker compose down`.
 
 ### Server Environment Variables
 
@@ -54,7 +55,7 @@ The server will be available at `http://localhost:23457`. To view logs: `make do
 ### Build Application Image
 
 ```bash
-# Using make (builds base image first, then app)
+# Using Make (builds base image first, then app)
 make docker-build
 
 # Or directly (requires an existing base image)
@@ -63,7 +64,7 @@ docker build -t lncrawl .
 
 ### Build Base Image
 
-The base image includes Calibre and system dependencies. Required before `make docker-build` if you don't pull it:
+The base image includes Calibre and system dependencies. Build or pull it before the app image:
 
 ```bash
 make docker-base
@@ -161,15 +162,17 @@ ARM64 builds use QEMU emulation in CI and may take longer. If local builds fail:
 1. Ensure Docker buildx is configured
 2. Ensure QEMU is installed for cross-platform builds
 
-## Makefile Targets
+## Make targets (Docker)
+
+These run `docker` / `docker compose` from the repo root (default `compose.yml` unless you use `-f`). See the root [Makefile](Makefile) for full dev commands.
 
 | Target              | Description                       |
 | ------------------- | --------------------------------- |
 | `make docker-base`  | Build base image (Calibre + deps) |
 | `make docker-build` | Build base then application image |
-| `make docker-up`    | Start server stack (compose)      |
-| `make docker-down`  | Stop server stack                 |
-| `make docker-logs`  | Stream compose logs               |
+| `make docker-up`    | `docker compose up -d`            |
+| `make docker-down`  | `docker compose down`             |
+| `make docker-logs`  | `docker compose logs -f`          |
 
 ## Image Tags
 

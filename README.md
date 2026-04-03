@@ -129,10 +129,11 @@ Just run the executable or type `lncrawl` in your terminal and you're ready to g
 Check the available options in the terminal:
 
 <!-- auto generated command line output -->
+
 ```text
 $ lncrawl -h
-Usage: lncrawl [OPTIONS] COMMAND [ARGS]...                                     
-                                                                                
+Usage: lncrawl [OPTIONS] COMMAND [ARGS]...
+
 ╭─ Options ────────────────────────────────────────────────────────────────────╮
 │ --verbose             -l            Log levels: -l = warn, -ll = info, -lll  │
 │                                     = debug                                  │
@@ -153,6 +154,7 @@ Usage: lncrawl [OPTIONS] COMMAND [ARGS]...
 │ server   Run web server.                                                     │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
+
 <!-- auto generated command line output -->
 
 Download a few chapters from a novel's **main info page** URL:
@@ -173,50 +175,73 @@ Want to help with code, sources, or docs?
 
 ### Quick Setup
 
+Install [uv](https://docs.astral.sh/uv/) (or run `make setup`, which can install it for you). From the repo root:
+
 ```bash
 git clone https://github.com/lncrawl/lightnovel-crawler.git
 cd lightnovel-crawler
-make
+make install    # or: make  (same default target)
 make start
 ```
 
-### Makefile Reference
+Equivalent with uv only (after submodules are initialized):
 
 ```bash
-# Setup and Install using virtual environment:
-make setup            # Sync submodules, install uv if needed
-make install          # Install Python dependencies (uv sync)
+git submodule update --init --recursive
+uv sync --extra dev
+uv run python -m lncrawl -ll server
+```
 
-# Run development servers
+### Makefile reference
+
+Targets are defined in the [Makefile](Makefile); `install` / `sync` / dependency targets use `uv sync --extra dev`.
+
+```bash
+# Setup and install
+make setup            # Sync submodules and install uv
+make install          # setup + uv sync (default target: `make` or `make all`)
+make sync             # uv sync only
+make upgrade          # setup + uv sync --upgrade
+
+# Development servers and tooling
 make start            # Backend server only
 make watch            # Backend with auto-reload
-make lint             # Run Python linter (ruff)
-make add-source       # Guided CLI to add a new source
+make lint             # ruff format and check
+make add-source       # Guided CLI to add a new source crawler
+
+# Version (writes lncrawl/VERSION via scripts/bump.py)
+make patch            # bump patch
+make minor            # bump minor
+make major            # bump major
 
 # Build
-make build            # Full build (wheel + exe)
-make build-wheel      # Python wheel only
-make build-exe        # PyInstaller executable
+make build            # print version + install + wheel + exe
+make build-wheel      # Python wheel (python -m build -w)
+make build-exe        # PyInstaller (setup_pyi.py)
 
-# Dependencies (uv)
-make add-dep PKG      # Add runtime dependency
-make add-dev PKG      # Add dev dependency
-make rm-dep PKG       # Remove runtime dependency
-make rm-dev PKG       # Remove dev dependency
+# Dependencies (second word is the package name)
+make add-dep <package>   # e.g. make add-dep httpx
+make add-dev <package>   # add to optional extra `dev`
+make rm-dep <package>
+make rm-dev <package>
 
-# Docker Commands
-make docker-build     # Build the base and application image
-make docker-base      # Build the base image only
-make docker-up        # Start stack (compose)
-make docker-down      # Stop stack
-make docker-logs      # Stream container logs
+# Docker (uses compose.yml in repo root unless you pass -f elsewhere)
+make docker-build     # Base image, then app image
+make docker-base      # Base image only (Calibre + deps)
+make docker-up        # docker compose up -d
+make docker-down      # docker compose down
+make docker-logs      # docker compose logs -f
 
-# Others
-make version          # Show current version
-make clean            # Remove .venv, build, dist
-make pull             # Git pull + submodule update
+# Other
+make version          # Print version from lncrawl/VERSION
+make clean            # Remove .venv, logs, build, dist, *.egg-info, __pycache__
+make submodule        # git submodule sync + update (init, recursive, remote)
 
-# Run from source directly
+
+# Update repo + submodules without make
+git pull && make submodule
+
+# Run CLI from source
 uv run python -m lncrawl
 ```
 
@@ -373,7 +398,6 @@ We are supporting 361 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `ar` Arabic
 
 <table>
@@ -400,7 +424,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `en` English
 
@@ -1739,7 +1762,6 @@ We are supporting 361 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `es` Spanish; Castilian
 
 <table>
@@ -1771,7 +1793,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `fr` French
 
@@ -1809,7 +1830,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `id` Indonesian
 
@@ -1908,7 +1928,6 @@ We are supporting 361 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `ja` Japanese
 
 <table>
@@ -1930,7 +1949,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `pt` Portuguese
 
@@ -1963,7 +1981,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `ru` Russian
 
@@ -2037,7 +2054,6 @@ We are supporting 361 sources and 391 crawlers.
 </tbody>
 </table>
 
-
 ### `tr` Turkish
 
 <table>
@@ -2054,7 +2070,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `vi` Vietnamese
 
@@ -2082,7 +2097,6 @@ We are supporting 361 sources and 391 crawlers.
 </tr>
 </tbody>
 </table>
-
 
 ### `zh` Chinese
 
