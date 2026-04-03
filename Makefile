@@ -5,7 +5,7 @@
 .PHONY: all \
 	version submodule clean ensure-uv setup sync install upgrade \
 	major minor patch \
-	lint start watch add-source \
+	lint lint-fixstart watch add-source \
 	build-wheel build-exe build \
 	docker-base docker-build docker-up docker-down docker-logs \
 	remove-tag push-tag push-tag-force \
@@ -110,6 +110,9 @@ upgrade: setup
 lint:
 	$(UV) run ruff check .
 	$(UV) run ruff format --check .
+
+lint-fix:
+	$(UV) run ruff check --fix .
 
 start:
 	$(UV) run python -m lncrawl -ll server

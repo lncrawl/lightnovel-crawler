@@ -97,6 +97,7 @@ def fetch_novel(
     url = str(body.url)
     return ctx.jobs.fetch_novel(user, url, full=body.full)
 
+
 @router.post("/create/fetch-novels", summary="Create a job to fetch multiple novels")
 def fetch_novels(
     user: User = Security(ensure_user),
@@ -106,6 +107,7 @@ def fetch_novels(
     if body.full and user.tier == UserTier.BASIC:
         raise ServerErrors.full_novel_not_allowed
     return ctx.jobs.fetch_many_novels(user, *urls, full=body.full)
+
 
 @router.post("/create/fetch-volumes", summary="Create a job to fetch all chapter contents for the volumes")
 def fetch_volumes(

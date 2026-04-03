@@ -129,7 +129,20 @@ line-length = 120
 target-version = "py39"
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = [
+  # isort
+  "I",
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # pyupgrade
+  # "UP",
+  # flake8-bugbear
+  # "B",
+  # flake8-simplify
+  # "SIM",
+]
 ignore = ["E203", "E265", "E501"]
 
 [tool.ruff.lint.isort]
