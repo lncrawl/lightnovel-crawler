@@ -57,6 +57,21 @@ def me(
 ) -> User:
     return user
 
+@router.delete("/me", summary="Deactivate current user")
+def delete_me(
+    user: User = Security(ensure_user),
+) -> bool:
+    ctx.users.update(user, UpdateRequest(is_active=False))
+    return True
+
+
+@router.delete("/me", summary="Deactivate current user")
+def delete_me(
+    user: User = Security(ensure_user),
+) -> bool:
+    ctx.users.update(user.id, UpdateRequest(is_active=False))
+    return True
+
 
 @router.put("/me/name", summary="Update current user name")
 def self_name_update(

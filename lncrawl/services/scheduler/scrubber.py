@@ -5,7 +5,7 @@ from threading import Event
 import sqlmodel as sq
 
 from ...context import ctx
-from ...dao import Artifact, Job, JobStatus, UserToken
+from ...dao import Artifact, Job, JobStatus, User, UserToken
 from ...exceptions import AbortedException
 from ...utils.file_tools import folder_size, format_size
 from ...utils.time_utils import current_timestamp
@@ -28,6 +28,7 @@ class Scrubber:
         scrubber.delete_old_jobs()
         scrubber.cancel_long_jobs()
         scrubber.delete_expired_tokens()
+        scrubber.delete_inactive_users()
 
     def free_disk_space(self):
         # Check if disk size limit is set
@@ -133,7 +134,10 @@ class Scrubber:
 
             # delete child jobs
             sess.exec(
-                sq.delete(Job).where(sq.col(Job.parent_job_id).is_not(None), sq.col(Job.updated_at) < now - _day * 15)
+                sq.delete(Job).where(
+                    sq.col(Job.parent_job_id).is_not(None),
+                    sq.col(Job.updated_at) < now - _day * 15,
+                )
             )
             sess.commit()
 
@@ -167,3 +171,13 @@ class Scrubber:
         with ctx.db.session() as sess:
             sess.exec(sq.delete(UserToken).where(sq.col(UserToken.expires_at) < now))
             sess.commit()
+
+    def delete_inactive_users(self):
+        now = current_timestamp()
+        with ctx.db.session() as sess:
+            sess.exec(
+                sq.delete(User).where(
+                    sq.col(User.is_active).is_not(True),
+                    sq.col(User.updated_at) < now - _month,
+                )
+            )
