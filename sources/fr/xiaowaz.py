@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
+from lncrawl.core import Chapter, LegacyCrawler
 from lncrawl.exceptions import LNException
-from lncrawl.models import Chapter
 
 logger = logging.getLogger(__name__)
 
 
-class XiaowazCrawler(Crawler):
+class XiaowazCrawler(LegacyCrawler):
     base_url = ["https://xiaowaz.fr/"]
 
     def initialize(self) -> None:
@@ -31,7 +30,11 @@ class XiaowazCrawler(Crawler):
 
         for a in soup.select(".entry-content a[href*='/articles/']"):
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, title=a.text.strip(), url=self.absolute_url(a["href"]))
+                Chapter(
+                    id=len(self.chapters) + 1,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     def download_chapter_body(self, chapter):

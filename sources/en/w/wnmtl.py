@@ -2,8 +2,7 @@
 import logging
 from urllib.parse import urlparse
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,7 @@ CHAPTER_LIST_URL = (
 CHAPTER_CONTENT_URL = "https://api.mystorywave.com/story-wave-backend/api/v1/content/chapters/%d"
 
 
-class WNMTLCrawler(Crawler):
+class WNMTLCrawler(LegacyCrawler):
     has_mtl = True
 
     base_url = [
@@ -46,7 +45,7 @@ class WNMTLCrawler(Crawler):
     # # end def
 
     def read_novel_info(self):
-        logger.debug(self.home_url)
+        logger.debug(self.scraper.origin)
         self.set_header("site-domain", urlparse(self.novel_url).hostname or "")
 
         self.novel_id = int(urlparse(self.novel_url).path.split("/")[2].split("-")[0])

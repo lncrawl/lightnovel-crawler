@@ -4,19 +4,16 @@ import logging
 import re
 from urllib.parse import quote
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 short_page_url = "https://indomtl.com/?p=%s"
 search_url = "https://indomtl.com/wp-admin/admin-ajax.php?action=mtl_auto_suggest&q=%s"
-chapter_list_url = (
-    "https://indomtl.com/wp-admin/admin-ajax.php?action=mtl_chapter_json&id_novel=%s&view_all=yes&moreItemsPageIndex=%d"
-)
+chapter_list_url = "https://indomtl.com/wp-admin/admin-ajax.php?action=mtl_chapter_json&id_novel=%s&view_all=yes&moreItemsPageIndex=%d"
 
 
-class IndoMTLCrawler(Crawler):
+class IndoMTLCrawler(LegacyCrawler):
     has_mtl = True
 
     base_url = "https://indomtl.com/"

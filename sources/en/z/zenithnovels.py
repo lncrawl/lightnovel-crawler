@@ -3,15 +3,14 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 novel_url = "http://zenithnovels.com/%s/"
 
 
-class ZenithNovelsCrawler(Crawler):
+class ZenithNovelsCrawler(LegacyCrawler):
     base_url = "http://zenithnovels.com/"
 
     def read_novel_info(self):
@@ -40,7 +39,12 @@ class ZenithNovelsCrawler(Crawler):
                 if len(self.volumes) < vol_id:
                     self.volumes.append(Volume(id=vol_id))
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, title=a["title"], url=self.absolute_url(a["href"]))
+                    Chapter(
+                        id=chap_id,
+                        volume=vol_id,
+                        title=a["title"],
+                        url=self.absolute_url(a["href"]),
+                    )
                 )
 
             next_link = soup.select_one("ul.lcp_paginator a.lcp_nextlink")

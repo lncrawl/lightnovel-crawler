@@ -3,13 +3,12 @@ import logging
 
 from bs4 import NavigableString
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class KiteNovel(Crawler):
+class KiteNovel(LegacyCrawler):
     base_url = "https://www.kitenovel.com/"
 
     def read_novel_info(self):
@@ -43,7 +42,12 @@ class KiteNovel(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     def download_chapter_body(self, chapter):

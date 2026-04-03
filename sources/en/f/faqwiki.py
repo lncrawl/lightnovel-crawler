@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, SearchResult, Volume
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class FaqWiki(Crawler):
+class FaqWiki(LegacyCrawler):
     base_url = [
         "https://faqwiki.us/",
         "https://www.faqwiki.us/",
@@ -59,14 +58,18 @@ class FaqWiki(Crawler):
         }
 
         if metadata_container:
-            metadata = metadata_container.text  # doesn't have line breaks anyway so not splitting here
+            metadata = (
+                metadata_container.text
+            )  # doesn't have line breaks anyway so not splitting here
             pos_dict = {}
             for key, sep in keywords.items():
                 pos_dict[key + "_start"] = metadata.find(sep)
                 pos_dict[key] = metadata.find(sep) + len(sep)
 
             self.novel_synopsis = metadata[pos_dict["desc"] : pos_dict["alt_name_start"]].strip()
-            self.novel_tags = metadata[pos_dict["genre"] : pos_dict["author_start"]].strip().split(" ")
+            self.novel_tags = (
+                metadata[pos_dict["genre"] : pos_dict["author_start"]].strip().split(" ")
+            )
             self.novel_author = metadata[pos_dict["author"] : pos_dict["status_start"]].strip()
 
         logger.info("Novel title: %s", self.novel_title)

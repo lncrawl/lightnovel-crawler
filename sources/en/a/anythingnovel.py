@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class AnythingNovelCrawler(Crawler):
+class AnythingNovelCrawler(LegacyCrawler):
     base_url = "https://anythingnovel.com/"
 
     def read_novel_info(self):
@@ -44,7 +43,9 @@ class AnythingNovelCrawler(Crawler):
         soup = self.get_soup(chapter["url"])
         content = soup.select_one("div#content")
         self.cleaner.clean_contents(content)
-        paragraphs = [str(p) for p in content.select("p") if p.text and p.text.lower() != "advertisement"]
+        paragraphs = [
+            str(p) for p in content.select("p") if p.text and p.text.lower() != "advertisement"
+        ]
         return "<p>" + "</p><p>".join(paragraphs) + "</p>"
 
     def should_take(self, p):

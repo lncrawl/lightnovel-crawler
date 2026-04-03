@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://wuxiaworld.online/search.ajax?type=&query=%s"
 
 
-class WuxiaOnlineCrawler(Crawler):
+class WuxiaOnlineCrawler(LegacyCrawler):
     base_url = "https://wuxiaworld.online/"
 
     # NOTE: DISABLING DUE TO CLOUDEFLARE CAPTCHA CHALLENGE
@@ -39,7 +38,9 @@ class WuxiaOnlineCrawler(Crawler):
         self.novel_title = possible_title.text
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_author = soup.select_one("div.entry-header > div.truyen_if_wrap > ul > li:nth-child(2)").text
+        self.novel_author = soup.select_one(
+            "div.entry-header > div.truyen_if_wrap > ul > li:nth-child(2)"
+        ).text
         logger.info("%s", self.novel_author)
 
         possible_image = soup.select_one(".info_image img")
@@ -55,7 +56,11 @@ class WuxiaOnlineCrawler(Crawler):
             if last_vol != vol_id:
                 self.volumes.append(volume)
                 last_vol = vol_id
-            self.chapters.append(Chapter(id=chap_id, volume=vol_id, title=a["title"], url=self.absolute_url(a["href"])))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id, volume=vol_id, title=a["title"], url=self.absolute_url(a["href"])
+                )
+            )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

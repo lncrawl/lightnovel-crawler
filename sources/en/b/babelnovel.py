@@ -3,15 +3,15 @@ import logging
 from concurrent import futures
 from urllib.parse import quote, urlparse
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 babelnovel_api = "https://api.babelnovel.com"
 login_url = babelnovel_api + "/v1/user-account/web-login"
 search_url = (
-    babelnovel_api + "/v1/books?page=0&pageSize=8&fields=id,name,canonicalName,lastChapter&ignoreStatus=false&query=%s"
+    babelnovel_api
+    + "/v1/books?page=0&pageSize=8&fields=id,name,canonicalName,lastChapter&ignoreStatus=false&query=%s"
 )
 novel_page_url = babelnovel_api + "/v1/books/%s"
 chapter_list_url = (
@@ -22,14 +22,14 @@ chapter_json_url = babelnovel_api + "/v1/books/%s/chapters/%s/content"
 chapter_page_url = "https://babelnovel.com/books/%s/chapters/%s"
 
 
-class BabelNovelCrawler(Crawler):
+class BabelNovelCrawler(LegacyCrawler):
     base_url = ["https://babelnovel.com/", "https://api.babelnovel.com"]
 
     def initialize(self):
-        self.home_url = "https://babelnovel.com/"
+        self.scraper.origin = "https://babelnovel.com/"
 
     def login(self, username_or_email, password_or_token):
-        logger.info("Visiting %s", self.home_url)
+        logger.info("Visiting %s", self.scraper.origin)
         data = self.post_json(
             login_url,
             data={
@@ -52,7 +52,7 @@ class BabelNovelCrawler(Crawler):
 
     def search_novel(self, query):
         # to get cookies
-        self.get_response(self.home_url)
+        self.get_response(self.scraper.origin)
 
         url = search_url % quote(query.lower())
         logger.debug("Visiting: %s", url)

@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class LunarLetters(Crawler):
+class LunarLetters(LegacyCrawler):
     base_url = "https://lunarletters.com/"
 
     def read_novel_info(self):
@@ -24,7 +23,9 @@ class LunarLetters(Crawler):
             self.novel_cover = self.absolute_url(possible_novel_cover["content"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="series-author"]')])
+        self.novel_author = " ".join(
+            [a.text.strip() for a in soup.select('.author-content a[href*="series-author"]')]
+        )
         logger.info("%s", self.novel_author)
 
         volumes = set()

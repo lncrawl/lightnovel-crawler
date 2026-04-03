@@ -2,8 +2,7 @@
 import logging
 import urllib.parse
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0",
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 search_url = "https://so.27k.net/search/"
 
 
-class LeYueDu(Crawler):
+class LeYueDu(LegacyCrawler):
     base_url = [
         "https://so.27k.net",
         "https://www.27k.net",
@@ -59,7 +58,9 @@ class LeYueDu(Crawler):
                     "title": novel.select_one("h3 a:not([imgbox])").text.title(),
                     "url": self.absolute_url(novel.select_one("h3 a")["href"]),
                     "info": "Latest: %s"
-                    % novel.select_one("div.zxzj p").text.replace("最近章节", "").replace("最近章節", ""),
+                    % novel.select_one("div.zxzj p")
+                    .text.replace("最近章节", "")
+                    .replace("最近章節", ""),
                 }
             )
 

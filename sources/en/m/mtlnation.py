@@ -2,13 +2,12 @@
 import logging
 from urllib.parse import urlencode, urlparse
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class MTLNation(Crawler):
+class MTLNation(LegacyCrawler):
     base_url = [
         "https://mtlnation.com/",
         "https://www.mtlnation.com/",
@@ -55,7 +54,9 @@ class MTLNation(Crawler):
         self.novel_author = data["data"]["author"]
         self.novel_cover = "https://api.mtlnation.com/media/" + data["data"]["cover"]
 
-        data = self.get_json(f"https://api.mtlnation.com/api/v2/novels/{data['data']['id']}/chapters/")
+        data = self.get_json(
+            f"https://api.mtlnation.com/api/v2/novels/{data['data']['id']}/chapters/"
+        )
         for item in data["data"]:
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1

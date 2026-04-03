@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://meionovels.com/wp-admin/admin-ajax.php"
 
 
-class MeionovelCrawler(Crawler):
+class MeionovelCrawler(LegacyCrawler):
     base_url = ["https://meionovel.id/", "https://meionovels.com/"]
 
     def initialize(self):
-        self.home_url = "https://meionovels.com/"
+        self.scraper.origin = "https://meionovels.com/"
 
     def search_novel(self, query):
         data = self.submit_form(

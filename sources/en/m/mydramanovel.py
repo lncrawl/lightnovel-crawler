@@ -2,13 +2,12 @@
 
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
 
 
-class MyDramaNovel(Crawler):
+class MyDramaNovel(LegacyCrawler):
     base_url = ["https://mydramanovel.com/"]
     has_manga = False
     has_mtl = True
@@ -16,9 +15,13 @@ class MyDramaNovel(Crawler):
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
 
-        self.novel_synopsis = self.cleaner.extract_contents(soup.find("div", {"class": "tagdiv-type"}))
+        self.novel_synopsis = self.cleaner.extract_contents(
+            soup.find("div", {"class": "tagdiv-type"})
+        )
 
-        self.novel_cover = self.absolute_url(soup.find("span", {"class": "entry-thumb"}).get("data-img-url"))
+        self.novel_cover = self.absolute_url(
+            soup.find("span", {"class": "entry-thumb"}).get("data-img-url")
+        )
 
         self.novel_title = soup.find("h1", {"class": "tdb-title-text"}).text
 
@@ -54,7 +57,9 @@ class MyDramaNovel(Crawler):
                 )
             )
 
-        for chapter in soup.select("div.tdb_module_loop.td_module_wrap.td-animation-stack.td-cpt-post"):
+        for chapter in soup.select(
+            "div.tdb_module_loop.td_module_wrap.td-animation-stack.td-cpt-post"
+        ):
             chapter_title = chapter.select_one("h3.entry-title a")
             if not chapter_title:
                 continue

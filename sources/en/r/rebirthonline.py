@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler, PageSoup
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler, PageSoup
 
 logger = logging.getLogger(__name__)
 
 book_url = "https://www.rebirth.online/novel/%s"
 
 
-class RebirthOnlineCrawler(Crawler):
+class RebirthOnlineCrawler(LegacyCrawler):
     base_url = "https://www.rebirth.online/"
 
     def read_novel_info(self):
@@ -35,7 +34,11 @@ class RebirthOnlineCrawler(Crawler):
 
         for a in soup.select(".table_of_content ul li a"):
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a["href"]), title=a.text.strip())
+                Chapter(
+                    id=len(self.chapters) + 1,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip(),
+                )
             )
 
     def download_chapter_body(self, chapter):

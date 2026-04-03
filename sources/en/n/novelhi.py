@@ -2,8 +2,7 @@
 import logging
 from urllib.parse import quote
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "%s/book/searchByPageInShelf?curr=1&limit=10&keyword=%s"
@@ -11,21 +10,22 @@ fetch_chapter_list_url = "%s/book/queryIndexList?bookId=%s&curr=1&limit=50000"
 fetch_chapter_body_url = "%s/book/queryBookIndexContent?bookId=%s&bookIndexId=%s&autoUnlock=false"
 
 
-class NovelHiCrawler(Crawler):
+class NovelHiCrawler(LegacyCrawler):
     base_url = [
         "https://novelhi.com/",
     ]
 
     def search_novel(self, query):
-        data = self.get_json(search_url % (self.home_url, quote(query)))
+        data = self.get_json(search_url % (self.scraper.origin, quote(query)))
 
         results = []
         for item in data["data"]["list"]:
             results.append(
                 {
                     "title": item["bookName"],
-                    "url": "%s/s/%s" % (self.home_url, item["simpleName"]),
-                    "info": "Latest: %s (%s)" % (item["lastIndexName"], item["lastIndexUpdateTime"]),
+                    "url": "%s/s/%s" % (self.scraper.origin, item["simpleName"]),
+                    "info": "Latest: %s (%s)"
+                    % (item["lastIndexName"], item["lastIndexUpdateTime"]),
                 }
             )
 
@@ -53,7 +53,7 @@ class NovelHiCrawler(Crawler):
                     self.novel_author = author.text
         logger.info("Novel author: %s", self.novel_author)
 
-        data = self.get_json(fetch_chapter_list_url % (self.home_url, self.novel_id))
+        data = self.get_json(fetch_chapter_list_url % (self.scraper.origin, self.novel_id))
         for item in reversed(data["data"]["list"]):
             chap_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1

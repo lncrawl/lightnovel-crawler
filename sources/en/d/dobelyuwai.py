@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class Dobelyuwai(Crawler):
+class Dobelyuwai(LegacyCrawler):
     has_mtl = True
     base_url = "https://dobelyuwai.wordpress.com/"
 
@@ -33,7 +32,9 @@ class Dobelyuwai(Crawler):
         # Removes none TOC links from bottom of page.
         toc_parts = soup.select_one("div.entry-content")
 
-        for notoc in toc_parts.select(".sharedaddy, .inline-ad-slot, .code-block, script, .adsbygoogle"):
+        for notoc in toc_parts.select(
+            ".sharedaddy, .inline-ad-slot, .code-block, script, .adsbygoogle"
+        ):
             notoc.extract()
 
         # Extract volume-wise chapter entries

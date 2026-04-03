@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://novel27.com/?s=%s&post_type=wp-manga&author=&artist=&release="
 
 
-class Novel27(Crawler):
+class Novel27(LegacyCrawler):
     base_url = "https://novel27.com/"
 
     def search_novel(self, query):
@@ -43,7 +42,9 @@ class Novel27(Crawler):
         self.novel_cover = self.absolute_url(soup.select_one(".summary_image a img")["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="authors"]')])
+        self.novel_author = " ".join(
+            [a.text.strip() for a in soup.select('.author-content a[href*="authors"]')]
+        )
         logger.info("%s", self.novel_author)
 
         volumes = set()

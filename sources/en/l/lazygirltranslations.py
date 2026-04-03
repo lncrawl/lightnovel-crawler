@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class LazyGirlTranslationsCrawler(Crawler):
+class LazyGirlTranslationsCrawler(LegacyCrawler):
     base_url = "https://lazygirltranslations.com/"
 
     def initialize(self) -> None:
@@ -43,7 +42,7 @@ class LazyGirlTranslationsCrawler(Crawler):
             author = next(filter(lambda x: "Author:" in x, t.split("\n")), "")
             self.novel_author = author.replace("Author: ", "")
 
-        for a in soup.select(f'.wp-block-column a[href^="{self.home_url}"]'):
+        for a in soup.select(f'.wp-block-column a[href^="{self.scraper.origin}"]'):
             chap_id = 1 + len(self.chapters)
             vol_id = 1 + len(self.chapters) // 100
             if chap_id % 100 == 1:

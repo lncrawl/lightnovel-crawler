@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://bestlightnovel.com/getsearchstory"
@@ -10,7 +9,7 @@ novel_page_url = "https://bestlightnovel.com/novel_%s"
 change_bad_words_off = "https://bestlightnovel.com/change_bad_words_off"
 
 
-class BestLightNovel(Crawler):
+class BestLightNovel(LegacyCrawler):
     base_url = "https://bestlightnovel.com/"
 
     def search_novel(self, query):
@@ -54,7 +53,8 @@ class BestLightNovel(Crawler):
         self.novel_synopsis = self.cleaner.extract_contents(synopsis)
 
         self.novel_tags = [
-            a.text.strip() for a in soup.select('.truyen_info_right a[href*="novel_list?type=latest&category="]')
+            a.text.strip()
+            for a in soup.select('.truyen_info_right a[href*="novel_list?type=latest&category="]')
         ]
 
         for a in reversed(soup.select("#list_chapter .chapter-list a")):

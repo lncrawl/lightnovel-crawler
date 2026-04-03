@@ -2,14 +2,13 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://novelsemperor.com/series?title=%s&type=&status="
 
 
-class NovelsEmperorCrawler(Crawler):
+class NovelsEmperorCrawler(LegacyCrawler):
     base_url = ["https://novelsemperor.com/"]
 
     def initialize(self) -> None:
@@ -55,7 +54,8 @@ class NovelsEmperorCrawler(Crawler):
             pagination_num = 1
 
         futures = [
-            self.executor.submit(self.get_soup, f"{self.novel_url}?page={i}") for i in range(1, pagination_num + 1)
+            self.executor.submit(self.get_soup, f"{self.novel_url}?page={i}")
+            for i in range(1, pagination_num + 1)
         ]
         page_soups = [f.result() for f in futures]
 
@@ -80,7 +80,9 @@ class NovelsEmperorCrawler(Crawler):
         # [sp.select("div#chapters-list a") for sp in soup]
         # flattened ->
         # [a for sp in soup for a in sp.select("div#chapters-list a")])
-        for element in reversed([a for soup in page_soups for a in soup.select("div#chapters-list a")]):
+        for element in reversed(
+            [a for soup in page_soups for a in soup.select("div#chapters-list a")]
+        ):
             ch_id = len(self.chapters) + 1
             vol_id = len(self.chapters) // 100 + 1
             if len(self.chapters) % 100 == 0:

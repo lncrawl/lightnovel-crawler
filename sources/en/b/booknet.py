@@ -2,21 +2,20 @@
 import logging
 from urllib.parse import quote_plus
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://booknet.com/en/search?q=%s"
 get_chapter_url = "https://booknet.com/reader/get-page"
 
 
-class LitnetCrawler(Crawler):
+class LitnetCrawler(LegacyCrawler):
     base_url = [
         "https://booknet.com/",
     ]
 
     def initialize(self):
-        self.home_url = "https://booknet.com/"
+        self.scraper.origin = "https://booknet.com/"
         self.init_executor(1)
 
     def search_novel(self, query):

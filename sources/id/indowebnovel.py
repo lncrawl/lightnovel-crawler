@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class IndowebnovelCrawler(Crawler):
+class IndowebnovelCrawler(LegacyCrawler):
     base_url = "https://indowebnovel.id/"
 
     def initialize(self):
-        self.home_url = "https://indowebnovel.id/"
+        self.scraper.origin = "https://indowebnovel.id/"
 
     def read_novel_info(self):
         # url = self.novel_url.replace('https://yukinovel.me', 'https://yukinovel.id')

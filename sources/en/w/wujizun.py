@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class Wujizun(Crawler):
+class Wujizun(LegacyCrawler):
     base_url = "https://wujizun.com/"
 
     def initialize(self) -> None:
-        self.cleaner.bad_text_regex.update(["Previous Chapter", "Table of Contents", "Next Chapter", "MYSD Patreon:"])
+        self.cleaner.bad_text_regex.update(
+            ["Previous Chapter", "Table of Contents", "Next Chapter", "MYSD Patreon:"]
+        )
 
     def read_novel_info(self):
         logger.debug("Visiting %s", self.novel_url)
@@ -28,7 +29,9 @@ class Wujizun(Crawler):
 
         # Removes none TOC links from bottom of page.
         toc_parts = soup.select_one("div.entry-content")
-        for notoc in toc_parts.select(".sharedaddy, .ezoic-adpicker-ad, .ezoic-ad-adaptive, .ezoic-ad"):
+        for notoc in toc_parts.select(
+            ".sharedaddy, .ezoic-adpicker-ad, .ezoic-ad-adaptive, .ezoic-ad"
+        ):
             notoc.extract()
 
         # Extract volume-wise chapter entries

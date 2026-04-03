@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class RPGNovels(Crawler):
+class RPGNovels(LegacyCrawler):
     base_url = ["https://rpgnovels.com/", "https://rpgnoob.wordpress.com/"]
 
     def initialize(self) -> None:
@@ -34,7 +33,9 @@ class RPGNovels(Crawler):
             self.novel_cover = self.absolute_url(possible_novel_cover["content"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join([a.text.strip() for a in soup.select('.post-entry a[href*="mypage.syosetu.com"]')])
+        self.novel_author = " ".join(
+            [a.text.strip() for a in soup.select('.post-entry a[href*="mypage.syosetu.com"]')]
+        )
         logger.info("%s", self.novel_author)
 
         # Removes none TOC links from bottom of page.

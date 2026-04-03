@@ -2,8 +2,7 @@
 import logging
 import urllib.parse
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0",
@@ -30,7 +29,7 @@ logger = logging.getLogger(__name__)
 search_url = "%s/modules/article/search.php"
 
 
-class sixnineshu(Crawler):
+class sixnineshu(LegacyCrawler):
     base_url = [
         "https://69shuba.cx",
         "https://69shu.me",
@@ -43,11 +42,11 @@ class sixnineshu(Crawler):
     def search_novel(self, query):
         query = urllib.parse.quote(query.encode("gbk"))
         data = f"searchkey={query}&searchtype=all"
-        headers["Origin"] = self.home_url
-        headers["Referer"] = search_url % self.home_url
+        headers["Origin"] = self.scraper.origin
+        headers["Referer"] = search_url % self.scraper.origin
 
         soup = self.post_soup(
-            search_url % self.home_url,
+            search_url % self.scraper.origin,
             headers=headers,
             data=data,
             encoding="gbk",
@@ -59,7 +58,8 @@ class sixnineshu(Crawler):
                 {
                     "title": novel.select_one("h3 a:not([imgbox])").text.title(),
                     "url": self.absolute_url(novel.select_one("h3 a")["href"]),
-                    "info": "Latest: %s" % novel.select_one("div.zxzj p").text.replace("最近章节", ""),
+                    "info": "Latest: %s"
+                    % novel.select_one("div.zxzj p").text.replace("最近章节", ""),
                 }
             )
 

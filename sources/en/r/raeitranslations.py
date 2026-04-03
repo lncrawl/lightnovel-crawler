@@ -2,13 +2,12 @@
 import logging
 from urllib.parse import urlencode
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
 
 
-class RaeiTranslationsCrawler(Crawler):
+class RaeiTranslationsCrawler(LegacyCrawler):
     base_url = ["https://raeitranslations.com/"]
     novel_json_url_prefix = "https://api.raeitranslations.com/api/novels/"
     novel_cover_url_prefix = "https://raeitranslations.com/assets/"
@@ -18,7 +17,9 @@ class RaeiTranslationsCrawler(Crawler):
 
     def read_novel_info(self) -> None:
         title = self.novel_url.rstrip("/").split("/")[-1]
-        novel_json = self.get_json(f"{self.novel_json_url_prefix}{title}", headers=self.json_request_headers)
+        novel_json = self.get_json(
+            f"{self.novel_json_url_prefix}{title}", headers=self.json_request_headers
+        )
         self.novel_title = novel_json["novTitle"]
         self.novel_author = novel_json["novAuthor"]
         self.novel_synopsis = novel_json["sum"]
@@ -26,7 +27,8 @@ class RaeiTranslationsCrawler(Crawler):
 
         params_chapters = {"novTitleId": title}
         chapters_json = self.get_json(
-            f"{self.novel_chapters_list_url_prefix}{urlencode(params_chapters)}", headers=self.json_request_headers
+            f"{self.novel_chapters_list_url_prefix}{urlencode(params_chapters)}",
+            headers=self.json_request_headers,
         )
 
         for index, json in enumerate(chapters_json):

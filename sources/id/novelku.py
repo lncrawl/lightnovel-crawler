@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class NovelkuCrawler(Crawler):
+class NovelkuCrawler(LegacyCrawler):
     base_url = "https://novelku.id/"
 
     def initialize(self):
-        self.home_url = "https://novelku.id/"
+        self.scraper.origin = "https://novelku.id/"
 
     def read_novel_info(self):
         logger.debug("Visiting %s", self.novel_url)

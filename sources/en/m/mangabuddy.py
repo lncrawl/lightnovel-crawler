@@ -3,21 +3,20 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 search_url = "%ssearch?q=%s"
 
 
-class MangaBuddyCrawler(Crawler):
+class MangaBuddyCrawler(LegacyCrawler):
     has_manga = True
     base_url = ["https://mangabuddy.com/"]
 
     def search_novel(self, query):
         query = query.lower().replace(" ", "+")
-        soup = self.get_soup(search_url % (self.home_url, query))
+        soup = self.get_soup(search_url % (self.scraper.origin, query))
 
         results = []
         for book in soup.select(".book-detailed-item .meta"):
@@ -34,7 +33,7 @@ class MangaBuddyCrawler(Crawler):
 
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
-        slug = re.search(rf"{self.home_url}(.*?)(/|\?|$)", self.novel_url).group(1)
+        slug = re.search(rf"{self.scraper.origin}(.*?)(/|\?|$)", self.novel_url).group(1)
 
         self.novel_title = soup.select_one(".book-info .name h1").text.strip()
 
@@ -48,10 +47,12 @@ class MangaBuddyCrawler(Crawler):
 
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = ", ".join([a.text.strip() for a in soup.select(".detail a[href*='/authors/'] span")])
+        self.novel_author = ", ".join(
+            [a.text.strip() for a in soup.select(".detail a[href*='/authors/'] span")]
+        )
         logger.info("Novel author: %s", self.novel_author)
 
-        soup = self.get_soup(f"{self.home_url}api/manga/{slug}" + "/chapters?source=detail")
+        soup = self.get_soup(f"{self.scraper.origin}api/manga/{slug}" + "/chapters?source=detail")
 
         for a in reversed(soup.select("#chapter-list > li > a")):
             chap_id = 1 + len(self.chapters)
@@ -81,12 +82,3 @@ class MangaBuddyCrawler(Crawler):
         image_urls = [f'<img src="{main_server}{img}">' for img in img_list]
 
         return "<p>" + "</p><p>".join(image_urls) + "</p>"
-
-    def download_image(self, url: str, **kwargs):
-        return super().download_image(
-            url,
-            headers={
-                "referer": self.home_url,
-                "accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-            },
-        )

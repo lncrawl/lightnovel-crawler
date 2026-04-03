@@ -2,13 +2,12 @@
 
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class SteambunCrawler(Crawler):
+class SteambunCrawler(LegacyCrawler):
     base_url = "https://steambunlightnovel.com/"
 
     def read_novel_info(self):
@@ -31,7 +30,9 @@ class SteambunCrawler(Crawler):
             chapter_id = len(self.chapters) + 1
             volume_id = 1 + (chapter_id - 1) // 100
             volumes.add(volume_id)
-            self.chapters.append(Chapter(id=chapter_id, volume=volume_id, title=title, url=a["href"]))
+            self.chapters.append(
+                Chapter(id=chapter_id, volume=volume_id, title=title, url=a["href"])
+            )
 
         self.chapters.sort(key=lambda x: x["id"])
         self.volumes = [Volume(id=x, title="") for x in volumes]

@@ -1,12 +1,11 @@
 import logging
 
-from lncrawl.core import Crawler, PageSoup
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, PageSoup, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class Xnunu(Crawler):
+class Xnunu(LegacyCrawler):
     """https://www.xnunu.com crawler, search is behind captcha so not feasible."""
 
     base_url = ["https://www.xnunu.com/"]
@@ -65,7 +64,9 @@ class Xnunu(Crawler):
         try:
             int(novel_id)
         except ValueError:
-            logger.error("Couldn't get novel_id from URL, URL should look like https://www.xnunu.com/book/9223")
+            logger.error(
+                "Couldn't get novel_id from URL, URL should look like https://www.xnunu.com/book/9223"
+            )
             return
 
         container = soup.select_one(".book-bookinfo")

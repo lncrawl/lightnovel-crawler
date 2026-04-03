@@ -2,13 +2,12 @@
 
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class Eight88NovelCrawler(Crawler):
+class Eight88NovelCrawler(LegacyCrawler):
     base_url = ["https://888novel.com/"]
 
     has_manga = False
@@ -33,7 +32,9 @@ class Eight88NovelCrawler(Crawler):
             if url != "First":
                 soup = self.get_soup(url)
 
-            for novel in soup.find("div", {"class": "col-lg-9"}).find_all("li", {"class": "col-md-6 col-xs-12"}):
+            for novel in soup.find("div", {"class": "col-lg-9"}).find_all(
+                "li", {"class": "col-md-6 col-xs-12"}
+            ):
                 a = novel.find("h2", {"class": "crop-text-2"}).find("a")
                 author = [e.text for e in novel.find("span", {"itemprop": "name"}).find_all("a")]
                 result.append(
@@ -54,12 +55,16 @@ class Eight88NovelCrawler(Crawler):
 
         try:
             rows = soup.find("table").find_all("tr")
-            self.novel_author = ", ".join([e.text.strip() for e in rows[(1 if len(rows) == 3 else 0)].find_all("a")])
+            self.novel_author = ", ".join(
+                [e.text.strip() for e in rows[(1 if len(rows) == 3 else 0)].find_all("a")]
+            )
         except Exception:
             pass
 
         try:
-            self.novel_cover = self.absolute_url(soup.find("div", {"class": "book3d"}).find("img").get("data-src"))
+            self.novel_cover = self.absolute_url(
+                soup.find("div", {"class": "book3d"}).find("img").get("data-src")
+            )
         except Exception:
             pass
 

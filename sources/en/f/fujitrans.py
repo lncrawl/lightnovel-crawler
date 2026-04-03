@@ -2,13 +2,12 @@
 
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class FujiTranslation(Crawler):
+class FujiTranslation(LegacyCrawler):
     base_url = [
         "https://fujitranslation.com/",
         "http://www.fujitranslation.com/",
@@ -26,7 +25,9 @@ class FujiTranslation(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(soup.select_one("div.entry-content p strong img")["data-orig-file"])
+        self.novel_cover = self.absolute_url(
+            soup.select_one("div.entry-content p strong img")["data-orig-file"]
+        )
         logger.info("Novel cover: %s", self.novel_cover)
 
         # Extract volume-wise chapter entries

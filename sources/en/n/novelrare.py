@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
 
 
-class NovelrareCrawler(Crawler):
+class NovelrareCrawler(LegacyCrawler):
     base_url = "https://novelrare.com/"
 
     def read_novel_info(self):
@@ -31,7 +30,9 @@ class NovelrareCrawler(Crawler):
         for a in reversed(chapters_table.find_all("a", class_=lambda x: x != "c-new-tag")):
             chap_id = 1 + (len(self.chapters))
 
-            self.chapters.append(Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a["href"])))
+            self.chapters.append(
+                Chapter(id=chap_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
+            )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

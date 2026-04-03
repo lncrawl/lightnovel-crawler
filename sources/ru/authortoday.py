@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ headers = {
 }
 
 
-class AuthorTodayCrawler(Crawler):
+class AuthorTodayCrawler(LegacyCrawler):
     base_url = ["https://author.today/"]
 
     def initialize(self):
@@ -66,6 +65,8 @@ class AuthorTodayCrawler(Crawler):
             chapter_d_bytes.append(chapter_e_bytes[i] ^ ord(cipher[i % len(cipher)]))
 
         # split by bytes, concatenate sequences and decode
-        chapter_content = bytes([b for a in chapter_d_bytes for b in [a >> 8, a & 0xFF]]).decode("utf-16")
+        chapter_content = bytes([b for a in chapter_d_bytes for b in [a >> 8, a & 0xFF]]).decode(
+            "utf-16"
+        )
 
         return chapter_content

@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://instadoses.com/?s=%s&post_type=wp-manga&op=&author=&artist=&release=&adult="
 post_chapter_url = "https://instadoses.com/wp-admin/admin-ajax.php"
 
 
-class InstadosesCrawler(Crawler):
+class InstadosesCrawler(LegacyCrawler):
     base_url = "https://instadoses.com/"
 
     def read_novel_info(self):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = " ".join([str(x) for x in soup.select_one(".post-title h1").contents if not x.name]).strip()
+        self.novel_title = " ".join(
+            [str(x) for x in soup.select_one(".post-title h1").contents if not x.name]
+        ).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         try:
@@ -32,7 +33,9 @@ class InstadosesCrawler(Crawler):
             self.novel_author = author[0].text
         logger.info("Novel author: %s", self.novel_author)
 
-        self.novel_id = soup.select_one(".wp-manga-action-button[data-action=bookmark]")["data-post"]
+        self.novel_id = soup.select_one(".wp-manga-action-button[data-action=bookmark]")[
+            "data-post"
+        ]
         logger.info("Novel id: %s", self.novel_id)
 
         for span in soup.select(".page-content-listing span"):

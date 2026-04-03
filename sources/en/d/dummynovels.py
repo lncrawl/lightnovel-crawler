@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class DummyNovelsCrawler(Crawler):
+class DummyNovelsCrawler(LegacyCrawler):
     base_url = "https://dummynovels.com/"
 
     def search_novel(self, query: str):
         keywords = set(query.lower().split())
-        soup = self.get_soup("%s/novels/" % self.home_url)
+        soup = self.get_soup("%s/novels/" % self.scraper.origin)
 
         novels = {}
         for a in soup.select(".elementor-post .elementor-post__title a"):
@@ -71,7 +70,12 @@ class DummyNovelsCrawler(Crawler):
             for a in possible_contents.select("a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
+                    Chapter(
+                        id=chap_id,
+                        volume=vol_id,
+                        title=a.text.strip(),
+                        url=self.absolute_url(a["href"]),
+                    )
                 )
 
     def download_chapter_body(self, chapter):

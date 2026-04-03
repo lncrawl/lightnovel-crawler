@@ -3,8 +3,7 @@ import ast
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -12,13 +11,13 @@ book_url = "https://mangatoon.mobi/%s/detail/%s/episodes"
 search_url = "https://mangatoon.mobi/%s/search?word=%s"
 
 
-class MangatoonMobiCrawler(Crawler):
+class MangatoonMobiCrawler(LegacyCrawler):
     base_url = [
         "https://mangatoon.mobi/",
     ]
 
     def initialize(self):
-        self.home_url = "https://mangatoon.mobi"
+        self.scraper.origin = "https://mangatoon.mobi"
 
     def read_novel_info(self):
         novel_id = self.novel_url.split("/")[5]

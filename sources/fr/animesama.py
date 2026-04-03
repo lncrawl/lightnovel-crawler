@@ -2,20 +2,19 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class animesama(Crawler):
+class animesama(LegacyCrawler):
     has_manga = True
     base_url = [
         "https://anime-sama.fr/",
     ]
 
     def search_novel(self, query):
-        search_url = f"{self.home_url}template-php/defaut/fetch.php"
+        search_url = f"{self.scraper.origin}template-php/defaut/fetch.php"
         data = self.submit_form(search_url, {"query": query})
         soup = self.make_soup(data)
 
@@ -120,7 +119,9 @@ class animesama(Crawler):
                     chap_title = f"{vol_title} chapitre {chap_number}"
 
                 # There are no individual chapter url. Everything is on the same page and chapter are generated client side
-                self.chapters.append(Chapter(id=1 + len(self.chapters), volume=vol_id, title=chap_title))
+                self.chapters.append(
+                    Chapter(id=1 + len(self.chapters), volume=vol_id, title=chap_title)
+                )
 
     def download_chapter_body(self, chapter):
         list_of_img = self.all_content[chapter["volume"]][chapter["id"] - 1]

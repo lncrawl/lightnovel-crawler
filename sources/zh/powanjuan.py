@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class PowanjuanCrawler(Crawler):
+class PowanjuanCrawler(LegacyCrawler):
     base_url = "https://www.powanjuan.cc/"
 
     def read_novel_info(self):
@@ -35,7 +34,9 @@ class PowanjuanCrawler(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
             self.chapters.append(
-                Chapter(id=ch_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
+                Chapter(
+                    id=ch_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"])
+                )
             )
 
         self.volumes = [Volume(id=x, title="") for x in volumes]

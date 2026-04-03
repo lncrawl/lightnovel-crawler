@@ -2,13 +2,12 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class ShuhaigeCrawler(Crawler):
+class ShuhaigeCrawler(LegacyCrawler):
     base_url = "https://m.shuhaige.net/"
 
     def read_novel_info(self):
@@ -43,7 +42,11 @@ class ShuhaigeCrawler(Crawler):
             clean_synopsis = []
             for line in synopsis_lines:
                 line = line.strip()
-                if line and not line.startswith("是一名出色的小说作者") and not line.startswith("最新章节"):
+                if (
+                    line
+                    and not line.startswith("是一名出色的小说作者")
+                    and not line.startswith("最新章节")
+                ):
                     clean_synopsis.append(line)
             self.novel_synopsis = "\n".join(clean_synopsis)
         logger.info("Novel synopsis: %s", self.novel_synopsis)
@@ -83,7 +86,11 @@ class ShuhaigeCrawler(Crawler):
                     clean_synopsis = []
                     for line in synopsis_lines:
                         line = line.strip()
-                        if line and not line.startswith("是一名出色的小说作者") and not line.startswith("最新章节"):
+                        if (
+                            line
+                            and not line.startswith("是一名出色的小说作者")
+                            and not line.startswith("最新章节")
+                        ):
                             clean_synopsis.append(line)
                     self.novel_synopsis = "\n".join(clean_synopsis)
                 logger.info("Novel synopsis: %s", self.novel_synopsis)
@@ -141,7 +148,9 @@ class ShuhaigeCrawler(Crawler):
             chapter_title = a.get_text(strip=True)
             chapter_url = self.absolute_url(a["href"])
 
-            self.chapters.append(Chapter(id=ch_id, volume=vol_id, title=chapter_title, url=chapter_url))
+            self.chapters.append(
+                Chapter(id=ch_id, volume=vol_id, title=chapter_title, url=chapter_url)
+            )
 
         self.volumes = [Volume(id=x, title=f"Volume {x}") for x in sorted(volumes)]
         logger.info("Found %d chapters in %d volumes", len(self.chapters), len(self.volumes))

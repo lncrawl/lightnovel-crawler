@@ -3,13 +3,12 @@ import json
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, SearchResult, Volume
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class Webfic(Crawler):
+class Webfic(LegacyCrawler):
     """
     This site has multilingual novels, though just about all of them are paywalled unfortunately.
 
@@ -43,7 +42,9 @@ class Webfic(Crawler):
 
         logger.info("book metadata %s", metadata)
 
-        lang, book_id = re.match("https://www.webfic.com(/?.*)/book_info/(\\d+)/.*", self.novel_url).groups()
+        lang, book_id = re.match(
+            "https://www.webfic.com(/?.*)/book_info/(\\d+)/.*", self.novel_url
+        ).groups()
         self.language = "en"
         if lang:
             logger.info("Novel is not english, instead is: %s", lang)
@@ -73,7 +74,10 @@ class Webfic(Crawler):
                     break
                 # chapter link template https://www.webfic.com/book/<bookid>/<chapid>
                 chapters.append(
-                    {"url": f"https://www.webfic.com{lang}/book/{book_id}/{chap['id']}", "title": chap["chapterName"]}
+                    {
+                        "url": f"https://www.webfic.com{lang}/book/{book_id}/{chap['id']}",
+                        "title": chap["chapterName"],
+                    }
                 )
 
         for idx, chapter in enumerate(chapters):
@@ -84,7 +88,13 @@ class Webfic(Crawler):
                 self.volumes.append(Volume(id=vol_id, title=vol_title))
 
             self.chapters.append(
-                Chapter(id=chap_id, url=chapter["url"], title=chapter["title"], volume=vol_id, volume_title=vol_title),
+                Chapter(
+                    id=chap_id,
+                    url=chapter["url"],
+                    title=chapter["title"],
+                    volume=vol_id,
+                    volume_title=vol_title,
+                ),
             )
 
     def download_chapter_body(self, chapter):
@@ -100,7 +110,9 @@ class Webfic(Crawler):
 
         # copied straight outta self.cleaner.extract_contents because we lack a TAG...
         # otherwise the output looks very mushed together cause it ignores all the newlines otherwise
-        text = "".join([f"<p>{t.strip()}</p>" for t in text_lines if not self.cleaner.contains_bad_texts(t)])
+        text = "".join(
+            [f"<p>{t.strip()}</p>" for t in text_lines if not self.cleaner.contains_bad_texts(t)]
+        )
 
         return text
 
@@ -124,7 +136,9 @@ class Webfic(Crawler):
 
         for page_idx in range(pages):
             page = 1 + page_idx
-            soup_page = self.get_soup(f"https://www.webfic.com/search/{page}?searchValue={query_simple_encoded}")
+            soup_page = self.get_soup(
+                f"https://www.webfic.com/search/{page}?searchValue={query_simple_encoded}"
+            )
             m_page_json = soup_page.select_one("script#__NEXT_DATA__")
             m_page = json.loads(m_page_json.text)
             data_page = m_page["props"]["pageProps"]

@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class DemonTranslations(Crawler):
+class DemonTranslations(LegacyCrawler):
     base_url = "https://demontranslations.com/"
 
     def read_novel_info(self):
@@ -17,7 +16,9 @@ class DemonTranslations(Crawler):
         self.novel_title = soup.find("h1", {"class": "entry-title"}).text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(soup.select_one("div.entry-content p img")["data-orig-file"])
+        self.novel_cover = self.absolute_url(
+            soup.select_one("div.entry-content p img")["data-orig-file"]
+        )
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = "Demon Translations"

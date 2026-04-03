@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class IdqidianCrawler(Crawler):
+class IdqidianCrawler(LegacyCrawler):
     base_url = "https://www.idqidian.us/"
 
     def read_novel_info(self):
@@ -66,7 +65,11 @@ class IdqidianCrawler(Crawler):
             unwanted_text = [str.strip(x.text) for x in soup.find_all()]
             my_texts = set(texts).difference(unwanted_text)
             body_parts = "".join(
-                [str(p) for p in my_texts if p.strip() and "Advertisement" not in p and "JavaScript!" not in p]
+                [
+                    str(p)
+                    for p in my_texts
+                    if p.strip() and "Advertisement" not in p and "JavaScript!" not in p
+                ]
             )
 
         return body_parts

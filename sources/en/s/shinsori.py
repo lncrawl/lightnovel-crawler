@@ -2,13 +2,12 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class ShinsoriCrawler(Crawler):
+class ShinsoriCrawler(LegacyCrawler):
     base_url = "https://www.shinsori.com/"
 
     def read_novel_info(self):
@@ -24,7 +23,8 @@ class ShinsoriCrawler(Crawler):
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = (
-            "Author : %s, Translator: Shinsori" % soup.select("div.entry.clearfix p strong")[1].next_sibling.strip()
+            "Author : %s, Translator: Shinsori"
+            % soup.select("div.entry.clearfix p strong")[1].next_sibling.strip()
         )
         logger.info("Novel author: %s", self.novel_author)
 

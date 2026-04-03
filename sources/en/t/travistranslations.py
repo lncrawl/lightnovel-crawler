@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class TravisTranslations(Crawler):
+class TravisTranslations(LegacyCrawler):
     base_url = "https://travistranslations.com/"
 
     def read_novel_info(self):
@@ -38,7 +37,9 @@ class TravisTranslations(Crawler):
             if possible_chapter_title:
                 title = possible_chapter_title.text.strip()
 
-            self.chapters.append(Chapter(id=chap_id, volume=vol_id, title=title, url=self.absolute_url(a["href"])))
+            self.chapters.append(
+                Chapter(id=chap_id, volume=vol_id, title=title, url=self.absolute_url(a["href"]))
+            )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])

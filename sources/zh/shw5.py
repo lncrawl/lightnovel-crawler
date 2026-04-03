@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class Shw5Crawler(Crawler):
+class Shw5Crawler(LegacyCrawler):
     base_url = [
         "https://www.shw5.cc/",
         "https://www.bq99.cc/",
@@ -44,7 +43,9 @@ class Shw5Crawler(Crawler):
             ch_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
-            self.chapters.append(Chapter(id=ch_id, volume=vol_id, title=a.text, url=self.absolute_url(a["href"])))
+            self.chapters.append(
+                Chapter(id=ch_id, volume=vol_id, title=a.text, url=self.absolute_url(a["href"]))
+            )
 
         self.volumes = [Volume(id=x, title="") for x in volumes]
 

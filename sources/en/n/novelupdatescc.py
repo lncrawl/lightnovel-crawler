@@ -2,21 +2,19 @@
 import logging
 from urllib.parse import quote
 
-from lncrawl.core import Crawler
-from lncrawl.models.chapter import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
-search_url = "https://www.novelupdates.cc/search/%s/1"
 
 
-class NovelUpdatesCC(Crawler):
+class NovelUpdatesCC(LegacyCrawler):
     base_url = [
         "https://www.novelupdates.cc/",
     ]
 
     def search_novel(self, query):
         query = quote(query.lower())
-        soup = self.get_soup(search_url % query)
+        soup = self.get_soup(f"{self.scraper.origin}search/{query}/1")
 
         results = []
         for li in soup.select(".result-list .list-item"):

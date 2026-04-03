@@ -3,15 +3,16 @@ import logging
 from base64 import b64decode
 from urllib.parse import quote_plus
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
-novel_search_url = b64decode("aHR0cHM6Ly9jb21yYWRlbWFvLmNvbS8/cG9zdF90eXBlPW5vdmVsJnM9".encode()).decode()
+novel_search_url = b64decode(
+    "aHR0cHM6Ly9jb21yYWRlbWFvLmNvbS8/cG9zdF90eXBlPW5vdmVsJnM9".encode()
+).decode()
 
 
-class Fu_kCom_ademao(Crawler):
+class Fu_kCom_ademao(LegacyCrawler):
     has_mtl = True
     base_url = b64decode("aHR0cHM6Ly9jb21yYWRlbWFvLmNvbS8=".encode()).decode()
 
@@ -81,7 +82,9 @@ class Fu_kCom_ademao(Crawler):
             futures_to_check = []
             novel_url = self.novel_url.split("?")[0].strip("/")
             for i in range(page_count - 1):
-                future = self.executor.submit(self.get_soup, novel_url + "/page/%d" % (page_count - i))
+                future = self.executor.submit(
+                    self.get_soup, novel_url + "/page/%d" % (page_count - i)
+                )
                 futures_to_check.append(future)
             futures_to_check.append(self.executor.submit(lambda: soup))
 

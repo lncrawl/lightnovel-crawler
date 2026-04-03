@@ -2,8 +2,7 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -11,18 +10,18 @@ novel_search_url = "%ssearch.aspx?k=%s"
 chapter_list_url = "%s&page=%d"
 
 
-class UukanshuOnlineSJ(Crawler):
+class UukanshuOnlineSJ(LegacyCrawler):
     base_url = ["https://sj.uukanshu.net/"]  # previously .com, redirects .com to .net though
 
     def search_novel(self, query):
         query = query.lower().replace(" ", "+")
-        soup = self.get_soup(novel_search_url % (self.home_url, query))
+        soup = self.get_soup(novel_search_url % (self.scraper.origin, query))
         results = []
 
         for data in soup.select("#bookList li"):
             title = data.select_one(".book-title a.name")["title"]
             author = data.select_one(".book-title .aut").get_text()
-            url = self.home_url + data.select_one(".book-title a.name")["href"]
+            url = self.scraper.origin + data.select_one(".book-title a.name")["href"]
 
             results.append(
                 {
@@ -74,7 +73,7 @@ class UukanshuOnlineSJ(Crawler):
                         id=chap_id,
                         volume=vol_id,
                         title=a.text,
-                        url=self.home_url + a["href"],
+                        url=self.scraper.origin + a["href"],
                     )
                 )
 

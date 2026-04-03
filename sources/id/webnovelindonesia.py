@@ -2,17 +2,14 @@
 import logging
 from concurrent import futures
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
-chapter_list_url = (
-    "https://webnovelindonesia.com/wp-json/writerist/v1/chapters?category=%s&perpage=100&order=ASC&paged=%s"
-)
+chapter_list_url = "https://webnovelindonesia.com/wp-json/writerist/v1/chapters?category=%s&perpage=100&order=ASC&paged=%s"
 
 
-class WebnovelIndonesia(Crawler):
+class WebnovelIndonesia(LegacyCrawler):
     base_url = "https://webnovelindonesia.com/"
 
     def read_novel_info(self):
@@ -24,7 +21,9 @@ class WebnovelIndonesia(Crawler):
         self.novel_title = possible_title.text.strip()
         logger.info("Novel title: %s", self.novel_title)
 
-        self.novel_cover = self.absolute_url(soup.select_one('.section-novel img[class*="lazy"]')["data-src"])
+        self.novel_cover = self.absolute_url(
+            soup.select_one('.section-novel img[class*="lazy"]')["data-src"]
+        )
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = soup.select_one('.section-novel li a[href*="/aut/"]').text.strip()

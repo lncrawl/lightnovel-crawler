@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 # import urllib.parse
 
 logger = logging.getLogger(__name__)
 
 
-class Novel543(Crawler):
+class Novel543(LegacyCrawler):
     base_url = ["https://www.novel543.com/"]
     has_manga = False
     has_mtl = False
@@ -19,7 +18,7 @@ class Novel543(Crawler):
 
     # def search_novel(self, query):
     #     encoded_query = urllib.parse.quote(query)
-    #     search_url = f"{self.home_url}search/{encoded_query}"
+    #     search_url = f"{self.scraper.origin}search/{encoded_query}"
     #     print(f"Searching for: {query} at {search_url}")
     #     soup = self.get_soup(search_url)
     #     with open("test", "w", encoding="utf-8") as f:
@@ -80,7 +79,9 @@ class Novel543(Crawler):
             self.novel_author = author_tag.text.strip()
         else:
             # Fallback for author if specific span not found
-            author_meta_tag = soup.select_one("#detail .media-content p.meta span:contains('作者：')")
+            author_meta_tag = soup.select_one(
+                "#detail .media-content p.meta span:contains('作者：')"
+            )
             if author_meta_tag:
                 self.novel_author = author_meta_tag.text.replace("作者：", "").strip()
             else:
@@ -151,6 +152,8 @@ class Novel543(Crawler):
             next_url = self.absolute_url(next_["href"])
             if next_url.count("_") > 1:  # if it has multiple _ it means it's a multi-page chapter
                 next_url = next_url.rsplit("_", 1)[0] + "_2.html"
-                extracted_content += self.download_chapter_body({"url": next_url, "title": chapter["title"]})
+                extracted_content += self.download_chapter_body(
+                    {"url": next_url, "title": chapter["title"]}
+                )
 
         return extracted_content

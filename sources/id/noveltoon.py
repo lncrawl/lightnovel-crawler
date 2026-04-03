@@ -3,14 +3,13 @@ import logging
 import re
 from urllib.parse import quote_plus
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://noveltoon.mobi/en/search?word=%s&source=&lock="
 
 
-class NovelsRockCrawler(Crawler):
+class NovelsRockCrawler(LegacyCrawler):
     base_url = "https://noveltoon.mobi/"
 
     def initialize(self) -> None:
@@ -34,7 +33,13 @@ class NovelsRockCrawler(Crawler):
                 {
                     "url": self.absolute_url(a["href"]),
                     "title": a.select_one(".search-item-title").text.strip(),
-                    "info": ", ".join([e.text.strip() for e in a.select(".search-label-text") if e and e.text.strip()]),
+                    "info": ", ".join(
+                        [
+                            e.text.strip()
+                            for e in a.select(".search-label-text")
+                            if e and e.text.strip()
+                        ]
+                    ),
                 }
             )
 

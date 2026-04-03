@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class VisTranslations(Crawler):
+class VisTranslations(LegacyCrawler):
     base_url = "https://vistranslations.wordpress.com/"
 
     def read_novel_info(self):
@@ -22,7 +21,9 @@ class VisTranslations(Crawler):
         #     'meta[property="og:image"]')['content']
         # logger.info('Novel cover: %s', self.novel_cover)
 
-        self.novel_author = soup.select_one("div.wp-block-media-text__content > p:nth-child(4)").text
+        self.novel_author = soup.select_one(
+            "div.wp-block-media-text__content > p:nth-child(4)"
+        ).text
         logger.info("%s", self.novel_author)
 
         # Removes none TOC links from bottom of page.

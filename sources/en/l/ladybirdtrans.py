@@ -2,13 +2,12 @@
 
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class lazybirdtranslations(Crawler):
+class lazybirdtranslations(LegacyCrawler):
     base_url = "https://lazybirdtranslations.wordpress.com/"
 
     def initialize(self) -> None:
@@ -43,7 +42,9 @@ class lazybirdtranslations(Crawler):
         logger.info("Novel author: %s", self.novel_author)
 
         # Stops external links being selected as chapters
-        chapters = soup.select('.wp-block-table tr td a[href*="lazybirdtranslations.wordpress.com/2"]')
+        chapters = soup.select(
+            '.wp-block-table tr td a[href*="lazybirdtranslations.wordpress.com/2"]'
+        )
 
         for a in chapters:
             chap_id = len(self.chapters) + 1

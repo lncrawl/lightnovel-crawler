@@ -3,8 +3,7 @@ import logging
 import re
 from urllib.parse import quote
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ SEARCH_URL = "https://mtlreader.com/search"
 CHAPTER_DETAIL_API = "https://www.mtlreader.com/api/chapter-content/%s"
 
 
-class MtlReaderCrawler(Crawler):
+class MtlReaderCrawler(LegacyCrawler):
     has_mtl = True
     base_url = [
         "https://mtlreader.com/",
@@ -20,7 +19,7 @@ class MtlReaderCrawler(Crawler):
     ]
 
     def search_novel(self, query):
-        soup = self.get_soup(self.home_url)
+        soup = self.get_soup(self.scraper.origin)
 
         form_data = {}
         for input in soup.select('form[action$="/search"] input'):
@@ -70,7 +69,11 @@ class MtlReaderCrawler(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             chap_title = re.sub(r"^(\d+[\s:\-]+)", "", a.text.strip())
-            self.chapters.append(Chapter(id=chap_id, volume=vol_id, title=chap_title, url=self.absolute_url(a["href"])))
+            self.chapters.append(
+                Chapter(
+                    id=chap_id, volume=vol_id, title=chap_title, url=self.absolute_url(a["href"])
+                )
+            )
 
     def download_chapter_body(self, chapter):
         self.get_response(chapter["url"])

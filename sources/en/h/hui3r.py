@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class hui3rCrawler(Crawler):
+class hui3rCrawler(LegacyCrawler):
     base_url = "https://hui3r.wordpress.com/"
 
     def initialize(self) -> None:
@@ -38,7 +37,9 @@ class hui3rCrawler(Crawler):
 
         # Removes none TOC links from bottom of page.
         toc_parts = soup.select_one(".single-entry-content")
-        for notoc in toc_parts.select(".sharedaddy, .inline-ad-slot, .code-block, script, .adsbygoogle"):
+        for notoc in toc_parts.select(
+            ".sharedaddy, .inline-ad-slot, .code-block, script, .adsbygoogle"
+        ):
             notoc.extract()
 
         # Extract volume-wise chapter entries

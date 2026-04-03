@@ -5,13 +5,12 @@ from urllib.parse import urlparse
 
 import requests
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, SearchResult, Volume
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class WtrLab(Crawler):
+class WtrLab(LegacyCrawler):
     """
     This site has multilingual novels, basically all MTL, supposedly through translators like Google
     but the output seems pretty decent for that
@@ -69,7 +68,9 @@ class WtrLab(Crawler):
 
         # Check if "tags" exists; if not, use the "genres" field as a fallback.
         if "tags" in metadata["props"]["pageProps"]:
-            self.novel_tags = [tag["title"] for tag in metadata["props"]["pageProps"]["tags"] if tag.get("title")]
+            self.novel_tags = [
+                tag["title"] for tag in metadata["props"]["pageProps"]["tags"] if tag.get("title")
+            ]
         else:
             # Convert numeric genre IDs to strings (or use a mapping if available)
             self.novel_tags = list(map(str, series_data.get("genres", [])))
@@ -98,7 +99,7 @@ class WtrLab(Crawler):
             )
 
     def download_chapter_body(self, chapter):
-        url = f"{self.home_url}/api/reader/get"
+        url = f"{self.scraper.origin}/api/reader/get"
         payload = json.dumps(
             {
                 "language": "en",

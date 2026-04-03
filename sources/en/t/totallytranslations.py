@@ -3,13 +3,12 @@ import logging
 
 from requests.sessions import Session
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
 
 
-class TotallyTranslations(Crawler):
+class TotallyTranslations(LegacyCrawler):
     base_url = "https://totallytranslations.com/"
 
     def initialize(self):
@@ -43,7 +42,12 @@ class TotallyTranslations(Crawler):
             for a in ul.select("a"):
                 chap_id = len(self.chapters) + 1
                 self.chapters.append(
-                    Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
+                    Chapter(
+                        id=chap_id,
+                        volume=vol_id,
+                        title=a.text.strip(),
+                        url=self.absolute_url(a["href"]),
+                    )
                 )
 
     def download_chapter_body(self, chapter):

@@ -2,8 +2,7 @@
 
 import logging
 
-from lncrawl.core import Crawler, PageSoup
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, PageSoup, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://mtled-novels.com/search_novel.php?q=%s"
@@ -11,14 +10,14 @@ login_url = "https://mtled-novels.com/login/ajax/checklogin.php"
 logout_url = "https://mtled-novels.com/login/logout.php"
 
 
-class MtledNovelsCrawler(Crawler):
+class MtledNovelsCrawler(LegacyCrawler):
     base_url = "https://mtled-novels.com/"
 
     def login(self, username, password):
         """login to LNMTL"""
         # Get the login page
-        logger.info("Visiting %s", self.home_url)
-        self.get_response(self.home_url)
+        logger.info("Visiting %s", self.scraper.origin)
+        self.get_response(self.scraper.origin)
 
         # Send post request to login
         logger.info("Logging in...")

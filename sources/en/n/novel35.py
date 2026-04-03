@@ -2,21 +2,20 @@
 import logging
 from urllib.parse import quote
 
-from lncrawl.core import Crawler
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult
 from lncrawl.exceptions import LNException
-from lncrawl.models import Chapter, SearchResult
 
 logger = logging.getLogger(__name__)
 
 
-class Novel35Crawler(Crawler):
+class Novel35Crawler(LegacyCrawler):
     base_url = ["https://novel35.com/"]
 
     def initialize(self) -> None:
         self.cleaner.bad_css.update(['div[align="left"]', 'img[src*="proxy?container=focus"]'])
 
     def search_novel(self, query):
-        soup = self.get_soup(f"{self.home_url}search?keyword={quote(query)}")
+        soup = self.get_soup(f"{self.scraper.origin}search?keyword={quote(query)}")
         results = []
         for div in soup.select("#list-page .archive .list-truyen > .row"):
             a = div.select_one(".truyen-title a")

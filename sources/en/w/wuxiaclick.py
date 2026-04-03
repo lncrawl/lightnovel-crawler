@@ -2,15 +2,14 @@
 import json
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 api_novel_chapter_url = "https://wuxia.click/api/chapters/"
 home_url = "https://wuxia.click/"
 
 
-class WuxiaClick(Crawler):
+class WuxiaClick(LegacyCrawler):
     base_url = ["https://wuxia.click/"]
     search_results_data = []
 
@@ -22,7 +21,9 @@ class WuxiaClick(Crawler):
         script = soup.find("script", {"id": "__NEXT_DATA__"})
         data = json.loads(script.contents[0])
 
-        data = data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"]["data"]["results"]
+        data = data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"]["data"][
+            "results"
+        ]
 
         results = []
         for novel in data:
@@ -39,7 +40,9 @@ class WuxiaClick(Crawler):
         soup = self.get_soup(self.novel_url)
         script = soup.find("script", {"id": "__NEXT_DATA__"})
         novel_data = json.loads(script.contents[0])
-        novel_data = novel_data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"]["data"]
+        novel_data = novel_data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"][
+            "data"
+        ]
 
         possible_title = novel_data["name"]
         assert possible_title, "No novel title"
@@ -55,7 +58,9 @@ class WuxiaClick(Crawler):
         self.novel_synopsis = novel_data["description"]
         logger.info("Novel synopsis: %s", self.novel_synopsis)
 
-        self.novel_tags = [x["name"] for x in novel_data["categories"]] + [x["name"] for x in novel_data["tags"]]
+        self.novel_tags = [x["name"] for x in novel_data["categories"]] + [
+            x["name"] for x in novel_data["tags"]
+        ]
         logger.info("Novel tags: %s", self.novel_tags)
 
         slug = novel_data["slug"]
@@ -78,7 +83,9 @@ class WuxiaClick(Crawler):
         soup = self.get_soup(chapter["url"])
         script = soup.find("script", {"id": "__NEXT_DATA__"})
         chapter_data = json.loads(script.contents[0])
-        contents = chapter_data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"]["data"]["text"]
+        contents = chapter_data["props"]["pageProps"]["dehydratedState"]["queries"][0]["state"][
+            "data"
+        ]["text"]
 
         contents = "<p>" + contents.replace("\n", "</p><p>") + "</p>"
         return contents

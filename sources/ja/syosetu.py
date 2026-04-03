@@ -5,14 +5,13 @@ from urllib.parse import quote_plus
 
 from bs4 import element
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://yomou.syosetu.com/search.php?word=%s"
 
 
-class SyosetuCrawler(Crawler):
+class SyosetuCrawler(LegacyCrawler):
     has_mtl = True
     base_url = "https://ncode.syosetu.com/"
 
@@ -24,7 +23,9 @@ class SyosetuCrawler(Crawler):
         results = []
         for tab in soup.select(".searchkekka_box"):
             a = tab.select_one(".novel_h a")
-            latest = tab.select_one(".left").get_text(separator=" ").strip()  # e.g.: 連載中 (全604部分)
+            latest = (
+                tab.select_one(".left").get_text(separator=" ").strip()
+            )  # e.g.: 連載中 (全604部分)
             votes = tab.select_one(".attention").text.strip()  # e.g.: "総合ポイント： 625,717 pt"
             results.append(
                 {
@@ -53,7 +54,10 @@ class SyosetuCrawler(Crawler):
         if pager_last and "href" in pager_last.attrs:
             page_num = int(pager_last["href"].split("=")[-1])
             with ThreadPoolExecutor() as executor:
-                futures = [executor.submit(self.get_soup, f"{self.novel_url}?p={x}") for x in range(1, page_num + 1)]
+                futures = [
+                    executor.submit(self.get_soup, f"{self.novel_url}?p={x}")
+                    for x in range(1, page_num + 1)
+                ]
                 for future in futures:
                     soups.append(future.result())
         else:

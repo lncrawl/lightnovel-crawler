@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class SleepyTranslations(Crawler):
+class SleepyTranslations(LegacyCrawler):
     base_url = "https://sleepytranslations.com/"
 
     def read_novel_info(self):
@@ -25,7 +24,9 @@ class SleepyTranslations(Crawler):
             self.novel_cover = self.absolute_url(possible_image["src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="author"]')])
+        self.novel_author = " ".join(
+            [a.text.strip() for a in soup.select('.author-content a[href*="author"]')]
+        )
         logger.info("%s", self.novel_author)
 
         self.novel_id = soup.select_one("#manga-chapters-holder")["data-id"]

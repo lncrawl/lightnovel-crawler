@@ -4,13 +4,12 @@ from urllib.parse import urlencode
 
 import execjs
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class NovelMaoCrawler(Crawler):
+class NovelMaoCrawler(LegacyCrawler):
     has_mtl = True
     base_url = ["https://novelmao.com/"]
 
@@ -33,7 +32,9 @@ class NovelMaoCrawler(Crawler):
             logger.info("Novel cover = %s", self.novel_cover)
             logger.info("Novel author = %s", self.novel_author)
         except Exception:
-            possible_title = soup.select_one('meta[itemprop="itemReviewed"], meta[property="og:title"]')
+            possible_title = soup.select_one(
+                'meta[itemprop="itemReviewed"], meta[property="og:title"]'
+            )
             self.novel_title = possible_title["content"]
             logger.info("Novel title = %s", self.novel_title)
 
@@ -52,7 +53,7 @@ class NovelMaoCrawler(Crawler):
                 "id_novel": novel_id,
                 "view_all": "yes",
                 "moreItemsPageIndex": current_page,
-                "__amp_source_origin": self.home_url.strip("/"),
+                "__amp_source_origin": self.scraper.origin.strip("/"),
             }
             url = chapter_list_url + "?" + urlencode(params)
             logger.info("Getting chapters: %s", url)

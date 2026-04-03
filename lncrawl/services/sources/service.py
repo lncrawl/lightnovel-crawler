@@ -10,10 +10,17 @@ from ...exceptions import ServerErrors
 from ...server.models import CrawlerIndex, CrawlerInfo, SourceItem
 from ...utils.fts_store import FTSStore
 from ...utils.text_tools import normalize
-from ...utils.url_tools import extract_base, extract_host, normalize_url
-from . import utils
+from ...utils.url_tools import extract_host, normalize_url
+from .helper import (
+    create_crawler_info,
+    fetch_online_source,
+    import_crawlers,
+    load_offline_source,
+    save_source,
+)
 
 logger = logging.getLogger(__name__)
+_crawlers_cache: Dict[Type[Crawler], Crawler] = {}
 
 
 class Sources:
@@ -53,7 +60,7 @@ class Sources:
         self._taskman = TaskManager(10)
 
         # load offline sources first
-        self.load_index(utils.load_offline_source(sync_remote))
+        self.load_index(load_offline_source(sync_remote))
 
         # dynamically import all crawlers
         self._taskman.submit_task(
@@ -82,7 +89,7 @@ class Sources:
             self.rejected[host] = reason
 
     def load_crawlers(self, *files: Path) -> List[CrawlerInfo]:
-        futures = [self._taskman.submit_task(utils.import_crawlers, file) for file in files]
+        futures = [self._taskman.submit_task(import_crawlers, file) for file in files]
         return [
             self.add_crawler(crawler)
             for crawlers in self._taskman.resolve_as_generator(
@@ -106,7 +113,7 @@ class Sources:
             info = self._index.crawlers[sid]
         else:
             logger.info(f"Found non-indexed crawler: {crawler.__name__}")
-            info = utils.create_crawler_info(crawler)
+            info = create_crawler_info(crawler)
             self._index.crawlers[sid] = info
 
         # update crawlers list with the latest crawler
@@ -131,14 +138,14 @@ class Sources:
     def update(self) -> None:
         assert self._index
         logger.info("Sync online sources")
-        online_index = utils.fetch_online_source()
+        online_index = fetch_online_source()
         if online_index.v <= self._index.v:
             logger.info("No latest updates found")
             return
 
         # save the latest index
         user_file = ctx.config.crawler.user_index_file
-        utils.save_source(user_file, self._index)
+        save_source(user_file, self._index)
 
         # load the online index
         self.load_index(online_index)
@@ -267,7 +274,14 @@ class Sources:
         disable_logger=not ctx.logger.is_debug,
         workers: Optional[int] = None,
         parser: Optional[str] = None,
+        renew: bool = False,
     ) -> Crawler:
+        if constructor in _crawlers_cache:
+            if renew:
+                _crawlers_cache.pop(constructor).close()
+            else:
+                return _crawlers_cache[constructor]
+
         url = getattr(constructor, "url")
         logger.debug(f"Creating crawler instance for {url}")
 
@@ -275,12 +289,17 @@ class Sources:
         if disable_logger:
             module = getattr(constructor, "__module_obj__")
             setattr(module, "print", lambda *a, **k: None)
-            setattr(module, "logger", type("", (), {"__getattr__": lambda *n: lambda *a, **k: None})())
+            setattr(
+                module, "logger", type("", (), {"__getattr__": lambda *n: lambda *a, **k: None})()
+            )
 
         # create instance
-        crawler = constructor(workers, parser)
-        crawler.home_url = extract_base(url)
-        crawler.novel_url = url
+        crawler = constructor(
+            origin=url,
+            workers=workers,
+            parser=parser,
+        )
+        _crawlers_cache[constructor] = crawler
 
         crawler.initialize()
         return crawler

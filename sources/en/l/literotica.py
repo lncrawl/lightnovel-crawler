@@ -2,13 +2,12 @@
 import logging
 from typing import List
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, SearchResult
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult
 
 logger = logging.getLogger(__name__)
 
 
-class LiteroticaCrawler(Crawler):
+class LiteroticaCrawler(LegacyCrawler):
     base_url = ["https://www.literotica.com/"]
 
     def initialize(self) -> None:
@@ -41,7 +40,9 @@ class LiteroticaCrawler(Crawler):
             )
             self.novel_tags = [item.text for item in soup.select("a.av_as")]
             for item in soup.select("a.br_rj"):
-                self.chapters.append(dict(id=len(self.chapters) + 1, title=item.text, url=item["href"]))
+                self.chapters.append(
+                    dict(id=len(self.chapters) + 1, title=item.text, url=item["href"])
+                )
         else:
             self.novel_title = soup.select_one("h1.headline").text
             self.novel_author = soup.select_one("a.y_eU").text
@@ -55,7 +56,9 @@ class LiteroticaCrawler(Crawler):
         while 1:
             chapterText += self.cleaner.extract_contents(soup.select_one("div.aa_ht"))
             try:
-                nextUrl = "https://speedy.literotica.com" + soup.select_one("a.l_bJ.l_bL").attrs["href"]
+                nextUrl = (
+                    "https://speedy.literotica.com" + soup.select_one("a.l_bJ.l_bL").attrs["href"]
+                )
                 soup = self.get_soup(nextUrl, timeout=100)
             except Exception:
                 break

@@ -2,14 +2,13 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult
 from lncrawl.exceptions import LNException
-from lncrawl.models import Chapter, SearchResult
 
 logger = logging.getLogger(__name__)
 
 
-class DdxSss(Crawler):
+class DdxSss(LegacyCrawler):
     base_url = [
         "https://www.ddxss.cc/",
         "https://www.ddtxt8.cc/",
@@ -43,7 +42,7 @@ class DdxSss(Crawler):
 
     def search_novel(self, query):
         data = self.get_json(
-            f"{self.home_url}user/search.html?q={query}",
+            f"{self.scraper.origin}user/search.html?q={query}",
             # if this cookie "expires" it might return INT results again -> maybe remove search functionality
             cookies={"hm": "7c2cee175bfbf597f805ebc48957806e"},
         )

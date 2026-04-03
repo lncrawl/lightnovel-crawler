@@ -3,13 +3,12 @@
 import logging
 from urllib.parse import parse_qs, urlparse
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class WebToonsCrawler(Crawler):
+class WebToonsCrawler(LegacyCrawler):
     has_manga = True
     base_url = ["https://www.webtoons.com/"]
 
@@ -21,7 +20,7 @@ class WebToonsCrawler(Crawler):
     def search_novel(self, query):
         query = query.lower().replace(" ", "+")
 
-        search_url1 = self.search_url % (self.home_url, query)
+        search_url1 = self.search_url % (self.scraper.origin, query)
         search_url2 = search_url1 + "&searchType=CHALLENGE"
 
         soup = self.get_soup(search_url1)
@@ -62,7 +61,10 @@ class WebToonsCrawler(Crawler):
         page_number = query_params.get("page", [])[0] if "page" in query_params else None
         page_number = int(page_number)
 
-        futures = [self.executor.submit(self.get_soup, f"{self.novel_url}&page={i}") for i in range(1, page_number + 1)]
+        futures = [
+            self.executor.submit(self.get_soup, f"{self.novel_url}&page={i}")
+            for i in range(1, page_number + 1)
+        ]
         page_soups = [f.result() for f in futures]
         # url_selector : element["href"] , chap_title : element.select_one("span.subj").text
 

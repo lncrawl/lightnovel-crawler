@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +9,7 @@ novel_toc_url = "https://genesistls.com/series/%s"
 chapter_list_url = "http://gravitytales.com/novel/%s/chapters"
 
 
-class GenesisTlsCrawler(Crawler):
+class GenesisTlsCrawler(LegacyCrawler):
     base_url = "https://genesistls.com"
     search_url = base_url + "/?s=%s"
 
@@ -40,7 +39,9 @@ class GenesisTlsCrawler(Crawler):
         self.novel_author = potential_author.text
         logger.info("Novel author: %s", self.novel_author)
 
-        potential_cover = self.absolute_url(soup.select_one(".bigcontent img[itemprop=image]")["src"]).split("?")[0]
+        potential_cover = self.absolute_url(
+            soup.select_one(".bigcontent img[itemprop=image]")["src"]
+        ).split("?")[0]
         assert potential_cover, "No cover"
         self.novel_cover = potential_cover
         logger.info("Novel cover: %s", self.novel_cover)
@@ -56,7 +57,9 @@ class GenesisTlsCrawler(Crawler):
 
             potential_chapter_title = ep_list_item.select_one("div.epl-title").text
             chapter_title = (
-                potential_chapter_title if len(potential_chapter_title) else f"Chapter {len(self.chapters) + 1}"
+                potential_chapter_title
+                if len(potential_chapter_title)
+                else f"Chapter {len(self.chapters) + 1}"
             )
 
             chapter_url = ep_list_item.select_one("a")["href"]

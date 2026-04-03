@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler, PageSoup
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, PageSoup, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://lightnovelsonl.com/getsearchstory"
 novel_page_url = "https://lightnovelsonl.com/novel/%s"
 
 
-class LightNovelsOnl(Crawler):
+class LightNovelsOnl(LegacyCrawler):
     base_url = "https://lightnovelsonl.com/"
 
     def initialize(self) -> None:
@@ -59,7 +58,12 @@ class LightNovelsOnl(Crawler):
             if len(self.chapters) % 100 == 0:
                 self.volumes.append(Volume(id=vol_id))
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
     def download_chapter_body(self, chapter):

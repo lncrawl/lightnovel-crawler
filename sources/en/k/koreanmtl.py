@@ -2,13 +2,12 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class LightNovelsOnl(Crawler):
+class LightNovelsOnl(LegacyCrawler):
     has_mtl = True
     base_url = "https://www.koreanmtl.online/"
 
@@ -31,7 +30,12 @@ class LightNovelsOnl(Crawler):
             vol_id = 1 + len(self.chapters) // 100
             volumes.add(vol_id)
             self.chapters.append(
-                Chapter(id=chap_id, volume=vol_id, title=a.text.strip(), url=self.absolute_url(a["href"]))
+                Chapter(
+                    id=chap_id,
+                    volume=vol_id,
+                    title=a.text.strip(),
+                    url=self.absolute_url(a["href"]),
+                )
             )
 
         self.volumes = [Volume(id=x) for x in volumes]

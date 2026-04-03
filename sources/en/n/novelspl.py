@@ -2,19 +2,18 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.novels.pl/?search=%s"
 chapter_list_url = "https://www.novels.pl/ajax/ajaxGetChapters.php"
 
 
-class NovelsPlCrawler(Crawler):
+class NovelsPlCrawler(LegacyCrawler):
     base_url = ["https://novels.pl/", "https://www.novels.pl/"]
 
     def initialize(self):
-        self.home_url = "https://www.novels.pl/"
+        self.scraper.origin = "https://www.novels.pl/"
 
     def search_novel(self, query):
         query = query.lower().replace(" ", "+")
@@ -42,7 +41,9 @@ class NovelsPlCrawler(Crawler):
 
         possible_image = soup.select_one(".imageCover img.img-thumbnail")
         if possible_image:
-            self.novel_cover = self.absolute_url(possible_image["src"], "https://www.novels.pl/novel")
+            self.novel_cover = self.absolute_url(
+                possible_image["src"], "https://www.novels.pl/novel"
+            )
         logger.info("Novel cover: %s", self.novel_cover)
 
         self.novel_author = soup.select_one('.panel-body .coll a[href^="/author/"]').text

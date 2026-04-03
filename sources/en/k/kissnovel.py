@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
 
 
-class KissNovelCrawler(Crawler):
+class KissNovelCrawler(LegacyCrawler):
     base_url = "https://kiss-novel.com/"
 
     # FIXME: Tried getting search to work, but it uses a autocomplete function and I can't figure out how to get results from it.
@@ -15,7 +14,9 @@ class KissNovelCrawler(Crawler):
         logger.debug("Visiting %s", self.novel_url)
         soup = self.get_soup(self.novel_url)
 
-        self.novel_title = " ".join([str(x) for x in soup.select_one(".post-title h1").contents if not x.name]).strip()
+        self.novel_title = " ".join(
+            [str(x) for x in soup.select_one(".post-title h1").contents if not x.name]
+        ).strip()
         logger.info("Novel title: %s", self.novel_title)
 
         possible_image = soup.select_one(".summary_image img")

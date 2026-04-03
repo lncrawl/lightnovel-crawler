@@ -4,18 +4,19 @@ import logging
 from typing import List
 from urllib.parse import quote
 
-from lncrawl.core import Crawler
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult
 from lncrawl.exceptions import LNException
-from lncrawl.models import Chapter, SearchResult
 
 logger = logging.getLogger(__name__)
 
 
-class InkittCrawler(Crawler):
+class InkittCrawler(LegacyCrawler):
     base_url = ["https://www.inkitt.com/"]
 
     def search_novel(self, query) -> List[SearchResult]:
-        search_json = self.get_json(f"{self.home_url}api/2/search/title?q={quote(query)}&page=1")
+        search_json = self.get_json(
+            f"{self.scraper.origin}api/2/search/title?q={quote(query)}&page=1"
+        )
 
         return [self.parse_search_item(story) for story in search_json["stories"]]
 
@@ -35,7 +36,7 @@ class InkittCrawler(Crawler):
 
         self.novel_id = json.loads(id_tag["props"])["storyId"]
 
-        book_data = self.get_json(f"{self.home_url}api/stories/{self.novel_id}")
+        book_data = self.get_json(f"{self.scraper.origin}api/stories/{self.novel_id}")
 
         self.novel_title = book_data["title"]
         self.novel_cover = book_data["vertical_cover"]["url"]
@@ -48,7 +49,9 @@ class InkittCrawler(Crawler):
                 Chapter(
                     id=len(self.chapters) + 1,
                     title=f"{chapter['chapter_number']}. {chapter['name']}",
-                    url=self.absolute_url(f"{self.novel_url.strip('/')}/chapters/{chapter['chapter_number']}"),
+                    url=self.absolute_url(
+                        f"{self.novel_url.strip('/')}/chapters/{chapter['chapter_number']}"
+                    ),
                 )
             )
 

@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://fsapk.com/?s=%s&post_type=wp-manga&author=&artist=&release="
 
 
-class BestofLightNovels(Crawler):
+class BestofLightNovels(LegacyCrawler):
     base_url = [
         "https://fsapk.com/",
         "https://bestoflightnovels.com/",
     ]
 
     def initialize(self):
-        self.home_url = "https://fsapk.com/"
+        self.scraper.origin = "https://fsapk.com/"
 
     def read_novel_info(self):
         logger.debug("Visiting %s", self.novel_url)
@@ -30,7 +29,9 @@ class BestofLightNovels(Crawler):
         self.novel_cover = self.absolute_url(soup.select_one(".summary_image a img")["data-src"])
         logger.info("Novel cover: %s", self.novel_cover)
 
-        self.novel_author = " ".join([a.text.strip() for a in soup.select('.author-content a[href*="manga-author"]')])
+        self.novel_author = " ".join(
+            [a.text.strip() for a in soup.select('.author-content a[href*="manga-author"]')]
+        )
         logger.info("%s", self.novel_author)
 
         volumes = set()

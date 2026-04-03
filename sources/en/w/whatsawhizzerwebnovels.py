@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
 
 
-class WhatsAWhizzerCrawler(Crawler):
+class WhatsAWhizzerCrawler(LegacyCrawler):
     base_url = ["https://whatsawhizzerwebnovels.com/"]
 
     def read_novel_info(self):
@@ -26,7 +25,11 @@ class WhatsAWhizzerCrawler(Crawler):
 
         for a in soup.select(".entry > p > a"):
             self.chapters.append(
-                Chapter(id=len(self.chapters) + 1, url=self.absolute_url(a["href"]), title=a.text.strip())
+                Chapter(
+                    id=len(self.chapters) + 1,
+                    url=self.absolute_url(a["href"]),
+                    title=a.text.strip(),
+                )
             )
 
     def download_chapter_body(self, chapter):

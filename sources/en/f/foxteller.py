@@ -4,20 +4,19 @@ import json
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 search_url = "https://www.foxteller.com/search"
 chapter_aux_url = "https://www.foxteller.com/aux_dem"
 
 
-class FoxtellerCrawler(Crawler):
+class FoxtellerCrawler(LegacyCrawler):
     base_url = "https://www.foxteller.com/"
 
     # NOTE: Disabled because it takes too long
     # def search_novel(self, query):
-    #     self.get_response(self.home_url)    # for cookies
+    #     self.get_response(self.scraper.origin)    # for cookies
 
     #     query = query.lower().replace(' ', '+')
     #     soup = self.post_soup(search_url, data=dict(query=query))
@@ -85,7 +84,7 @@ class FoxtellerCrawler(Crawler):
             }
         )
         headers = {
-            "Origin": self.home_url.strip("/"),
+            "Origin": self.scraper.origin.strip("/"),
             "Referer": chapter["url"].strip("/"),
             "X-XSRF-TOKEN": self.cookies["XSRF-TOKEN"],
             "X-CSRF-TOKEN": soup.select_one('meta[name="csrf-token"]')["content"],

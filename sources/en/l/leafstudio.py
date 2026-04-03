@@ -2,20 +2,21 @@
 import logging
 from typing import List
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, SearchResult
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult
 
 logger = logging.getLogger(__name__)
 
 
-class LiteroticaCrawler(Crawler):
+class LiteroticaCrawler(LegacyCrawler):
     base_url = ["https://leafstudio.site/"]
 
     def initialize(self) -> None:
         self.init_executor(ratelimit=2)
 
     def search_novel(self, query) -> List[SearchResult]:
-        soup = self.get_soup(f"{self.home_url}novels?search={query}&type=&language=&status=&sort=")
+        soup = self.get_soup(
+            f"{self.scraper.origin}novels?search={query}&type=&language=&status=&sort="
+        )
         results = []
         for item in soup.select("a.novel-item"):
             results.append(

@@ -2,16 +2,17 @@
 import logging
 import re
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter
+from lncrawl.core import Chapter, LegacyCrawler
 
 logger = logging.getLogger(__name__)
 
 
-class Shanghaifantasy(Crawler):
+class Shanghaifantasy(LegacyCrawler):
     base_url = ["https://shanghaifantasy.com/"]
     wp_json_novel = "https://shanghaifantasy.com/wp-json/wp/v2/novel/%s"
-    wp_json_chapters = "https://shanghaifantasy.com/wp-json/fiction/v1/chapters?category=%s&order=asc&per_page=%%s"
+    wp_json_chapters = (
+        "https://shanghaifantasy.com/wp-json/fiction/v1/chapters?category=%s&order=asc&per_page=%%s"
+    )
 
     def read_novel_info(self):
         soup = self.get_soup(self.novel_url)
@@ -43,7 +44,9 @@ class Shanghaifantasy(Crawler):
             locked = chapter["locked"]
 
             if not locked:
-                self.chapters.append(Chapter(id=chap_id, title=chapter["title"], url=chapter["permalink"]))
+                self.chapters.append(
+                    Chapter(id=chap_id, title=chapter["title"], url=chapter["permalink"])
+                )
 
     def download_chapter_body(self, chapter):
         soup = self.get_soup(chapter["url"])
@@ -53,7 +56,9 @@ class Shanghaifantasy(Crawler):
         else:
             possible_chap_id = soup.select_one("input#comment_post_ID")
             chap_id = possible_chap_id.attrs["value"]
-        data = self.get_json("https://shanghaifantasy.com/wp-json/wp/v2/posts/%s" % chap_id)["content"]["rendered"]
+        data = self.get_json("https://shanghaifantasy.com/wp-json/wp/v2/posts/%s" % chap_id)[
+            "content"
+        ]["rendered"]
         soup = self.make_soup(data.replace("\n", " "))
         content = soup.find("body")
         return self.cleaner.extract_contents(content)

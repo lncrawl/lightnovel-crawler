@@ -4,13 +4,12 @@ from datetime import datetime
 from hashlib import md5
 from urllib.parse import urlparse
 
-from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.core import Chapter, LegacyCrawler, Volume
 
 logger = logging.getLogger(__name__)
 
 
-class FlyingLinesCrawler(Crawler):
+class FlyingLinesCrawler(LegacyCrawler):
     base_url = "https://www.flying-lines.com/"
 
     def read_novel_info(self):
@@ -71,14 +70,14 @@ class FlyingLinesCrawler(Crawler):
         # - check `app.js`
         # - search for `e.data.meta`
         url = "%s/h5/novel/%s/%s?accessToken=&isFirstEnter=1&webdriver=0&time=%s&sign=%s"
-        url = url % (self.home_url.strip("/"), self.novel_id, chapter["id"], time, sign)
+        url = url % (self.scraper.origin.strip("/"), self.novel_id, chapter["id"], time, sign)
 
         logger.info("Downloading %s", url)
         data = self.post_json(
             url,
             headers={
-                "Origin": self.home_url.strip("/"),
-                "Referer": self.home_url.strip("/") + "/novel/" + self.novel_id,
+                "Origin": self.scraper.origin.strip("/"),
+                "Referer": self.scraper.origin.strip("/") + "/novel/" + self.novel_id,
             },
         )
 
