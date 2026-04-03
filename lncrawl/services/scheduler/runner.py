@@ -7,7 +7,6 @@ from typing import Any, Dict, Iterable, Optional, Set
 from ...context import ctx
 from ...dao import Artifact, Job, JobStatus, JobType, NotificationItem, OutputFormat
 from ...exceptions import AbortedException
-from ...server.tier import ENABLED_FORMATS
 from ...utils.event_lock import EventLock
 from ...utils.time_utils import current_timestamp
 
@@ -304,13 +303,11 @@ class JobRunner:
                 )
                 added_types[job.type] = job.id
 
-            if JobType.ARTIFACT_BATCH not in added_types:
-                available = ctx.binder.available_formats
-                enabled = set(ENABLED_FORMATS[self.user.tier])
-                ctx.jobs.make_many_artifacts(
+            if JobType.ARTIFACT not in added_types:
+                ctx.jobs.make_artifact(
                     self.user,
                     novel.id,
-                    *(enabled & available),
+                    OutputFormat.epub,
                     parent_id=self.job.id,
                     novel_title=novel.title,
                     depends_on=added_types[JobType.VOLUME_BATCH],

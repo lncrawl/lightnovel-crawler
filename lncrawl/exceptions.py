@@ -101,6 +101,7 @@ class ServerErrors:
     email_not_verified = ServerError(401, "Email is not verified")
     email_already_verified = ServerError(409, "Email is already verified")
     can_not_delete_self = ServerError(403, "You are not allowed to delete your own account")
+    full_novel_not_allowed = ServerError(403, "Full novel is not allowed for this user")
 
     invalid_url = ServerError(422, "Invalid URL")
     invalid_input = ServerError(422, "Invalid input")

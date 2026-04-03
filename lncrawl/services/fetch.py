@@ -51,14 +51,14 @@ class FetchService:
         favicon_url = f"{extract_base(url)}favicon.ico"
 
         filename = hashlib.md5(favicon_url.encode()).hexdigest()
-        out_file = ctx.files.resolve(f"/images/{filename}.ico")
+        out_file = ctx.files.resolve(f"images/{filename}.ico")
         if out_file.is_file():
             return out_file
 
         try:
             self.download(favicon_url, out_file)
         except Exception:
-            logger.warning(f"Failed to download favicon {url}. Using the default one.")
+            logger.info(f"Failed to download favicon: {url}")
             shutil.copy(favicon_icon(), out_file)
 
         return out_file

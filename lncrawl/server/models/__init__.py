@@ -1,8 +1,19 @@
 from .announcement import AnnouncementCreateRequest, AnnouncementUpdateRequest
 from .config import ConfigProperty, ConfigSection, ConfigUpdateRequest
 from .crawler import LoginData
-from .feedback import FeedbackCreateRequest, FeedbackRespondRequest, FeedbackUpdateRequest
-from .job import FetchChaptersRequest, FetchImagesRequest, FetchNovelRequest, FetchVolumesRequest, MakeArtifactsRequest
+from .feedback import (
+    FeedbackCreateRequest,
+    FeedbackRespondRequest,
+    FeedbackUpdateRequest,
+)
+from .job import (
+    FetchChaptersRequest,
+    FetchImagesRequest,
+    FetchNovelRequest,
+    FetchNovelsRequest,
+    FetchVolumesRequest,
+    MakeArtifactsRequest,
+)
 from .library import LibraryCreateRequest, LibraryItem, LibraryUpdateRequest
 from .novel import ReadChapterResponse
 from .pagination import Paginated
@@ -38,6 +49,7 @@ __all__ = [
     "LoginData",
     # job
     "FetchNovelRequest",
+    "FetchNovelsRequest",
     "FetchVolumesRequest",
     "FetchChaptersRequest",
     "FetchImagesRequest",

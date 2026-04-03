@@ -2,20 +2,20 @@ from typing import Optional
 
 from fastapi import APIRouter, Body, Path, Query, Security
 
-from lncrawl.server.tier import ENABLED_FORMATS
-
 from ...context import ctx
-from ...dao import Job, JobPriority, JobStatus, JobType, User
+from ...dao import Job, JobPriority, JobStatus, JobType, User, UserTier
 from ...exceptions import ServerErrors
 from ..models import (
     FetchChaptersRequest,
     FetchImagesRequest,
     FetchNovelRequest,
+    FetchNovelsRequest,
     FetchVolumesRequest,
     MakeArtifactsRequest,
     Paginated,
 )
 from ..security import ensure_user
+from ..tier import ENABLED_FORMATS
 
 # The root router
 router = APIRouter()
@@ -89,7 +89,7 @@ def replay_job(
     )
 
 
-@router.post("/create/fetch-novel", summary="Create a job to fetch novel details")
+@router.post("/create/fetch-novel", summary="Create a job to fetch entire novel")
 def fetch_novel(
     user: User = Security(ensure_user),
     body: FetchNovelRequest = Body(),
@@ -97,6 +97,15 @@ def fetch_novel(
     url = str(body.url)
     return ctx.jobs.fetch_novel(user, url, full=body.full)
 
+@router.post("/create/fetch-novels", summary="Create a job to fetch multiple novels")
+def fetch_novels(
+    user: User = Security(ensure_user),
+    body: FetchNovelsRequest = Body(),
+) -> Job:
+    urls = [str(url) for url in body.urls]
+    if body.full and user.tier == UserTier.BASIC:
+        raise ServerErrors.full_novel_not_allowed
+    return ctx.jobs.fetch_many_novels(user, *urls, full=body.full)
 
 @router.post("/create/fetch-volumes", summary="Create a job to fetch all chapter contents for the volumes")
 def fetch_volumes(

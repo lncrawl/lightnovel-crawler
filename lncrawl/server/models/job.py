@@ -10,6 +10,11 @@ class FetchNovelRequest(BaseModel):
     full: bool = Field(default=False, description="To fetch all contents")
 
 
+class FetchNovelsRequest(BaseModel):
+    urls: List[HttpUrl] = Field(description="List of urls to fetch")
+    full: bool = Field(default=False, description="To fetch all contents")
+
+
 class FetchVolumesRequest(BaseModel):
     volumes: List[str] = Field(description="List of volume ids to fetch")
 

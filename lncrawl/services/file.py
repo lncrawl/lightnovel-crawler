@@ -22,7 +22,7 @@ class FileService:
 
     def resolve(self, file: StrPath) -> Path:
         if isinstance(file, str):
-            file = Path(file)
+            file = Path(file.lstrip("/"))
         if file.is_absolute():
             return file
         return self.root / file
