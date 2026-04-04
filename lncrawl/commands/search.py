@@ -2,7 +2,7 @@ import logging
 from concurrent.futures import Future
 from difflib import SequenceMatcher
 from threading import Event
-from typing import List, Optional, Set, Type
+from typing import List, Optional
 
 import questionary
 import typer
@@ -10,9 +10,9 @@ from rich import print
 from slugify import slugify
 
 from ..context import ctx
-from ..core.crawler import Crawler
 from ..core.taskman import TaskManager
 from ..models import CombinedSearchResult, SearchResult
+from ..server.models import SourceItem
 
 app = typer.Typer(
     help="Search for novels across multiple sources.",
@@ -79,15 +79,15 @@ def search(
     ctx.sources.ensure_load()
 
     # Get searchable crawlers
-    constructors = set([item.crawler for item in ctx.sources.list(source_query, can_search=True)])
-    if not constructors:
+    sources = ctx.sources.list(source_query, can_search=True)
+    if not sources:
         print("[red]No searchable sources available[/red]")
         raise typer.Exit(1)
 
     # Perform search
     results = _perform_search(
         query=query,
-        constructors=constructors,
+        sources=sources,
         concurrency=concurrency,
         limit=limit,
         timeout=timeout,
@@ -119,20 +119,20 @@ def _prompt_query() -> str:
 
 def _perform_search(
     query: str,
-    constructors: Set[Type[Crawler]],
+    sources: List[SourceItem],
     limit: int,
     concurrency: int,
     timeout: float,
 ) -> List[CombinedSearchResult]:
     """Perform the actual search across sources."""
-    logger.info(f'Searching {len(constructors)} sources for "{query}"')
+    logger.info(f'Searching {len(sources)} sources for "{query}"')
     signal = Event()
     taskman = TaskManager(concurrency, signal=signal)
 
     # Submit search tasks
     futures: List[Future[List[SearchResult]]] = []
-    for constructor in constructors:
-        future = taskman.submit_task(_search_job, constructor, query, signal)
+    for source in sources:
+        future = taskman.submit_task(_search_job, source, query, signal)
         futures.append(future)
 
     # Wait for all tasks to finish with progress
@@ -157,9 +157,11 @@ def _perform_search(
     # Combine the search results
     combined: dict[str, List[SearchResult]] = {}
     for item in records:
-        if not (item and item.title):
+        if not (item and isinstance(item.title, str)):
             continue
-        key = slugify(str(item.title))
+        item.title = str(item.title).strip()
+        item.info = str(item.info).strip()
+        key = slugify(item.title)
         if len(key) <= 2:
             continue
         combined.setdefault(key, [])
@@ -172,8 +174,8 @@ def _perform_search(
         results.append(
             CombinedSearchResult(
                 id=key,
-                title=value[0].title,
                 novels=value,
+                title=value[0].title,
             )
         )
 
@@ -188,11 +190,12 @@ def _perform_search(
     return results[:limit]
 
 
-def _search_job(constructor: Type[Crawler], query: str, signal: Event) -> List[SearchResult]:
-    url = getattr(constructor, "url")
+def _search_job(source: SourceItem, query: str, signal: Event) -> List[SearchResult]:
+    url = source.url
     logger.info(f"[green]{url}[/green] Searching...")
     try:
-        crawler = ctx.sources.init_crawler(constructor)
+        setattr(source.crawler, "url", url)
+        crawler = ctx.sources.init_crawler(source.crawler)
         crawler.scraper.signal = signal
         results = crawler.search_novel(query)
         results = [SearchResult(**item) for item in results]

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from typing import List
 from urllib.parse import quote_plus
 
 from lncrawl.core import Crawler
-from lncrawl.models import Chapter, Volume
+from lncrawl.models import Chapter, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -22,44 +23,46 @@ class WuxiaCityCrawler(Crawler):
     # Set True if this source contains machine translations.
     has_mtl = True
 
-    def search_novel(self, query):
+    def search_novel(self, query: str) -> List[SearchResult]:
         query = quote_plus(str(query).lower())
         soup = self.get_soup(search_url % query)
         entries = [
             (
-                e.find("div", class_="book-caption"),
-                e.find("p", class_="book-genres").a.text,
-                e.find("span", class_="star").get("style").split(" ")[1],
+                e.select_one("div.book-caption a[href] h4"),
+                e.select_one("p.book-genres a"),
+                e.select_one("span.star[style]").get("style").split(" ")[1].strip(),
             )
             for e in soup.find_all("li", class_="section-item")
         ]
+        print(entries)
         return [
-            {
-                "title": e[0].a.h4.text,
-                "url": f"{self.home_url.strip('/')}{e[0].a.get('href')}",
-                "info": f"{e[1]} | Score: {e[2]}",
-            }
+            SearchResult(
+                title=e[0].text,
+                url=self.absolute_url(e[0].parent["href"]),
+                info=f"{e[1].text} | Score: {e[2].strip()}",
+            )
             for e in entries
         ]
 
     def read_novel_info(self):
         soup = self.get_soup(f"{self.novel_url}/table-of-contents")
 
-        self.novel_title = soup.find("h1", class_="book-name").text
-        self.novel_author = soup.find("dl", class_="author").dd.text
-        self.novel_cover = soup.find("div", class_="book-img").img.get("src")
+        self.novel_title = soup.select_one("h1.book-name").text
+        self.novel_author = soup.select_one("dl.author dd").text
+        self.novel_cover = self.absolute_url(soup.select_one("div.book-img img[src]").get("src"))
 
         vol_id = 0
         self.volumes.append(Volume(id=vol_id))
-        chapterItems = soup.find("ul", class_="chapters").find_all("li", class_="oneline")
+        chapterItems = soup.select("ul.chapters li.oneline")
         for chapter in chapterItems:
+            a = chapter.select_one("a.chapter-item")
             self.chapters.append(
                 Chapter(
-                    id=int(chapter.find("span", class_="chapter-num").text),
                     volume=vol_id,
-                    url=f"{self.home_url.strip('/')}{chapter.a.get('href')}",
-                    title=chapter.a.p.text,
-                    hash=chapter.a.get("href").split("/")[-1],
+                    id=len(self.chapters) + 1,
+                    url=self.absolute_url(a["href"]),
+                    title=a.find("p").text,
+                    hash=a["href"].split("/")[-1],
                 )
             )
         self.chapters.sort(key=lambda c: c["id"])
