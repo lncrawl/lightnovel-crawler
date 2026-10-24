@@ -6,6 +6,7 @@ import sqlmodel as sq
 from ..context import ctx
 from ..dao import (
     Artifact,
+    Chapter,
     ChapterTranslation,
     LanguageCode,
     Novel,
@@ -36,6 +37,40 @@ class NovelService:
         with ctx.db.session() as sess:
             stmt = sq.select(Novel)
             cnt = sq.select(sq.func.count()).select_from(Novel)
+
+            # Rank globally before filters so a filtered query cannot promote
+            # a lower-ranked duplicate.
+            downloaded_counts = (
+                sq.select(
+                    sq.col(Chapter.novel_id).label("novel_id"),
+                    sq.func.count().label("downloaded_count"),
+                )
+                .where(sq.col(Chapter.is_done).is_(True))
+                .group_by(Chapter.novel_id)
+                .subquery()
+            )
+            ranked = (
+                sq.select(
+                    sq.col(Novel.id).label("id"),
+                    sq.func.row_number()
+                    .over(
+                        partition_by=[Novel.title, Novel.domain],
+                        order_by=[
+                            sq.desc(sq.func.coalesce(downloaded_counts.c.downloaded_count, 0)),
+                            sq.desc(Novel.updated_at),
+                            sq.asc(Novel.id),
+                        ],
+                    )
+                    .label("rn"),
+                )
+                .select_from(Novel)
+                .outerjoin(
+                    downloaded_counts,
+                    downloaded_counts.c.novel_id == Novel.id,
+                )
+                .subquery()
+            )
+            best_ids = sq.select(ranked.c.id).where(ranked.c.rn == 1)
 
             # Apply filters
             conditions: List[Any] = []
@@ -73,6 +108,10 @@ class NovelService:
                     .having(sq.func.count(sq.col(NovelTag.tag_name)) == len(wanted))
                 )
                 conditions.append(sq.col(Novel.id).in_(tag_match))
+
+            # Dedup is applied to both the page query and the count query.
+            stmt = stmt.where(sq.col(Novel.id).in_(best_ids))
+            cnt = cnt.where(sq.col(Novel.id).in_(best_ids))
 
             if conditions:
                 cnd = sq.and_(*conditions)

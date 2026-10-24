@@ -104,7 +104,7 @@ def fetch_novels(
     user: User = Security(ensure_user),
     body: FetchNovelsRequest = Body(),
 ) -> Job:
-    urls = [str(url) for url in body.urls]
+    urls = list(dict.fromkeys(str(url) for url in body.urls))
     if not urls:
         raise ServerErrors.no_novels_to_download
     if len(urls) == 1:

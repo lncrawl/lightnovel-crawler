@@ -6,7 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **The fetch-novels API accepts URL lists pasted as lines, comma-separated text or JSON**, and removes repeated URLs before creating jobs.
+
 ### Changed
+
+- **Browse Novels shows only one novel with the same title on each source: the entry with the most downloaded chapters.**
 
 - **Every configured proxy is used, instead of whichever one the first request happened to pick.** The scraper holds one address per site by design, so five proxies meant four of them idle and a fetch of missing chapters queued behind a single address; each address now gets a visitor of its own and sessions take them in turn. The per-source job cap scales with them as well — `RanobeLib` declares 0.99 requests per second, which was one job at a time no matter how many proxies were configured. **Use Every Proxy** turns it off and holds a site to one address.
 
