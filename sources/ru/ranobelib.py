@@ -4,6 +4,7 @@ import operator
 from urllib.parse import urlencode, urlsplit
 
 from lncrawl.core import Chapter, LegacyCrawler
+from lncrawl.exceptions import LNException
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +27,29 @@ class RanobeLibMeCrawler(LegacyCrawler):
         "https://ranobelib.me/",
     ]
     request_rate_limit = 0.99
+    can_login = True
+
+    def initialize(self) -> None:
+        self.access_token: str | None = None
+
+    def login(self, username_or_email: str, password_or_token: str) -> None:
+        if username_or_email != "Bearer":
+            raise LNException(
+                "RanobeLib uses an access token. Set username to 'Bearer' and password to the token."
+            )
+        self.access_token = password_or_token
+
+    def api_headers(self) -> dict[str, str]:
+        headers = {"Site-Id": "3", "Referer": "https://ranobelib.me/"}
+        if self.access_token:
+            headers["Authorization"] = f"Bearer {self.access_token}"
+        return headers
 
     def read_novel_info(self):
         path_parts = [part for part in urlsplit(self.novel_url).path.split("/") if part]
         if len(path_parts) < 3 or path_parts[-2] != "book":
             raise ValueError(f"Invalid RanobeLib novel URL: {self.novel_url}")
-        self.api_url = f"https://api.cdnlibs.org/api/manga/{path_parts[-1]}"
+        self.api_url = f"https://api.imglib.info/api/manga/{path_parts[-1]}"
 
         api_requests_params = {
             "fields[]": [
@@ -48,7 +66,7 @@ class RanobeLibMeCrawler(LegacyCrawler):
         logger.debug("Visiting %s", self.novel_url)
         book_info = self.get_json(
             f"{self.api_url}?{urlencode(api_requests_params, doseq=True)}",
-            headers={"Site-Id": "3", "Referer": "https://ranobelib.me/"},
+            headers=self.api_headers(),
         )
 
         self.novel_title = book_info["data"]["rus_name"]
@@ -70,7 +88,9 @@ class RanobeLibMeCrawler(LegacyCrawler):
         self.novel_tags = [item["name"] for item in genres]
         logger.info("Novel tags: %s", self.novel_tags)
 
-        chapters = self.get_json(f"{self.api_url}/chapters")["data"]
+        chapters = self.get_json(
+            f"{self.api_url}/chapters", headers=self.api_headers()
+        )["data"]
         chap_id = 0
 
         branches = dict()
@@ -111,7 +131,7 @@ class RanobeLibMeCrawler(LegacyCrawler):
             )
 
     def download_chapter_body(self, chapter):
-        chapter = self.get_json(chapter["url"])
+        chapter = self.get_json(chapter["url"], headers=self.api_headers())
 
         if "content" in chapter["data"]["content"]:
             paragraphs = self._paragraph_parser(data=chapter["data"])
