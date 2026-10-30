@@ -22,7 +22,7 @@ class NovelPhoenixCrawler(SoupTemplate):
 
     def select_chapter_tags(
         self, tag: PageSoup, novel: Novel, volume: Optional[Volume] = None
-) -> Iterable[PageSoup]:
+    ) -> Iterable[PageSoup]:
         base = self.absolute_url(novel.url).split("?")[0].rstrip("/") + "/chapters"
         seen, result = set(), []
         for page in range(1, 40):  # temporary low cap while testing
