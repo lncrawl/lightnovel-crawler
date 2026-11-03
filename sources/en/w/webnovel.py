@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from functools import cached_property
+import html
 import logging
 import re
 from time import time
@@ -98,9 +99,36 @@ class WebnovelCrawler(SoupTemplate):
                 [x.get("name") for x in book_info["authorItems"] if x.get("name")]
             )
 
+        self._read_synopsis_and_tags(novel, book_info)
+
         # To get the chapter list catalog
         soup = self.scraper.get_soup(f"{novel.url.strip('/')}/catalog")
         self.parse_chapter_catalog(soup, novel)
+
+    def _read_synopsis_and_tags(self, novel: Novel, book_info: dict) -> None:
+        """Synopsis and tags come in the same bookInfo response; keep them."""
+        description = str(book_info.get("description") or "").strip()
+        if description:
+            paragraphs = [
+                html.escape(line.strip())
+                for line in description.replace("\r", "").split("\n")
+                if line.strip()
+            ]
+            novel.synopsis = "".join(f"<p>{p}</p>" for p in paragraphs)
+
+        tags = []
+        category = str(book_info.get("categoryName") or "").strip()
+        if category:
+            tags.append(category)
+        for info in book_info.get("tagInfos") or []:
+            if not isinstance(info, dict):
+                continue
+            name = str(info.get("enTagName") or info.get("tagName") or "").strip()
+            if name:
+                tags.append(name.title())
+        # keep order, drop duplicates (case-insensitive)
+        seen = set()
+        novel.tags = [t for t in tags if not (t.lower() in seen or seen.add(t.lower()))]
 
     def parse_chapter_catalog(self, soup: PageSoup, novel: Novel) -> None:
         novel.volumes = []
