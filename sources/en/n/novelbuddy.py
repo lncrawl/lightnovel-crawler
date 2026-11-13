@@ -20,7 +20,7 @@ class NovelbuddyCrawler(SoupTemplate):
     has_mtl = True
     can_search = True
 
-    chapter_body_selector = "article"
+    chapter_body_selector = "article .novel-tts-content"
 
     def initialize(self) -> None:
         self.title_data: Dict[str, Any] = {}

@@ -213,7 +213,7 @@ class JobService:
         depends_on: Optional[str] = None,
         **data: Any,
     ) -> Job:
-        data.update({"urls": list(set(urls))})
+        data.update({"urls": list(dict.fromkeys(urls))})
         return self._create(
             user=user,
             data=data,

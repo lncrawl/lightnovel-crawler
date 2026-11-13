@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Smakolyky crawler** — searches and downloads Ukrainian novels from the primary site and its test mirror.
+- **`zenko.online` searches the site's title API and crawls its text-novel metadata and chapters**, including the Ukrainian title Всеозброєний.
+
+- **The fetch-novels API accepts URL lists pasted as lines, comma-separated text or JSON**, and removes repeated URLs before creating jobs.
+- **`baka.in.ua` crawler** — searches Ukrainian fiction and reads chapter sections through the site's paginated list endpoint.
+
+
+### Changed
+
+- **Browse Novels shows only one novel with the same title on each source: the entry with the most downloaded chapters.**
+- **RanobeLib accepts its Bearer access token via `--user Bearer --pass TOKEN` for API requests that require a signed-in account.** Anonymous titles still crawl without credentials.
+
+- **Every configured proxy is used, instead of whichever one the first request happened to pick.** The scraper holds one address per site by design, so five proxies meant four of them idle and a fetch of missing chapters queued behind a single address; each address now gets a visitor of its own and sessions take them in turn. The per-source job cap scales with them as well — `RanobeLib` declares 0.99 requests per second, which was one job at a time no matter how many proxies were configured. **Use Every Proxy** turns it off and holds a site to one address.
+
+### Fixed
+
+- **NovelBuddy chapters no longer include reader controls or navigation links.** Extraction is limited to the story content on all supported mirrors.
+- **Search-by-title results now require every query term to appear in the title**, preventing unrelated results from reaching metadata fetch and aggregation while retaining multiword and Unicode searches.
+
+- **Saving the proxy list no longer moves the sessions that were already running.** Every pool was rebuilt on save, so each origin lost the address it had been using and the rotation restarted at the first entry — the jobs that resumed together all left by one proxy while the rest showed idle. A pool whose address is still configured now keeps it, and an added address gets a pool of its own; removing or editing an address still rebuilds. Existing pools cannot have their failover lists extended through the scraper's public API, so newly added addresses are used by their new pool rather than added to surviving pools.
+- Releasing exits from discarded proxy pools now happens after the service lock is released.
+- **A `socks5://` proxy is upgraded to `socks5h://`.** Resolving the name on this machine let libcurl prefer the IPv6 address, and an exit without IPv6 routing answered SOCKS5 reply 3 — which read as a broken proxy, so a site behind a dual-stack CDN failed on every exit while `curl -4` reached it.
+
 ## [4.14.0] - 2026-08-03
 
 ### Added

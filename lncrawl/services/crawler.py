@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from difflib import SequenceMatcher
 import gc
 import logging
+import re
 from threading import Event
 from typing import List, Optional, Union
 
@@ -37,6 +38,12 @@ def _normalize_language(lang: Optional[str]) -> Optional[str]:
 
 def _origin_of(crawler: Crawler) -> str:
     return describe(getattr(crawler, "tier", None), getattr(crawler, "__file__", ""))
+
+
+def _matches_search_title(title: str, query: str) -> bool:
+    query_terms = re.findall(r"\w+", query.casefold(), flags=re.UNICODE)
+    normalized_title = title.casefold()
+    return all(term in normalized_title for term in query_terms)
 
 
 class CrawlerService:
@@ -334,6 +341,18 @@ class CrawlerService:
         source = ctx.sources.get_source(domain)
         with self.prepare_crawler(user_id, source.url, signal, custom) as crawler:
             logger.info(f"Using {_origin_of(crawler)} to search {domain}")
-            results = list(crawler.search(query))
+            results = [
+                result
+                for result in crawler.search(query)
+                if any(
+                    _matches_search_title(title, query)
+                    for title in (
+                        result.title,
+                        result.get("eng_title", ""),
+                        result.get("original_title", ""),
+                    )
+                    if isinstance(title, str) and title
+                )
+            ]
             results.sort(key=lambda x: -SequenceMatcher(a=x.title, b=query).ratio())
-            return list(results)
+            return results
