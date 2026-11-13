@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+- **NovelBuddy chapters no longer include reader controls or navigation links.** Extraction is limited to the story content on all supported mirrors.
 - **Search-by-title results now require every query term to appear in the title**, preventing unrelated results from reaching metadata fetch and aggregation while retaining multiword and Unicode searches.
 
 - **Saving the proxy list no longer moves the sessions that were already running.** Every pool was rebuilt on save, so each origin lost the address it had been using and the rotation restarted at the first entry — the jobs that resumed together all left by one proxy while the rest showed idle. A pool whose address is still configured now keeps it, and an added address gets a pool of its own; removing or editing an address still rebuilds. Existing pools cannot have their failover lists extended through the scraper's public API, so newly added addresses are used by their new pool rather than added to surviving pools.
