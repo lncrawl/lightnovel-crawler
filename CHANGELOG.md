@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+- **`zenko.online` searches the site's title API and crawls its text-novel metadata and chapters**, including the Ukrainian title Всеозброєний.
+
 - **The fetch-novels API accepts URL lists pasted as lines, comma-separated text or JSON**, and removes repeated URLs before creating jobs.
 - **`baka.in.ua` crawler** — searches Ukrainian fiction and reads chapter sections through the site's paginated list endpoint.
 

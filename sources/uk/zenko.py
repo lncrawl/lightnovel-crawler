@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 import re
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
-from lncrawl.core import Chapter, LegacyCrawler, Volume
+from lncrawl.core import Chapter, LegacyCrawler, SearchResult, Volume
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +13,35 @@ class ZenkoCrawler(LegacyCrawler):
     language = "uk"
     request_rate_limit = 1
     api_url = "https://api.zenko.online"
+    can_search = True
+
+    def search(self, query: str):
+        titles = []
+        offset = 0
+        while True:
+            response = self.get_json(
+                f"{self.api_url}/titles?{urlencode({'name': query, 'offset': offset})}"
+            )
+            titles.extend(response["data"])
+            meta = response["meta"]
+            if not meta["hasNextPage"]:
+                break
+            next_offset = meta["offset"] + meta["limit"]
+            if next_offset <= offset:
+                raise ValueError("Zenko search pagination did not advance")
+            offset = next_offset
+
+        return [
+            SearchResult(
+                title=title["name"],
+                url=f"{self.base_url[0]}titles/{title['id']}",
+                info=title.get("engName") or title.get("originalName") or "",
+                eng_title=title.get("engName") or "",
+                original_title=title.get("originalName") or "",
+            )
+            for title in titles
+            if title.get("category") == "RANOBE"
+        ]
 
     def read_novel_info(self):
         path_parts = [part for part in urlsplit(self.novel_url).path.split("/") if part]
@@ -34,7 +63,12 @@ class ZenkoCrawler(LegacyCrawler):
         self.novel_tags = [tag["name"] for tag in title.get("genres", [])]
         self.novel_cover = f"https://storage.zenko.online/{title['coverImg']}"
 
-        chapter_items = self.get_json(f"{self.api_url}/titles/{title_id}/chapters")
+        chapter_response = self.get_json(f"{self.api_url}/titles/{title_id}/chapters")
+        chapter_items = (
+            chapter_response.get("data", [])
+            if isinstance(chapter_response, dict)
+            else chapter_response
+        )
         volume = Volume(id=1, title="")
         self.volumes.append(volume)
         for index, item in enumerate(chapter_items, start=1):
