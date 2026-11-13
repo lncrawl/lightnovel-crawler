@@ -4,7 +4,7 @@ from dataclasses import replace
 from importlib import util
 import logging
 import threading
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple
 
 from scraper import BROWSER_MODES, extract_base, pick_chromium, pick_firefox
 
@@ -66,6 +66,42 @@ def _spread_rotations(specs: List["ExitSpec"]) -> List[List["ExitSpec"]]:
     return rotations
 
 
+def _rotations(specs: List["ExitSpec"], spread: bool) -> List[List["ExitSpec"]]:
+    """The exit lists one pool each should be built from."""
+    if len(specs) < 2 or not spread:
+        return [list(specs)]
+    return _spread_rotations(specs)
+
+
+def _held(specs: List["ExitSpec"]) -> Optional["ExitSpec"]:
+    """The address a pool built from *specs* holds, or None when it holds none."""
+    return _top_pick(specs) if specs else None
+
+
+def _plan_states(
+    previous: List[List["ExitSpec"]],
+    rotations: List[List["ExitSpec"]],
+) -> Tuple[List[int], List[List["ExitSpec"]]]:
+    """Which pools stay as they are, and which addresses need a new one.
+
+    A pool keeps serving while the address it holds is one the configuration still
+    offers: its lease, the identity built on that address and every origin pinned to it
+    stay where they are. Only an address no surviving pool holds gets a state of its
+    own, which is what puts a newly added proxy to work without moving anything already
+    running.
+    """
+    keep: List[int] = []
+    taken: Set[Optional["ExitSpec"]] = set()
+    offered = {_held(rotation) for rotation in rotations}
+    for index, specs in enumerate(previous):
+        pick = _held(specs)
+        if pick in offered and pick not in taken:
+            keep.append(index)
+            taken.add(pick)
+    added = [rotation for rotation in rotations if _held(rotation) not in taken]
+    return keep, added
+
+
 class ScraperService:
     """The only place a `Scraper` is constructed.
 
@@ -96,6 +132,7 @@ class ScraperService:
         self._lock = threading.RLock()
         self._memory: Optional["Memory"] = None
         self._states: Optional[List["SharedState"]] = None
+        self._state_specs: List[List["ExitSpec"]] = []
         self._next_state = 0
         self._plain: Optional["Scraper"] = None
         self._solver: Optional["BrowserSolver"] = None
@@ -297,23 +334,15 @@ class ScraperService:
         """
         with self._lock:
             if self._states is None:
-                self._states = self._build_states()
+                rotations = _rotations(self._exits(), ctx.config.crawler.spread_across_exits)
+                self._states = [self._spawn(rotation) for rotation in rotations]
+                self._state_specs = rotations
             return self._states
 
-    def _build_states(self) -> List["SharedState"]:
+    def _spawn(self, rotation: List["ExitSpec"]) -> "SharedState":
         from scraper import SharedState
 
-        # Read once and handed to every state. `_exits` is cheap, but two readings of a
-        # proxy list an operator is editing are two different lists, and the states a
-        # process routes its sessions over should be one.
-        specs = self._exits()
-        if len(specs) < 2 or not ctx.config.crawler.spread_across_exits:
-            return [SharedState.create(self._crawl_config(exits=specs), memory=self.memory)]
-
-        return [
-            SharedState.create(self._crawl_config(exits=rotation), memory=self.memory)
-            for rotation in _spread_rotations(specs)
-        ]
+        return SharedState.create(self._crawl_config(exits=rotation), memory=self.memory)
 
     def exit_count(self) -> int:
         """How many addresses one source's sessions may be split across.
@@ -331,15 +360,16 @@ class ScraperService:
     def invalidate(self) -> None:
         """Rebuild the shared state on next use, after the configuration changed.
 
-        The exits and the pacing policy are read once when the state is built, so an
-        operator changing the proxy list needs the pool rebuilt. Crawlers already
-        holding a scraper keep the old state until they close, which is why the memory
-        outlives this and is handed to the replacement. The next session starts at the
-        first address again, so a proxy list edited down to one entry does not leave
-        the rotation on a state that no longer exists.
+        The exits and the pacing policy are read once when the state is built, so a
+        changed setting needs the state rebuilt. This is the blunt version: every pool
+        is dropped and each origin's address goes with it, so it is for settings that
+        describe the state as a whole rather than for the proxy list — see
+        :meth:`reconcile` for that. The memory outlives this and is handed to the
+        replacements, so what was learned about the sites is not lost.
         """
         with self._lock:
             states, self._states = self._states, None
+            self._state_specs = []
             self._next_state = 0
             plain, self._plain = self._plain, None
             solver, self._solver = self._solver, None
@@ -350,6 +380,49 @@ class ScraperService:
             self._close(plain)
         if solver is not None:
             self._close_solver(solver)
+
+    def reconcile(self) -> None:
+        """Take the configured proxy list into use without disturbing live sessions.
+
+        Rebuilding every pool for a changed list would give up each origin's address and
+        restart its rotation, disrupting jobs already running. A pool whose address is
+        still configured therefore keeps its state; an address no surviving pool holds
+        gets a state of its own.
+
+        The external pool API exposes no way to append failover exits to an existing
+        state. Existing pools therefore retain their original rotation on additive
+        changes; the new address is made available through its newly created state.
+        Removed or edited addresses still require rebuilding the pools that could rotate
+        back onto them.
+        """
+        release: List["SharedState"] = []
+        with self._lock:
+            previous_states = self._states
+            wanted = self._exits()
+            rotations = _rotations(wanted, ctx.config.crawler.spread_across_exits)
+
+            if previous_states is None:
+                self._states = [self._spawn(rotation) for rotation in rotations]
+                self._state_specs = rotations
+                return
+
+            configured = set(wanted)
+            if any(spec not in configured for specs in self._state_specs for spec in specs):
+                self._states = [self._spawn(rotation) for rotation in rotations]
+                self._state_specs = rotations
+                release = list(previous_states)
+            else:
+                keep, added = _plan_states(self._state_specs, rotations)
+                kept_specs = [self._state_specs[index] for index in keep]
+                self._states = [previous_states[index] for index in keep]
+                self._states += [self._spawn(rotation) for rotation in added]
+                self._state_specs = kept_specs + added
+                kept = set(keep)
+                release = [
+                    state for index, state in enumerate(previous_states) if index not in kept
+                ]
+        for state in release:
+            state.exits.release_all()
 
     # ------------------------------------------------------------------------- #
     # Sessions
@@ -567,13 +640,14 @@ class ScraperService:
     def set_proxies(self, submitted: List["ProxyExit"]) -> List[Dict[str, Any]]:
         """Replace the configured proxies, keeping any secret that was not re-sent.
 
-        Rebuilds the shared state, because the exit list is read once when the pool is
-        built — an operator who just added an address expects the next request to use it.
+        Reconciled rather than rebuilt, because the exit list is read once when a pool is
+        built and a save commonly lands while jobs are running: an added address starts
+        taking sessions, and the addresses already in use keep them.
         """
         merged = proxy_tools.merge_secrets(submitted, ctx.config.crawler.proxies)
         ctx.config.crawler.proxies = merged
         ctx.config.save()
-        self.invalidate()
+        self.reconcile()
         return self.proxies()
 
     def knows(self, url: str) -> Optional["OriginProfile"]:
@@ -612,6 +686,7 @@ class ScraperService:
         with self._lock:
             plain, self._plain = self._plain, None
             states, self._states = self._states, None
+            self._state_specs = []
             self._next_state = 0
             memory, self._memory = self._memory, None
             solver, self._solver = self._solver, None
