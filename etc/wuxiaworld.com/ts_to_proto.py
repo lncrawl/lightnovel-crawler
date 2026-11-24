@@ -15,7 +15,7 @@ those, so nothing is guessed:
 
 Library use:   ``convert_dir(ts_root, out_dir)``
 CLI use:       ``python ts_to_proto.py <ts-dir|ts-file> [out-dir] [options]``
-"""
+"""  # noqa: E501
 from __future__ import annotations
 
 import argparse
@@ -30,12 +30,14 @@ EXTRA_FIELDOPTION = "extra_fieldoption_wuxiaworld.proto"
 ROOT_PROTO = "wuxia.proto"
 
 # protobuf ScalarType codes (the "T: n" numbers in reflection info)
-SCALARS = {1: "double", 2: "float", 3: "int64", 4: "uint64", 5: "int32", 6: "fixed64",
-           7: "fixed32", 8: "bool", 9: "string", 12: "bytes", 13: "uint32", 15: "sfixed32",
-           16: "sfixed64", 17: "sint32", 18: "sint64"}
+SCALARS = {1: "double", 2: "float", 3: "int64", 4: "uint64", 5: "int32",
+           6: "fixed64", 7: "fixed32", 8: "bool", 9: "string", 12: "bytes",
+           13: "uint32", 15: "sfixed32", 16: "sfixed64", 17: "sint32",
+           18: "sint64"}
 NON_PACKABLE = {9, 12}
 
-# Custom FieldOptions the site uses: name -> (message type from options.proto, field number)
+# Custom FieldOptions the site uses: name ->
+# (message type from options.proto, field number)
 EXTENSIONS = {
     "stringLength": ("FieldStringLengthOptions", 50001),
     "wordLength": ("FieldWordLengthOptions", 50002),
@@ -48,7 +50,8 @@ EXTENSIONS = {
 @dataclass
 class Options:
     package: str = DEFAULT_PACKAGE   # every file is unified into this package
-    native_maps: bool = False        # True: map<K,V>;  False: repeated MapEntry_N messages
+    # True: map<K,V>;  False: repeated MapEntry_N messages
+    native_maps: bool = False
     explicit_optional: bool = True   # True: `optional` on every singular field
     verbose: bool = False
 
@@ -134,7 +137,8 @@ class Field:
     oneof: str | None = None
     opt: bool = False
     json_name: str | None = None
-    options: list = field(default_factory=list)   # [(option name, text-format value)]
+    # [(option name, text-format value)]
+    options: list = field(default_factory=list)
     key: int | None = None       # map key scalar code
     value: TypeRef | None = None  # map value type
 
@@ -191,17 +195,23 @@ class TsFile:
 # ----------------------------------------------------------------------------
 # TS parsing
 # ----------------------------------------------------------------------------
-_HEADER = re.compile(r'@generated from protobuf file "[^"]*" \((?:package "([^"]+)",\s*)?syntax')
+_HEADER = re.compile(
+    r'@generated from protobuf file "[^"]*"'
+    r' \((?:package "([^"]+)",\s*)?syntax'
+    )
 _IMPORT = re.compile(r'import\s+(?:type\s+)?\{([^}]*)\}\s+from\s+"([^"]+)"')
 _CLASS = re.compile(r"class\s+([\w$]+?)\$Type\s+extends\s+MessageType")
-_ENUM_DOC = re.compile(r"@generated from protobuf enum ([\w.]+)\s*\*/\s*export\s+(?:const\s+)?enum\s+(\w+)\s*\{")
+_ENUM_DOC = re.compile(
+    r"@generated from protobuf enum ([\w.]+)\s*\*"
+    r"/\s*export\s+(?:const\s+)?enum\s+(\w+)\s*\{")
 _ENUM_ANY = re.compile(r"export\s+(?:const\s+)?enum\s+(\w+)\s*\{")
 _SERVICE = re.compile(r'new\s+ServiceType\(\s*"([^"]+)"\s*,\s*\[')
 
 
 def _parse_type(kind: str, text: str) -> TypeRef:
     if kind == "scalar":
-        return TypeRef("scalar", scalar=int(re.search(r"\bT:\s*(\d+)", text).group(1)))
+        return TypeRef("scalar",
+                       scalar=int(re.search(r"\bT:\s*(\d+)", text).group(1)))
     m = re.search(r"\bT:\s*\(\)\s*=>\s*(\[[^\]]*\]|[\w$.]+)", text)
     if not m:
         raise ValueError(f"cannot read {kind} type from: {text[:80]}")
@@ -243,7 +253,8 @@ def _parse_field(obj: str) -> Field:
     f.options = _parse_options(opts) if opts else []
     if f.kind == "map":
         f.key = int(re.search(r"\bK:\s*(\d+)", inner).group(1))
-        f.value = _parse_type(re.search(r'\bkind:\s*"(\w+)"', vblk).group(1), vblk)
+        f.value = _parse_type(
+            re.search(r'\bkind:\s*"(\w+)"', vblk).group(1), vblk)
     else:
         f.type = _parse_type(f.kind, inner)
     return f
@@ -251,7 +262,8 @@ def _parse_field(obj: str) -> Field:
 
 def parse_ts(path: Path) -> TsFile:
     raw = path.read_text(encoding="utf-8")
-    code = _COMMENT.sub("", raw)          # reflection data never needs comments
+    # reflection data never needs comments
+    code = _COMMENT.sub("", raw)
 
     hm = _HEADER.search(raw)
     package = hm.group(1) if hm else None
@@ -271,27 +283,36 @@ def parse_ts(path: Path) -> TsFile:
     starts = [(m.start(), m.end(), m.group(1)) for m in _CLASS.finditer(code)]
     for n, (_, end, ident) in enumerate(starts):
         limit = starts[n + 1][0] if n + 1 < len(starts) else len(code)
-        sm = re.compile(r'super\(\s*"([^"]+)"\s*,\s*\[').search(code, end, limit)
+        sm = re.compile(
+            r'super\(\s*"([^"]+)"\s*,\s*\[').search(code, end, limit)
         if not sm:
             continue
         arr_start = sm.end() - 1
         arr = code[arr_start:_match_close(code, arr_start, "[", "]")]
-        fields = sorted((_parse_field(o) for o in _split_objects(arr[1:-1])), key=lambda f: f.no)
+        fields = sorted((_parse_field(o)
+                        for o in _split_objects(arr[1:-1])),
+                        key=lambda f: f.no)
         messages.append(Message(ident, sm.group(1), fields))
 
     enums, seen = [], set()
     for m in _ENUM_DOC.finditer(raw):
         body = raw[m.end():raw.find("\n}", m.end())]
-        vals = [(a, int(b)) for a, b in re.findall(r"enum value:\s*(\w+)\s*=\s*(-?\d+)", body)]
-        if not vals:                       # no doc comments: fall back to TS names
-            vals = [(a, int(b)) for a, b in re.findall(r"(\w+)\s*=\s*(-?\d+)", _COMMENT.sub("", body))]
+        vals = [(a, int(b)) for a, b in re.findall(
+            r"enum value:\s*(\w+)\s*=\s*(-?\d+)", body)]
+        if not vals:                # no doc comments: fall back to TS names
+            vals = [(a, int(b)) for a, b in re.findall(
+                r"(\w+)\s*=\s*(-?\d+)", _COMMENT.sub("", body))]
         enums.append(Enum(m.group(2), m.group(1), vals))
         seen.add(m.group(2))
-    for m in _ENUM_ANY.finditer(code):     # enums generated without doc comments
+    # enums generated without doc comments
+    for m in _ENUM_ANY.finditer(code):
         if m.group(1) not in seen:
             body = code[m.end():code.find("\n}", m.end())]
-            vals = [(a, int(b)) for a, b in re.findall(r"(\w+)\s*=\s*(-?\d+)", body)]
-            enums.append(Enum(m.group(1), (package + "." if package else "") + m.group(1), vals))
+            vals = [(a, int(b))
+                    for a, b in re.findall(r"(\w+)\s*=\s*(-?\d+)", body)]
+            enums.append(
+                Enum(m.group(1),
+                     (package + "." if package else "") + m.group(1), vals))
 
     services = []
     for m in _SERVICE.finditer(code):
@@ -318,14 +339,17 @@ class Registry:
         self.files = {f.stem: f for f in files}
         if len(self.files) != len(files):
             raise ValueError("two TS files share the same file name")
-        self.idents: dict[tuple[str, str], str] = {}   # (stem, TS ident) -> local proto name
+        # (stem, TS ident) -> local proto name
+        self.idents: dict[tuple[str, str], str] = {}
         owner: dict[str, str] = {}
         for f in files:
             for d in [*f.messages, *f.enums]:
                 local = f.local(d.full)
                 if owner.setdefault(local, f.stem) != f.stem:
-                    raise ValueError(f"'{local}' is defined in both {owner[local]} and {f.stem} "
-                                     f"(packages are unified, so names must be unique)")
+                    raise ValueError(
+                        f"'{local}' is defined in both "
+                        f"{owner[local]} and {f.stem} "
+                        f"(packages are unified, so names must be unique)")
                 self.idents[(f.stem, d.ident)] = local
 
     def resolve(self, f: TsFile, ident: str):
@@ -335,8 +359,11 @@ class Registry:
         if ident in f.imports:
             orig, module = f.imports[ident]
             g = re.search(r"(?:^|/)google/protobuf/(\w+)$", module)
-            if g:                                         # well-known type, provided by protoc
-                return f"google.protobuf.{orig}", f"google/protobuf/{g.group(1)}.proto"
+            if g:                       # well-known type, provided by protoc
+                return (
+                    f"google.protobuf.{orig}",
+                    f"google/protobuf/{g.group(1)}.proto",
+                    )
             stem = module.rsplit("/", 1)[-1]
             if (stem, orig) in self.idents:
                 return self.idents[(stem, orig)], f"{stem}.proto"
@@ -367,11 +394,16 @@ def render(f: TsFile, reg: Registry, opt: Options) -> str:
     def field_options(fl: Field) -> str:
         parts = []
         for name, text in fl.options:
-            if name.rpartition(".")[2] in EXTENSIONS and name.rpartition(".")[0] == DEFAULT_PACKAGE:
+            if (
+                    name.rpartition(".")[2] in EXTENSIONS
+                    and name.rpartition(".")[0] == DEFAULT_PACKAGE):
                 parts.append(f"({name}) = {text}")
                 imports.add(EXTRA_FIELDOPTION)
             else:
-                print(f"  warning: {f.path.name}: unknown field option '{name}' skipped", file=sys.stderr)
+                print(
+                    f"  warning: {f.path.name}:"
+                    f" unknown field option '{name}' skipped",
+                    file=sys.stderr)
         if fl.json_name:
             parts.append(f'json_name = "{fl.json_name}"')
         if fl.repeat == 2 and fl.kind in ("scalar", "enum") and not (
@@ -393,7 +425,7 @@ def render(f: TsFile, reg: Registry, opt: Options) -> str:
         for sub_local, sub in enum_kids.get(local, []):
             out += emit_enum(sub_local, sub, ind + "    ") + [""]
 
-        entry_names = {}                     # compat map mode: field no -> MapEntry_N
+        entry_names = {}            # compat map mode: field no -> MapEntry_N
         if not opt.native_maps:
             n = 0
             for fl in m.fields:
@@ -412,7 +444,9 @@ def render(f: TsFile, reg: Registry, opt: Options) -> str:
                 oneofs.setdefault(fl.oneof, []).append(fl)
         for oname, members in oneofs.items():
             out.append(f"{ind}    oneof {oname} {{")
-            out += [f"{ind}        {ref(fl.type)} {fl.name} = {fl.no}{field_options(fl)};" for fl in members]
+            out += [
+                f"{ind}        {ref(fl.type)} {fl.name}"
+                f" = {fl.no}{field_options(fl)};" for fl in members]
             out += [f"{ind}    }}", ""]
 
         for fl in m.fields:
@@ -432,7 +466,9 @@ def render(f: TsFile, reg: Registry, opt: Options) -> str:
                     prefix = "optional "
                 else:
                     prefix = ""
-            out.append(f"{ind}    {prefix}{typ} {fl.name} = {fl.no}{field_options(fl)};")
+            out.append(
+                f"{ind}    {prefix}{typ} {fl.name}"
+                f" = {fl.no}{field_options(fl)};")
         out.append(f"{ind}}}")
         return out
 
@@ -444,8 +480,10 @@ def render(f: TsFile, reg: Registry, opt: Options) -> str:
     for svc in f.services:
         body.append(f"service {svc.name} {{")
         for r in svc.rpcs:
-            req = ("stream " if r.client_stream else "") + ref(TypeRef("message", ident=r.req))
-            res = ("stream " if r.server_stream else "") + ref(TypeRef("message", ident=r.res))
+            req = ("stream " if r.client_stream else "") + \
+                ref(TypeRef("message", ident=r.req))
+            res = ("stream " if r.server_stream else "") + \
+                ref(TypeRef("message", ident=r.res))
             body.append(f"    rpc {r.name}({req}) returns ({res});")
         body.append("}")
 
@@ -459,13 +497,17 @@ def render(f: TsFile, reg: Registry, opt: Options) -> str:
 # directory-level API
 # ----------------------------------------------------------------------------
 def collect_ts(root: Path) -> list[Path]:
-    """TS files that define schema: skips RPC clients, well-known google/* types, .ignor* dirs."""
+    """TS files that define schema: skips RPC clients,"""
+    """well-known google/* types, .ignor* dirs."""
     out = []
     for p in sorted(root.rglob("*.ts")):
         parent_dirs = p.relative_to(root).parts[:-1]
         if p.name.endswith((".client.ts", ".d.ts")):
             continue
-        if "google" in parent_dirs or any(d.startswith(".ignor") for d in parent_dirs):
+        if (
+            "google" in parent_dirs
+            or any(d.startswith(".ignor") for d in parent_dirs)
+        ):
             continue
         out.append(p)
     return out
@@ -473,24 +515,30 @@ def collect_ts(root: Path) -> list[Path]:
 
 def extra_fieldoption_text(package: str = DEFAULT_PACKAGE) -> str:
     lines = ['syntax = "proto3";', f"package {package};", "",
-             'import "google/protobuf/descriptor.proto";', 'import "options.proto";', "",
+             'import "google/protobuf/descriptor.proto";',
+             'import "options.proto";', "",
              "extend google.protobuf.FieldOptions {"]
-    lines += [f"    {typ} {name} = {num};" for name, (typ, num) in EXTENSIONS.items()]
+    lines += [f"    {typ} {name} = {num};" for name,
+              (typ, num) in EXTENSIONS.items()]
     return "\n".join(lines + ["}", ""])
 
 
-def write_root_proto(out_dir: Path, stems, package: str = DEFAULT_PACKAGE, name: str = ROOT_PROTO) -> Path:
+def write_root_proto(out_dir: Path, stems, package: str = DEFAULT_PACKAGE,
+                     name: str = ROOT_PROTO) -> Path:
     lines = ['syntax = "proto3";', "", f'import "{EXTRA_FIELDOPTION}";']
     lines += [f'import "{s}.proto";' for s in sorted(stems)]
-    lines += ["", f"package {package};", "", "// WUXIA API - imports every converted proto file", ""]
+    lines += ["", f"package {package};", "",
+              "// WUXIA API - imports every converted proto file", ""]
     path = out_dir / name
     path.write_text("\n".join(lines), encoding="utf-8")
     return path
 
 
 def convert_dir(ts_root: Path, out_dir: Path, opt: Options | None = None,
-                only: list[Path] | None = None, root_proto: str | None = None) -> list[str]:
-    """Convert every schema .ts under ts_root into out_dir/<name>.proto. Returns the stems written."""
+                only: list[Path] | None = None,
+                root_proto: str | None = None) -> list[str]:
+    """Convert every schema .ts under ts_root into out"""
+    """_dir/<name>.proto. Returns the stems written."""
     opt = opt or Options()
     ts_root, out_dir = Path(ts_root), Path(out_dir)
     files = [parse_ts(p) for p in collect_ts(ts_root)]
@@ -502,13 +550,16 @@ def convert_dir(ts_root: Path, out_dir: Path, opt: Options | None = None,
     for f in files:
         if wanted and f.stem not in wanted:
             continue
-        (out_dir / f"{f.stem}.proto").write_text(render(f, reg, opt), encoding="utf-8")
+        (out_dir / f"{f.stem}.proto").write_text(render(f, reg, opt),
+                                                 encoding="utf-8")
         written.append(f.stem)
         if opt.verbose:
             print(f"Generated: {out_dir / (f.stem + '.proto')}")
-    (out_dir / EXTRA_FIELDOPTION).write_text(extra_fieldoption_text(opt.package), encoding="utf-8")
+    (out_dir / EXTRA_FIELDOPTION).write_text(
+        extra_fieldoption_text(opt.package), encoding="utf-8")
     if "options" not in reg.files:
-        print("  warning: no options.ts found - extra_fieldoption_wuxiaworld.proto imports options.proto",
+        print("  warning: no options.ts found - "
+              "extra_fieldoption_wuxiaworld.proto imports options.proto",
               file=sys.stderr)
     if root_proto:
         write_root_proto(out_dir, written, opt.package, root_proto)
@@ -516,13 +567,23 @@ def convert_dir(ts_root: Path, out_dir: Path, opt: Options | None = None,
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="Convert protobuf-ts TypeScript to .proto files")
-    ap.add_argument("input", help="TS directory, or one TS file (siblings are read to resolve imports)")
-    ap.add_argument("output", nargs="?", help="output directory (default: next to the input)")
-    ap.add_argument("--root", metavar="NAME", help=f"also write a root proto importing everything (e.g. {ROOT_PROTO})")
-    ap.add_argument("--package", default=DEFAULT_PACKAGE, help="package for every generated file")
-    ap.add_argument("--native-maps", action="store_true", help="emit real map<K,V> fields instead of MapEntry_N messages")
-    ap.add_argument("--no-optional", action="store_true", help="don't put `optional` on every singular field")
+    ap = argparse.ArgumentParser(
+        description="Convert protobuf-ts TypeScript to .proto files")
+    ap.add_argument(
+        "input", help="TS directory, or one TS file "
+        "(siblings are read to resolve imports)")
+    ap.add_argument("output", nargs="?",
+                    help="output directory (default: next to the input)")
+    ap.add_argument("--root", metavar="NAME",
+                    help=f"also write a root proto "
+                    f"importing everything (e.g. {ROOT_PROTO})")
+    ap.add_argument("--package", default=DEFAULT_PACKAGE,
+                    help="package for every generated file")
+    ap.add_argument("--native-maps", action="store_true",
+                    help="emit real map<K,V> "
+                    "fields instead of MapEntry_N messages")
+    ap.add_argument("--no-optional", action="store_true",
+                    help="don't put `optional` on every singular field")
     ap.add_argument("-v", "--verbose", action="store_true")
     a = ap.parse_args(argv)
 
@@ -533,7 +594,8 @@ def main(argv=None):
         stems = convert_dir(src, out, opt, root_proto=a.root)
     else:
         out = Path(a.output) if a.output else src.parent
-        stems = convert_dir(src.parent, out, opt, only=[src], root_proto=a.root)
+        stems = convert_dir(src.parent, out, opt, only=[
+                            src], root_proto=a.root)
     print(f"Generated {len(stems)} proto file(s) in {out}")
 
 

@@ -13,7 +13,7 @@ dump      compile wuxia.proto with pyease_grpc -> wuxiacom_proto.py (and/or wuxi
 
 Needs: requests (scrape), pyease-grpc >= 1.8 + grpcio-tools (dump).
 All paths are relative to this script, not to the current directory.
-"""
+"""  # noqa: E501
 from __future__ import annotations
 
 import argparse
@@ -33,7 +33,8 @@ ROOT_PROTO = "wuxia.proto"
 DEFAULT_URL = "https://www.wuxiaworld.com"
 
 HEADERS = {
-    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "User-Agent": ("Mozilla/5.0 (Windows NT 10.0;"
+                   " Win64; x64) AppleWebKit/537.36 "
                    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 }
 JS_RE = re.compile(r"""["'(]([^"'()\s]+?\.js)(?:\?[^"'()\s]*)?["')]""")
@@ -53,7 +54,8 @@ def _make_session(workers: int):
     s.headers.update(HEADERS)
     retry = Retry(total=3, backoff_factor=0.5, allowed_methods=("GET",),
                   status_forcelist=(429, 500, 502, 503, 504))
-    adapter = HTTPAdapter(max_retries=retry, pool_connections=workers, pool_maxsize=workers)
+    adapter = HTTPAdapter(
+        max_retries=retry, pool_connections=workers, pool_maxsize=workers)
     s.mount("https://", adapter)
     s.mount("http://", adapter)
     return s
@@ -96,7 +98,8 @@ def _clean_path(src):
 
 
 def _process_js(session, js_url, flt, ext):
-    """Worker: download one JS file -> (new chunk urls, [(rel path, source)], notes)."""
+    """Worker: download one JS file ->"""
+    """(new chunk urls, [(rel path, source)], notes)."""
     r = _get(session, js_url)
     if not r:
         return None
@@ -120,7 +123,8 @@ def _process_js(session, js_url, flt, ext):
     return chunks, files, notes
 
 
-def scrape(url=DEFAULT_URL, flt="_proto", ext=".ts", out=TS_DIR, workers=8) -> int:
+def scrape(url=DEFAULT_URL, flt="_proto", ext=".ts",
+           out=TS_DIR, workers=8) -> int:
     session = _make_session(workers)
     page = _get(session, url)
     if not page:
@@ -165,15 +169,20 @@ def scrape(url=DEFAULT_URL, flt="_proto", ext=".ts", out=TS_DIR, workers=8) -> i
 # ----------------------------------------------------------------------------
 # 2. generate
 # ----------------------------------------------------------------------------
-def generate(ts_dir=TS_DIR, proto_dir=PROTO_DIR, native_maps=False, explicit_optional=True, verbose=False):
+def generate(ts_dir=TS_DIR, proto_dir=PROTO_DIR,
+             native_maps=False, explicit_optional=True, verbose=False):
     ts_dir, proto_dir = Path(ts_dir), Path(proto_dir)
     if not ts_dir.is_dir():
         sys.exit(f"{ts_dir} not found - run 'scrape' first")
     proto_dir.mkdir(parents=True, exist_ok=True)
-    for old in proto_dir.glob("*.proto"):          # proto_temp is generated output; drop stale files
+    # proto_temp is generated output; drop stale files
+    for old in proto_dir.glob("*.proto"):
         old.unlink()
-    opt = ts_to_proto.Options(native_maps=native_maps, explicit_optional=explicit_optional, verbose=verbose)
-    stems = ts_to_proto.convert_dir(ts_dir, proto_dir, opt, root_proto=ROOT_PROTO)
+    opt = ts_to_proto.Options(
+        native_maps=native_maps,
+        explicit_optional=explicit_optional, verbose=verbose)
+    stems = ts_to_proto.convert_dir(
+        ts_dir, proto_dir, opt, root_proto=ROOT_PROTO)
     print(f"Generated {len(stems)} proto files + {ROOT_PROTO} in {proto_dir}")
     return stems
 
@@ -181,17 +190,24 @@ def generate(ts_dir=TS_DIR, proto_dir=PROTO_DIR, native_maps=False, explicit_opt
 # ----------------------------------------------------------------------------
 # 3. dump
 # ----------------------------------------------------------------------------
-def dump(proto_dir=PROTO_DIR, out_dir=HERE, py=True, as_json=False, pretty=False):
+def dump(proto_dir=PROTO_DIR, out_dir=HERE, py=True,
+         as_json=False, pretty=False):
     try:
         from pyease_grpc import Protobuf
     except ImportError:
-        sys.exit("pyease_grpc is not installed:  pip install -U pyease-grpc grpcio-tools")
+        sys.exit(
+            "pyease_grpc is not installed:  "
+            "pip install -U pyease-grpc grpcio-tools")
     proto_dir = Path(proto_dir)
     try:
-        data = Protobuf.from_file(str(proto_dir / ROOT_PROTO), [str(proto_dir)]).save()   # one protoc run
+        data = Protobuf.from_file(
+            # one protoc run
+            str(proto_dir / ROOT_PROTO), [str(proto_dir)]).save()
     except TypeError as e:
         if "duplicate file name" in str(e):
-            sys.exit(f"{e}\nYour pyease-grpc is too old for this protobuf version:  pip install -U pyease-grpc")
+            sys.exit(
+                f"{e}\nYour pyease-grpc is too old for this protobuf version:"
+                f"  pip install -U pyease-grpc")
         raise
     out_dir = Path(out_dir)
     if as_json or pretty:
@@ -200,35 +216,46 @@ def dump(proto_dir=PROTO_DIR, out_dir=HERE, py=True, as_json=False, pretty=False
         print(f"wrote {out_dir / 'wuxia.json'}")
     if py:
         text = json.dumps(data)
-        # repr() makes the JSON a valid Python literal whatever quotes/backslashes it contains
+        # repr() makes the JSON a valid Python literal
+        # whatever quotes/backslashes it contains
         (out_dir / "wuxiacom_proto.py").write_text(
             "import json\n"
             f"WUXIWORLD_PROTO__str = {text!r}\n"
-            "WUXIWORLD_PROTO = json.loads(WUXIWORLD_PROTO__str)\n", encoding="utf-8")
+            "WUXIWORLD_PROTO = json.loads(WUXIWORLD_PROTO__str)\n",
+            encoding="utf-8")
         print(f"wrote {out_dir / 'wuxiacom_proto.py'}")
 
 
 # ----------------------------------------------------------------------------
 def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("scrape", help="download TypeScript from source maps")
     s.add_argument("url", nargs="?", default=DEFAULT_URL)
-    s.add_argument("-f", "--filter", default="_proto", help="only sources whose path contains this text")
+    s.add_argument("-f", "--filter", default="_proto",
+                   help="only sources whose path contains this text")
     s.add_argument("-e", "--ext", default=".ts", help="file extension to keep")
     s.add_argument("-o", "--out", default=str(TS_DIR))
-    s.add_argument("-j", "--workers", type=int, default=8, help="parallel downloads")
+    s.add_argument("-j", "--workers", type=int,
+                   default=8, help="parallel downloads")
 
     g = sub.add_parser("generate", help="TypeScript -> .proto")
-    g.add_argument("--native-maps", action="store_true", help="real map<K,V> instead of MapEntry_N messages")
-    g.add_argument("--no-optional", action="store_true", help="no `optional` on every singular field")
+    g.add_argument("--native-maps", action="store_true",
+                   help="real map<K,V> instead of MapEntry_N messages")
+    g.add_argument("--no-optional", action="store_true",
+                   help="no `optional` on every singular field")
     g.add_argument("-v", "--verbose", action="store_true")
 
-    d = sub.add_parser("dump", help="compile wuxia.proto -> wuxiacom_proto.py / wuxia.json")
-    d.add_argument("--py", action="store_true", help="write wuxiacom_proto.py (default)")
+    d = sub.add_parser(
+        "dump", help="compile wuxia.proto -> wuxiacom_proto.py / wuxia.json")
+    d.add_argument("--py", action="store_true",
+                   help="write wuxiacom_proto.py (default)")
     d.add_argument("--json", action="store_true", help="write wuxia.json")
-    d.add_argument("--pretty", action="store_true", help="write indented wuxia.json")
+    d.add_argument("--pretty", action="store_true",
+                   help="write indented wuxia.json")
 
     a = sub.add_parser("all", help="scrape + generate + dump")
     a.add_argument("url", nargs="?", default=DEFAULT_URL)
@@ -237,9 +264,11 @@ def main(argv=None):
     if args.cmd == "scrape":
         scrape(args.url, args.filter, args.ext, args.out, args.workers)
     elif args.cmd == "generate":
-        generate(native_maps=args.native_maps, explicit_optional=not args.no_optional, verbose=args.verbose)
+        generate(native_maps=args.native_maps,
+                 explicit_optional=not args.no_optional, verbose=args.verbose)
     elif args.cmd == "dump":
-        dump(py=args.py or not (args.json or args.pretty), as_json=args.json, pretty=args.pretty)
+        dump(py=args.py or not (args.json or args.pretty),
+             as_json=args.json, pretty=args.pretty)
     else:
         scrape(args.url)
         generate()
