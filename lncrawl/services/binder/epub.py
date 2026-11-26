@@ -44,6 +44,7 @@ def build_cover() -> epub.EpubHtml:
 
 
 def build_intro(novel: Novel) -> epub.EpubHtml:
+    synopsis = (novel.synopsis or "").replace("\r\n", "\n").replace("\n", "<br/>")
     content = RE_WHITESPACE.sub(
         "",
         f"""
@@ -51,7 +52,7 @@ def build_intro(novel: Novel) -> epub.EpubHtml:
         <h1>{novel.title}</h1>
         <h3>{novel.authors}</h3>
         <div class="synopsis">
-            {novel.synopsis}
+            {synopsis}
         </div>
         <div class="footer">
             <b>Source:</b> <a href="{novel.url}">{novel.url}</a>

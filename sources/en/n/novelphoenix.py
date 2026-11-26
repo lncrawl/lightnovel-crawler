@@ -26,7 +26,11 @@ class NovelPhoenixCrawler(SoupTemplate):
         # The novel page links only the newest chapter; the list lives one level down.
         url = self.absolute_url(novel.url).split("?")[0].rstrip("/") + "/chapters"
         soup = self.scraper.get_soup(url)
-        return soup.select("ul.chapter-list li a[href]")
+        yield from soup.select("ul.chapter-list li a[href]")
+        page_count = len(soup.select('select[aria-label="Chapter range"] option'))
+        for page in range(2, page_count + 1):
+            page_soup = self.scraper.get_soup(f"{url}?page={page}")
+            yield from page_soup.select("ul.chapter-list li a[href]")
 
     def parse_chapter_title(self, soup: PageSoup, chapter: Chapter) -> None:
         # A row runs number, title and timestamp together with no separators between the

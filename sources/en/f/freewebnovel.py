@@ -52,12 +52,8 @@ class FreewebnovelCrawler(FreewebnovelTemplate):
             )
             for page in range(1, total_page + 1)
         ]
-        for resp in self.taskman.resolve(
-            futures,
-            desc="Index",
-            unit="page",
-            fail_fast=True,
-        ):
+        for future in futures:
+            resp = future.result()
             assert resp, "failed to fetch chapter list"
             data = resp.json()
             assert "html" in data, "invalid chapter list result"

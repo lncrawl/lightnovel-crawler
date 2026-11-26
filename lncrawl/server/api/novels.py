@@ -26,16 +26,16 @@ router = APIRouter()
     summary="Returns a list of novels",
 )
 def list_novels(
-    search: str = Query(default="", help="Search query"),
-    offset: int = Query(default=0, help="Offset"),
-    limit: int = Query(default=20, le=100, help="Limit"),
-    domain: str = Query(default="", help="Domain name"),
-    language: Optional[LanguageCode] = Query(default=None, help="Language code"),
-    tags: List[str] = Query(default=[], help="Match novels having all of these tags"),
-    manga: Optional[bool] = Query(default=None, help="Filter manga/comic entries"),
-    mtl: Optional[bool] = Query(default=None, help="Filter machine-translated entries"),
-    min_chapters: int = Query(default=0, ge=0, help="Minimum chapter count"),
-    sort: NovelSort = Query(default=NovelSort.updated, help="Sort order"),
+    search: str = Query(default="", description="Search query"),
+    offset: int = Query(default=0, description="Offset"),
+    limit: int = Query(default=20, le=100, description="Limit"),
+    domain: str = Query(default="", description="Domain name"),
+    language: Optional[LanguageCode] = Query(default=None, description="Language code"),
+    tags: List[str] = Query(default=[], description="Match novels having all of these tags"),
+    manga: Optional[bool] = Query(default=None, description="Filter manga/comic entries"),
+    mtl: Optional[bool] = Query(default=None, description="Filter machine-translated entries"),
+    min_chapters: int = Query(default=0, ge=0, description="Minimum chapter count"),
+    sort: NovelSort = Query(default=NovelSort.updated, description="Sort order"),
 ) -> Paginated[Novel]:
     return ctx.novels.list(
         limit=limit,

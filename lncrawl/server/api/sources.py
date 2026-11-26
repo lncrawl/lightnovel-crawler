@@ -23,7 +23,7 @@ router = APIRouter()
     summary="Returns a list of supported sources",
 )
 def list_sources(
-    skip_rejected: bool = Query(default=False, help="Send true to skip rejected sources"),
+    skip_rejected: bool = Query(default=False, description="Send true to skip rejected sources"),
     user: User = Security(ensure_user),
 ) -> List[SourceItem]:
     ctx.activity.record(user.id, ActivityType.SOURCES, "sources")

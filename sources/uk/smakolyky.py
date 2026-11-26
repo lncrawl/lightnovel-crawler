@@ -73,4 +73,6 @@ class SmakolykyCrawler(SoupTemplate):
         if not content.strip():
             raise LNException(f"Empty Smakolyky chapter: {chapter.url}")
         soup = PageSoup.create(f"<div>{content}</div>")
-        chapter.body = self.cleaner.extract_contents(soup.select_one("div"))
+        div = soup.select_one("div")
+        raw_tag = getattr(div, "_tag", div)
+        chapter.body = self.cleaner.extract_contents(raw_tag)
