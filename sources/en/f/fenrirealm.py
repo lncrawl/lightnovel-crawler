@@ -78,8 +78,13 @@ class FenriRealm(LegacyCrawler):
         chapters_data = json.loads(response)
 
         chapters_data.sort(key=lambda x: x["number"])
+        free_chapters = [
+            chapter
+            for chapter in chapters_data
+            if (chapter.get("locked") or {}).get("price", 0) == 0
+        ]
 
-        for chapter in chapters_data:
+        for chapter in free_chapters:
             chap_id = len(self.chapters) + 1
             vol_id = 1 + len(self.chapters) // 100
 
@@ -106,6 +111,12 @@ class FenriRealm(LegacyCrawler):
             )
 
     def download_chapter_body(self, chapter):
-        return self.cleaner.extract_contents(
-            self.get_soup(chapter.url).select_one("div#reader-area")
-        )
+        soup = self.get_soup(chapter.url)
+        body = soup.select_one("[id^='reader-area-']") or soup.select_one("div#reader-area")
+        if body:
+            for tag in body.find_all("style"):
+                tag.decompose()
+            for tag in body.find_all(attrs={"aria-hidden": True}):
+                if str(tag.get("aria-hidden", "")).strip().lower() == "true":
+                    tag.decompose()
+        return self.cleaner.extract_contents(body)

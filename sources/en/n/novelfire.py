@@ -15,7 +15,7 @@ class NovelFireCrawler(LegacyCrawler):
     has_mtl = False
     has_manga = False
     can_search = True
-    request_rate_limit = 3
+    request_rate_limit = 1
 
     def read_novel_info(self) -> None:
         soup = self.get_soup(self.novel_url)
@@ -25,6 +25,11 @@ class NovelFireCrawler(LegacyCrawler):
 
         img = soup.select_one(".cover img")
         self.novel_cover = self.absolute_url(img["src"])
+
+        self.novel_synopsis = "\n".join(
+            paragraph.text.strip() for paragraph in soup.select("div.summary div.content p")
+        )
+        self.novel_tags = [item.text.strip() for item in soup.select(".categories a.property-item")]
 
         vol_id = 1
         vol_url = self.novel_url + "/chapters"
@@ -56,8 +61,10 @@ class NovelFireCrawler(LegacyCrawler):
 
     def download_chapter_body(self, chapter) -> str:
         soup = self.get_soup(chapter["url"])
-        contents = soup.select_one("div#content")
-        if not contents:
+        contents = soup.select_one(
+            "div#content, div.chapter-content, div.content, div.cha-content, .cha-words"
+        )
+        if not contents or not contents.text.strip():
             return ""
 
         # 1. Look through the very top elements inside the content container

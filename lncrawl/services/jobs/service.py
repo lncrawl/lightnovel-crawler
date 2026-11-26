@@ -213,7 +213,7 @@ class JobService:
         depends_on: Optional[str] = None,
         **data: Any,
     ) -> Job:
-        data.update({"urls": list(set(urls))})
+        data.update({"urls": list(dict.fromkeys(urls))})
         return self._create(
             user=user,
             data=data,
@@ -926,6 +926,7 @@ class JobService:
         sa_is_done = sa_done == sa_total
 
         sa_status = sq.case(
+            (sq.and_(sa_is_done, sa_failed > 0), JobStatus.FAILED),
             (sa_is_done, JobStatus.SUCCESS),
             else_=Job.status,
         )

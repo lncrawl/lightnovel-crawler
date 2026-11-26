@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from functools import cached_property
+import html
 import logging
 import re
 from time import time
@@ -97,6 +98,26 @@ class WebnovelCrawler(SoupTemplate):
             novel.author = ", ".join(
                 [x.get("name") for x in book_info["authorItems"] if x.get("name")]
             )
+
+        description = str(book_info.get("description") or "").strip()
+        if description:
+            novel.synopsis = "".join(
+                f"<p>{html.escape(line.strip())}</p>"
+                for line in description.splitlines()
+                if line.strip()
+            )
+
+        tags = [book_info.get("categoryName") or ""]
+        for info in book_info.get("tagInfos") or []:
+            if isinstance(info, dict):
+                tags.append(info.get("enTagName") or info.get("tagName") or "")
+        seen = set()
+        novel.tags = []
+        for tag in tags:
+            name = str(tag).strip()
+            if name and name.casefold() not in seen:
+                novel.tags.append(name)
+                seen.add(name.casefold())
 
         # To get the chapter list catalog
         soup = self.scraper.get_soup(f"{novel.url.strip('/')}/catalog")
